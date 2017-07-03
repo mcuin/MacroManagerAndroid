@@ -7,7 +7,7 @@
     tools:context="com.macromanager.macromanagerandroid.DailyActivity">
 
     <GridView
-        android:id="@+id/gridView"
+        android:id="@+id/macrosGridView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:numColumns="3"
@@ -17,7 +17,7 @@
         app:layout_constraintHorizontal_bias="0.0" />
 
     <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
+        android:id="@+id/dailyAdView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
@@ -26,24 +26,25 @@
         app:layout_constraintHorizontal_bias="0.0" />
 
     <android.support.v7.widget.RecyclerView
+        android:id="@+id/userFoodRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="0dp"
         android:layout_marginEnd="0dp"
         android:layout_marginStart="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintBottom_toTopOf="@+id/dailyBottomNavtigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gridView" />
+        app:layout_constraintTop_toBottomOf="@+id/macrosGridView" />
 
     <android.support.design.widget.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
+        android:id="@+id/dailyBottomNavtigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginBottom="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/adView">
+        app:layout_constraintBottom_toTopOf="@+id/dailyAdView">
 
     </android.support.design.widget.BottomNavigationView>
 
