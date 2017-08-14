@@ -18,10 +18,6 @@
         </activity>
         <activity android:name=".macroCalculatorActivity" />
         <activity android:name=".SettingsActivity"></activity>
-
-        <meta-data
-            android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
     </application>
 
 </manifest>
