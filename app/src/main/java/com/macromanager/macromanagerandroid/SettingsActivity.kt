@@ -1,5 +1,6 @@
 package com.macromanager.macromanagerandroid
 
+import android.app.DatePickerDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
@@ -12,6 +13,8 @@ import android.text.InputType
 import android.view.Gravity
 import android.view.View
 import android.widget.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -19,11 +22,12 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        val settingsConstraintLayout: ConstraintLayout = findViewById(R.id.settingsConstraintLayout) as ConstraintLayout
-        val genderRadioGroup: RadioGroup = findViewById(R.id.genderRadioGroup) as RadioGroup
-        val heightRadioGroup: RadioGroup = findViewById(R.id.heightMeasurmentRadioGroup) as RadioGroup
-        val weightRadioGroup: RadioGroup = findViewById(R.id.weightMeasurmentRadioGroup) as RadioGroup
-        val heightTextView: TextView = findViewById(R.id.heightTextView) as TextView
+        val settingsConstraintLayout: ConstraintLayout = findViewById<ConstraintLayout>(R.id.settingsConstraintLayout)
+        val genderRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.genderRadioGroup)
+        val heightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.heightMeasurmentRadioGroup)
+        val weightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.weightMeasurmentRadioGroup)
+        val heightTextView: TextView = findViewById<TextView>(R.id.heightTextView)
+        val birthDateTextView: TextView = findViewById<TextView>(R.id.birthDateTextView)
 
         val feetEditText = EditText(this)
         val feetTextView = TextView(this)
@@ -45,7 +49,36 @@ class SettingsActivity : AppCompatActivity() {
 
         var userPreferences = this.getSharedPreferences("userPreferences", 0)
 
+        if (userPreferences.contains("birthDate")) {
+
+            birthDateTextView.setText(userPreferences.getString("birthDate", ""))
+        } else {
+
+            birthDateTextView.setText("Tap to set your birthday.")
+        }
+
         val editor = userPreferences.edit()
+
+        birthDateTextView.setOnClickListener {
+
+            val currentCalendar = Calendar.getInstance()
+            val birthdayPicker = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { datePicker, year, month, date ->
+
+                val birthCalendar = Calendar.getInstance()
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                birthCalendar.set(year, month, date)
+                val birthDate = dateFormat.format(birthCalendar.time)
+                editor.putString("birthDate", birthDate)
+
+                editor.apply()
+
+                birthDateTextView.setText(userPreferences.getString("birthDate", ""))
+
+            }, currentCalendar.get(Calendar.YEAR),
+                    currentCalendar.get(Calendar.MONTH), currentCalendar.get(Calendar.DATE))
+
+            birthdayPicker.show()
+        }
 
         genderRadioGroup.setOnCheckedChangeListener { group, checkedId ->
 
