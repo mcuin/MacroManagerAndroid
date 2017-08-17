@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.*
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.function.DoubleToLongFunction
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -145,7 +146,7 @@ class SettingsActivity : AppCompatActivity() {
                     val feetEditTextSet = ConstraintSet()
                     feetEditTextSet.clone(settingsConstraintLayout)
                     feetEditTextSet.constrainHeight(feetEditText.id, ConstraintSet.WRAP_CONTENT)
-                    feetEditTextSet.constrainWidth(feetEditText.id, 200)
+                    feetEditTextSet.constrainWidth(feetEditText.id, ConstraintSet.WRAP_CONTENT)
                     feetEditTextSet.setMargin(ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
                     feetEditTextSet.connect(feetEditText.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
                     feetEditTextSet.connect(feetEditText.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
@@ -154,8 +155,8 @@ class SettingsActivity : AppCompatActivity() {
 
                     val feetTextViewSet = ConstraintSet()
                     feetTextViewSet.clone(settingsConstraintLayout)
-                    feetTextViewSet.constrainWidth(feetTextView.id, feetEditText.height)
-                    feetTextViewSet.constrainHeight(feetTextView.id, feetEditText.height)
+                    feetTextViewSet.constrainWidth(feetTextView.id, ConstraintSet.WRAP_CONTENT)
+                    feetTextViewSet.constrainHeight(feetTextView.id, ConstraintSet.WRAP_CONTENT)
                     feetTextViewSet.connect(feetTextView.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
                     feetTextViewSet.connect(feetTextView.id, ConstraintSet.START, feetEditText.id, ConstraintSet.END)
                     feetTextViewSet.connect(feetTextView.id, ConstraintSet.END, inchesEditText.id, ConstraintSet.START, 8)
@@ -163,7 +164,7 @@ class SettingsActivity : AppCompatActivity() {
 
                     val inchesEditTextSet = ConstraintSet()
                     inchesEditTextSet.clone(settingsConstraintLayout)
-                    inchesEditTextSet.constrainWidth(inchesEditText.id, 200)
+                    inchesEditTextSet.constrainWidth(inchesEditText.id, ConstraintSet.WRAP_CONTENT)
                     inchesEditTextSet.constrainHeight(inchesEditText.id, ConstraintSet.WRAP_CONTENT)
                     inchesEditTextSet.connect(inchesEditText.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
                     inchesEditTextSet.connect(inchesEditText.id, ConstraintSet.START, feetTextView.id, ConstraintSet.END, 8)
@@ -172,8 +173,8 @@ class SettingsActivity : AppCompatActivity() {
 
                     val inchesTextViewSet = ConstraintSet()
                     inchesTextViewSet.clone(settingsConstraintLayout)
-                    inchesTextViewSet.constrainWidth(inchesTextView.id, inchesEditText.height)
-                    inchesTextViewSet.constrainHeight(inchesTextView.id, inchesEditText.height)
+                    inchesTextViewSet.constrainWidth(inchesTextView.id, ConstraintSet.WRAP_CONTENT)
+                    inchesTextViewSet.constrainHeight(inchesTextView.id, ConstraintSet.WRAP_CONTENT)
                     inchesTextViewSet.connect(inchesTextView.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
                     inchesTextViewSet.connect(inchesTextView.id, ConstraintSet.START, inchesEditText.id, ConstraintSet.END)
                     inchesTextViewSet.applyTo(settingsConstraintLayout)
@@ -181,7 +182,7 @@ class SettingsActivity : AppCompatActivity() {
                     if (userPreferences.contains("feet") && userPreferences.contains("inches")) {
 
                         feetEditText.setText(userPreferences.getInt("feet", 0).toString())
-                        inchesEditText.setText(userPreferences.getInt("inches", 0).toString())
+                        inchesEditText.setText(userPreferences.getFloat("inches", 0.0f).toString())
                     }
 
                     saveButtonSet.clone(settingsConstraintLayout)
@@ -215,7 +216,7 @@ class SettingsActivity : AppCompatActivity() {
                     val cmEditTextSet = ConstraintSet()
                     cmEditTextSet.clone(settingsConstraintLayout)
                     cmEditTextSet.constrainHeight(cmEditText.id, ConstraintSet.WRAP_CONTENT)
-                    cmEditTextSet.constrainWidth(cmEditText.id, 200)
+                    cmEditTextSet.constrainWidth(cmEditText.id, ConstraintSet.WRAP_CONTENT)
                     cmEditTextSet.setMargin(ConstraintSet.PARENT_ID, ConstraintSet.START, R.dimen.height_text_margin)
                     cmEditTextSet.connect(cmEditText.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
                     cmEditTextSet.connect(cmEditText.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
@@ -232,7 +233,7 @@ class SettingsActivity : AppCompatActivity() {
 
                     if (userPreferences.contains("cm")) {
 
-                        cmEditText.setText(userPreferences.getInt("cm", 0).toString())
+                        cmEditText.setText(userPreferences.getFloat("cm", 0.0f).toString())
                     }
 
                     saveButtonSet.clone(settingsConstraintLayout)
@@ -282,8 +283,8 @@ class SettingsActivity : AppCompatActivity() {
 
             if (heightRadioGroup.checkedRadioButtonId == R.id.heightImperial) {
 
-                if (feetEditText.text.toString() == "" || inchesEditText.text.toString() == "" || Integer.valueOf(inchesEditText.text.toString()) >= 13
-                        || Integer.valueOf(inchesEditText.text.toString()) < 0) {
+                if (feetEditText.text.toString() == "" || inchesEditText.text.toString() == "" || (inchesEditText.text.toString().toDouble()) >= 13
+                        || (inchesEditText.text.toString().toDouble()) < 0) {
 
                     val heightAlert = AlertDialog.Builder(this)
                     heightAlert.setTitle("Height Error").setMessage("Please enter a valid number for both entries.").setPositiveButton("OK") {
@@ -292,8 +293,12 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 } else {
 
+                    val totalInches = ((Integer.valueOf(feetEditText.text.toString())) * 12) + (inchesEditText.text.toString().toDouble())
+                    val cm = totalInches * 2.54
+
                     editor.putInt("feet", Integer.valueOf(feetEditText.text.toString()))
-                    editor.putInt("inches", Integer.valueOf(inchesEditText.text.toString()))
+                    editor.putFloat("inches", inchesEditText.text.toString().toFloat())
+                    editor.putFloat("cm", cm.toFloat())
                     editor.apply()
                     editor.commit()
                     finish()
@@ -310,7 +315,14 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 } else {
 
-                    editor.putInt("cm", Integer.valueOf(cmEditText.text.toString()))
+                    val feetConversion = (cmEditText.text.toString().toFloat()) / 30.48
+                    val feetRemainder = feetConversion % 1
+                    val feet = feetConversion - feetRemainder
+                    val inches = ((cmEditText.text.toString().toFloat()) / 2.54) - (feet * 12) + feetRemainder
+
+                    editor.putFloat("cm", cmEditText.text.toString().toFloat())
+                    editor.putInt("feet", feet.toInt())
+                    editor.putFloat("inches", inches.toFloat())
                     editor.apply()
                     editor.commit()
                     finish()
