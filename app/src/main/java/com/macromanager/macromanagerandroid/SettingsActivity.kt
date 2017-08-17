@@ -1,11 +1,8 @@
 package com.macromanager.macromanagerandroid
 
 import android.app.DatePickerDialog
-import android.content.Context
-import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.renderscript.ScriptGroup
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
 import android.support.v7.app.AlertDialog
@@ -24,8 +21,8 @@ class SettingsActivity : AppCompatActivity() {
 
         val settingsConstraintLayout: ConstraintLayout = findViewById<ConstraintLayout>(R.id.settingsConstraintLayout)
         val genderRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.genderRadioGroup)
-        val heightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.heightMeasurmentRadioGroup)
-        val weightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.weightMeasurmentRadioGroup)
+        val heightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.heightMeasurementRadioGroup)
+        val weightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.weightMeasurementRadioGroup)
         val heightTextView: TextView = findViewById<TextView>(R.id.heightTextView)
         val birthDateTextView: TextView = findViewById<TextView>(R.id.birthDateTextView)
 
@@ -95,17 +92,17 @@ class SettingsActivity : AppCompatActivity() {
 
                 R.id.weightImperial -> {
 
-                    editor.putString("weight", "imperial");
+                    editor.putString("weightMeasurement", "imperial");
                 }
 
                 R.id.weightMetric -> {
 
-                    editor.putString("weight", "metric")
+                    editor.putString("weightMeasurement", "metric")
                 }
 
                 R.id.weightStone -> {
 
-                    editor.putString("weight", "stone")
+                    editor.putString("weightMeasurement", "stone")
                 }
             }
         }
@@ -116,7 +113,7 @@ class SettingsActivity : AppCompatActivity() {
 
                 R.id.heightImperial -> {
 
-                    editor.putString("height", "imperial")
+                    editor.putString("heightMeasurement", "imperial")
 
                     if (cmEditText.visibility == View.VISIBLE) {
 
@@ -194,7 +191,7 @@ class SettingsActivity : AppCompatActivity() {
 
                 R.id.heightMetric -> {
 
-                    editor.putString("height", "metric")
+                    editor.putString("heightMeasurement", "metric")
 
                     if (feetEditText.visibility == View.VISIBLE) {
 
@@ -256,13 +253,13 @@ class SettingsActivity : AppCompatActivity() {
             genderRadioGroup.check(R.id.femaleButton)
         }
 
-        if (userPreferences.getString("weight", "") == "imperial") {
+        if (userPreferences.getString("weightMeasurement", "") == "imperial") {
 
             weightRadioGroup.check(R.id.weightImperial)
-        } else if (userPreferences.getString("weight", "") == "metric") {
+        } else if (userPreferences.getString("weightMeasurement", "") == "metric") {
 
             weightRadioGroup.check(R.id.weightMetric)
-        } else if (userPreferences.getString("weight", "") == "stone") {
+        } else if (userPreferences.getString("weightMeasurement", "") == "stone") {
 
             weightRadioGroup.check(R.id.weightStone)
         } else {
@@ -270,10 +267,10 @@ class SettingsActivity : AppCompatActivity() {
             weightRadioGroup.check(R.id.weightImperial)
         }
 
-        if (userPreferences.getString("height", "") == "imperial") {
+        if (userPreferences.getString("heightMeasurement", "") == "imperial") {
 
             heightRadioGroup.check(R.id.heightImperial)
-        } else if (userPreferences.getString("height", "") == "metric") {
+        } else if (userPreferences.getString("heightMeasurement", "") == "metric") {
 
             heightRadioGroup.check(R.id.heightMetric)
         } else {
