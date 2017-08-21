@@ -181,8 +181,8 @@ class SettingsActivity : AppCompatActivity() {
 
                     if (userPreferences.contains("feet") && userPreferences.contains("inches")) {
 
-                        feetEditText.setText(userPreferences.getInt("feet", 0).toString())
-                        inchesEditText.setText(userPreferences.getFloat("inches", 0.0f).toString())
+                        feetEditText.setText(userPreferences.getString("feet", ""))
+                        inchesEditText.setText(userPreferences.getString("inches", ""))
                     }
 
                     saveButtonSet.clone(settingsConstraintLayout)
@@ -233,7 +233,7 @@ class SettingsActivity : AppCompatActivity() {
 
                     if (userPreferences.contains("cm")) {
 
-                        cmEditText.setText(userPreferences.getFloat("cm", 0.0f).toString())
+                        cmEditText.setText(userPreferences.getString("cm", ""))
                     }
 
                     saveButtonSet.clone(settingsConstraintLayout)
@@ -296,9 +296,9 @@ class SettingsActivity : AppCompatActivity() {
                     val totalInches = ((Integer.valueOf(feetEditText.text.toString())) * 12) + (inchesEditText.text.toString().toDouble())
                     val cm = totalInches * 2.54
 
-                    editor.putInt("feet", Integer.valueOf(feetEditText.text.toString()))
-                    editor.putFloat("inches", inchesEditText.text.toString().toFloat())
-                    editor.putFloat("cm", cm.toFloat())
+                    editor.putString("feet", feetEditText.text.toString())
+                    editor.putString("inches", inchesEditText.text.toString())
+                    editor.putString("cm", cm.toString())
                     editor.apply()
                     editor.commit()
                     finish()
@@ -320,9 +320,9 @@ class SettingsActivity : AppCompatActivity() {
                     val feet = feetConversion - feetRemainder
                     val inches = ((cmEditText.text.toString().toFloat()) / 2.54) - (feet * 12) + feetRemainder
 
-                    editor.putFloat("cm", cmEditText.text.toString().toFloat())
-                    editor.putInt("feet", feet.toInt())
-                    editor.putFloat("inches", inches.toFloat())
+                    editor.putString("cm", cmEditText.text.toString())
+                    editor.putString("feet", feet.toString())
+                    editor.putString("inches", inches.toString())
                     editor.apply()
                     editor.commit()
                     finish()

@@ -16,8 +16,20 @@ import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.*
+import kotlinx.android.synthetic.main.activity_settings.*
+import org.joda.time.DateTime
+import org.joda.time.JodaTimePermission
+import org.joda.time.Years
+import org.joda.time.format.DateTimeFormat
 import org.w3c.dom.Text
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.Period
+import java.time.Year
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class CalculatorActivity : AppCompatActivity() {
 
@@ -29,6 +41,10 @@ class CalculatorActivity : AppCompatActivity() {
         val weightTextView = findViewById<TextView>(R.id.weightTextView)
         val calculatorBottomNav = findViewById<BottomNavigationView>(R.id.calculatorBottomNav)
         var previousView = View(this)
+        val poundsEditText = EditText(this)
+        val kilogramsEditText = EditText(this)
+        val stoneEditText = EditText(this)
+        val stonePoundsEditText = EditText(this)
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
         val editor = userPreferences.edit()
@@ -37,7 +53,7 @@ class CalculatorActivity : AppCompatActivity() {
         Log.d("Birth Measure", userPreferences.getString("birthDate", ""))
         Log.d("Gender Measure", userPreferences.getString("gender", ""))
         Log.d("Height Measure", userPreferences.getString("heightMeasurement", ""))
-        Log.d("CM Measure", userPreferences.getFloat("cm", 0.0f).toString())
+        Log.d("CM Measure", userPreferences.getString("cm", ""))
 
         if (!userPreferences.contains("weightMeasurement") || !userPreferences.contains("birthDate") || !userPreferences.contains("gender")
                 || !userPreferences.contains("heightMeasurement") || !userPreferences.contains("cm")) {
@@ -67,7 +83,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             if (userPreferences.getString("weightMeasurement", "") == "imperial") {
 
-                val poundsEditText = EditText(this)
+                //val poundsEditText = EditText(this)
                 poundsEditText.id = View.generateViewId()
                 calculatorConstraintLayout.addView(poundsEditText)
                 val poundsTextView = TextView(this)
@@ -99,7 +115,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             if (userPreferences.getString("weightMeasurement", "") == "metric") {
 
-                val kilogramsEditText = EditText(this)
+                //val kilogramsEditText = EditText(this)
                 kilogramsEditText.id = View.generateViewId()
                 calculatorConstraintLayout.addView(kilogramsEditText)
                 val kilogramsTextView = TextView(this)
@@ -126,21 +142,21 @@ class CalculatorActivity : AppCompatActivity() {
 
             if (userPreferences.getString("weightMeasurement", "") == "stone") {
 
-                val stoneEditText = EditText(this)
+                //val stoneEditText = EditText(this)
                 stoneEditText.id = View.generateViewId()
                 calculatorConstraintLayout.addView(stoneEditText)
                 val stoneTextView = TextView(this)
                 stoneTextView.id = View.generateViewId()
                 calculatorConstraintLayout.addView(stoneTextView)
-                val poundsEditText = EditText(this)
-                poundsEditText.id = View.generateViewId()
-                calculatorConstraintLayout.addView(poundsEditText)
+                //val poundsEditText = EditText(this)
+                /*stonePoundsEditText.id = View.generateViewId()
+                calculatorConstraintLayout.addView(stonePoundsEditText)
                 val poundsTextView = TextView(this)
                 poundsTextView.id = View.generateViewId()
-                calculatorConstraintLayout.addView(poundsTextView)
+                calculatorConstraintLayout.addView(poundsTextView)*/
 
                 stoneTextView.text = "ST"
-                poundsTextView.text = "LBS"
+                //poundsTextView.text = "LBS"
 
                 val weightStoneSet = ConstraintSet()
 
@@ -149,18 +165,18 @@ class CalculatorActivity : AppCompatActivity() {
                 weightStoneSet.constrainHeight(stoneEditText.id, ConstraintSet.WRAP_CONTENT)
                 weightStoneSet.constrainWidth(stoneTextView.id, ConstraintSet.WRAP_CONTENT)
                 weightStoneSet.constrainHeight(stoneTextView.id, ConstraintSet.WRAP_CONTENT)
-                weightStoneSet.constrainWidth(poundsEditText.id, ConstraintSet.WRAP_CONTENT)
-                weightStoneSet.constrainHeight(poundsEditText.id, ConstraintSet.WRAP_CONTENT)
-                weightStoneSet.constrainWidth(poundsTextView.id, ConstraintSet.WRAP_CONTENT)
-                weightStoneSet.constrainHeight(poundsTextView.id, ConstraintSet.WRAP_CONTENT)
+                weightStoneSet.constrainWidth(stonePoundsEditText.id, ConstraintSet.WRAP_CONTENT)
+                weightStoneSet.constrainHeight(stonePoundsEditText.id, ConstraintSet.WRAP_CONTENT)
+                /*weightStoneSet.constrainWidth(poundsTextView.id, ConstraintSet.WRAP_CONTENT)
+                weightStoneSet.constrainHeight(poundsTextView.id, ConstraintSet.WRAP_CONTENT)*/
                 weightStoneSet.connect(stoneEditText.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
                 weightStoneSet.connect(stoneEditText.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
                 weightStoneSet.connect(stoneTextView.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
                 weightStoneSet.connect(stoneTextView.id, ConstraintSet.START, stoneEditText.id, ConstraintSet.END, 16)
-                weightStoneSet.connect(poundsEditText.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
-                weightStoneSet.connect(poundsEditText.id, ConstraintSet.START, stoneTextView.id, ConstraintSet.END, 16)
+                /*weightStoneSet.connect(stonePoundsEditText.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
+                weightStoneSet.connect(stonePoundsEditText.id, ConstraintSet.START, stoneTextView.id, ConstraintSet.END, 16)
                 weightStoneSet.connect(poundsTextView.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
-                weightStoneSet.connect(poundsTextView.id, ConstraintSet.START, poundsEditText.id, ConstraintSet.END, 16)
+                weightStoneSet.connect(poundsTextView.id, ConstraintSet.START, poundsEditText.id, ConstraintSet.END, 16)*/
                 weightStoneSet.applyTo(calculatorConstraintLayout)
 
                 previousView = stoneEditText
@@ -315,12 +331,12 @@ class CalculatorActivity : AppCompatActivity() {
 
                 when (checkedId) {
 
-                    sedentaryAdultRadioButton.id -> editor.putFloat("physicalActivityLifestyle", 0.4f)
-                    recreationalExerciserAdultRadioButton.id -> editor.putFloat("physicalActivityLifestyle", 0.75f)
-                    competitiveAthleteAdultRadioButton.id -> editor.putFloat("physicalActivityLifestyle", 0.9f)
-                    buildingMuscleAdultRadioButton.id -> editor.putFloat("physicalActivityLifestyle", 0.9f)
-                    dietingAthleteRadioButton.id -> editor.putFloat("physicalActivityLifestyle", 0.9f)
-                    growingAthleteTeenager.id -> editor.putFloat("physicalActivityLifestyle", 1.0f)
+                    sedentaryAdultRadioButton.id -> editor.putString("physicalActivityLifestyle", "sedentaryAdult")
+                    recreationalExerciserAdultRadioButton.id -> editor.putString("physicalActivityLifestyle", "recreationalExerciserAdult")
+                    competitiveAthleteAdultRadioButton.id -> editor.putString("physicalActivityLifestyle", "competitiveAthleteAdult")
+                    buildingMuscleAdultRadioButton.id -> editor.putString("physicalActivityLifestyle", "buildingMuscleAdult")
+                    dietingAthleteRadioButton.id -> editor.putString("physicalActivityLifestyle", "dietingAthlete")
+                    growingAthleteTeenager.id -> editor.putString("physicalActivityLifestyle", "growingAthleteTeenager")
                 }
             }
 
@@ -446,7 +462,7 @@ class CalculatorActivity : AppCompatActivity() {
                     goalWeightLossSuggestedRadioButton.id -> editor.putString("goal", "weightLossSuggested")
                     goalWeightLossAggressiveRadioButton.id -> editor.putString("goal", "weightLossAggressive")
                     goalWeightLossRecklessRadioButton.id -> editor.putString("goal", "weightLossReckless")
-                    goalMaintainRadioButton.id -> editor.putString("goal", "matintain")
+                    goalMaintainRadioButton.id -> editor.putString("goal", "maintain")
                     goalBulkingSuggestedRadioButton.id -> editor.putString("goal", "bulkingSuggested")
                     goalBulkingAggressiveRadioButton.id -> editor.putString("goal", "bulkingAggressive")
                     goalBulkingRecklessRadioButton.id -> editor.putString("goal", "bulkingReckless")
@@ -536,7 +552,204 @@ class CalculatorActivity : AppCompatActivity() {
 
             calculateButton.setOnClickListener {
 
-                
+                when (userPreferences.getString("weightMeasurement", "")) {
+
+                    "imperial" -> {
+
+                        val pounds = poundsEditText.text.toString().toDouble()
+                        val kg = pounds * 0.454
+                        val stone = (pounds / 14)
+
+                        editor.putString("pounds", pounds.toString())
+                        editor.putString("kg", kg.toString())
+                        editor.putString("stone", stone.toString())
+                    }
+
+                    "metric" -> {
+
+                        val kg = kilogramsEditText.text.toString().toDouble()
+                        val pounds = kg / 0.454
+                        val stone = kg * .157
+
+                        editor.putString("pounds", pounds.toString())
+                        editor.putString("kg", kg.toString())
+                        editor.putString("stone", stone.toString())
+                    }
+
+                    "stone" -> {
+
+                        val stone = stoneEditText.text.toString().toDouble()
+                        val pounds = stone * 14
+                        val kg = stone * 6.35
+
+                        editor.putString("pounds", pounds.toString())
+                        editor.putString("kg", kg.toString())
+                        editor.putString("stone", stone.toString())
+                    }
+                }
+
+                editor.apply()
+
+                var bmr = 0.0
+                var tdee = 0.0
+                var calories = 0.0
+                var protein = 0.0
+                var proteinCalories = 0.0
+                var fat = 0.0
+                var fatCalories = 0.0
+                var carbs = 0.0
+                var carbsCalories = 0.0
+                val dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")//SimpleDateFormat()
+                val age = Years.yearsBetween(dateFormat.parseDateTime(userPreferences.getString("birthDate", "")) as DateTime, DateTime.now())
+
+                when(userPreferences.getString("gender", "")) {
+
+                    "male" -> {
+
+                        bmr = (10 * userPreferences.getString("kg", "").toDouble()) + (6.25 * userPreferences.getString("cm", "").toDouble()) - ((5 * age.years) + 5)
+                    }
+
+                    "female" -> {
+
+                        bmr = (10 * userPreferences.getString("kg", "").toDouble()) + (6.25 * userPreferences.getString("cm", "").toDouble()) - ((5 * age.years) - 161)
+                    }
+                }
+
+                when(userPreferences.getString("dailyActivity", "")) {
+
+                    "very light" -> {
+
+                        tdee = bmr * 1.20
+                    }
+
+                    "light" -> {
+
+                        tdee = bmr * 1.45
+                    }
+
+                    "moderate" -> {
+
+                        tdee = bmr * 1.55
+                    }
+
+                    "heavy" -> {
+
+                        tdee = bmr * 1.75
+                    }
+
+                    "very heavy" -> {
+
+                        tdee = 2.00
+                    }
+
+                    else -> {
+
+                        tdee = bmr
+                    }
+                }
+
+                when(userPreferences.getString("goal", "")) {
+
+                    "weightLossSuggested" -> {
+
+                        calories = tdee - (tdee * 0.15)
+                    }
+
+                    "weightLossAggressive" -> {
+
+                        calories = tdee - (tdee * 0.20)
+                    }
+
+                    "weightLossReckless" -> {
+
+                        calories = tdee - (tdee * 0.25)
+                    }
+
+                    "maintain" -> {
+
+                        calories = tdee
+                    }
+
+                    "bulkingSuggested" -> {
+
+                        calories = tdee + (tdee * 0.05)
+                    }
+
+                    "bulkingAggressive" -> {
+
+                        calories = tdee + (tdee * 0.10)
+                    }
+
+                    "bulkingReckless" -> {
+
+                        calories = tdee + (tdee * 0.15)
+                    }
+
+                    else -> {
+
+                        calories = tdee
+                    }
+                }
+
+                editor.putString("calories", calories.toString())
+
+                when (userPreferences.getString("physicalActivityLifestyle", "")) {
+
+                    "sedentaryAdult" -> {
+
+                        protein = userPreferences.getString("pounds", "").toDouble() * 0.4
+                    }
+
+                    "recreationalExerciserAdult" -> {
+
+                        protein = userPreferences.getString("pounds", "").toDouble() * 0.75
+                    }
+
+                    "competitiveAthleteAdult" -> {
+
+                        protein = userPreferences.getString("pounds", "").toDouble() * 0.90
+                    }
+
+                    "buildingMuscleAdult" -> {
+
+                        protein = userPreferences.getString("pounds", "").toDouble() * 0.90
+                    }
+
+                    "dietingAthlete" -> {
+
+                        protein = userPreferences.getString("pounds", "").toDouble() * 0.90
+                    }
+
+                    "growingAthelteTeenager" -> {
+
+                        protein = userPreferences.getString("pounds", "").toDouble() * 1.0
+                    }
+
+                    else -> {
+
+                        protein = userPreferences.getString("pounds", "").toDouble() * 0.4
+                    }
+                }
+
+                proteinCalories = protein * 4
+                editor.putString("protein", protein.toString())
+
+                fatCalories = calories * (fatPercentageEditText.text.toString().toDouble() / 100)
+                fat = fatCalories / 9
+
+                editor.putString("fat", fat.toString())
+
+                carbsCalories = tdee - (proteinCalories + fatCalories)
+                carbs = carbsCalories / 4
+
+                editor.putString("carbs", carbs.toString())
+
+                editor.apply()
+
+                caloriesCalculatedTextView.text = userPreferences.getString("calories", "")
+                proteinCalculatedTextView.text = userPreferences.getString("protein", "") + "g"
+                fatsCalculatedTextView.text = userPreferences.getString("fat", "") + "g"
+                carbsCalculatedTextView.text = userPreferences.getString("carbs", "") + "g"
             }
         }
     }
