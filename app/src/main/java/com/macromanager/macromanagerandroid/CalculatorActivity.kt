@@ -24,6 +24,8 @@ import org.joda.time.JodaTimePermission
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import org.w3c.dom.Text
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
@@ -45,6 +47,9 @@ class CalculatorActivity : AppCompatActivity() {
         val kilogramsEditText = EditText(this)
         val stoneEditText = EditText(this)
         val stonePoundsEditText = EditText(this)
+
+        val decimalFormat = DecimalFormat("#.##")
+        decimalFormat.roundingMode = RoundingMode.FLOOR
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
         val editor = userPreferences.edit()
@@ -560,9 +565,9 @@ class CalculatorActivity : AppCompatActivity() {
                         val kg = pounds * 0.454
                         val stone = (pounds / 14)
 
-                        editor.putString("pounds", pounds.toString())
-                        editor.putString("kg", kg.toString())
-                        editor.putString("stone", stone.toString())
+                        editor.putString("pounds", decimalFormat.format(pounds).toString())
+                        editor.putString("kg", decimalFormat.format(kg).toString())
+                        editor.putString("stone", decimalFormat.format(stone).toString())
                     }
 
                     "metric" -> {
@@ -571,9 +576,9 @@ class CalculatorActivity : AppCompatActivity() {
                         val pounds = kg / 0.454
                         val stone = kg * .157
 
-                        editor.putString("pounds", pounds.toString())
-                        editor.putString("kg", kg.toString())
-                        editor.putString("stone", stone.toString())
+                        editor.putString("pounds", decimalFormat.format(pounds).toString())
+                        editor.putString("kg", decimalFormat.format(kg).toString())
+                        editor.putString("stone", decimalFormat.format(stone).toString())
                     }
 
                     "stone" -> {
@@ -582,9 +587,9 @@ class CalculatorActivity : AppCompatActivity() {
                         val pounds = stone * 14
                         val kg = stone * 6.35
 
-                        editor.putString("pounds", pounds.toString())
-                        editor.putString("kg", kg.toString())
-                        editor.putString("stone", stone.toString())
+                        editor.putString("pounds", decimalFormat.format(pounds).toString())
+                        editor.putString("kg", decimalFormat.format(kg).toString())
+                        editor.putString("stone", decimalFormat.format(stone).toString())
                     }
                 }
 
@@ -691,7 +696,7 @@ class CalculatorActivity : AppCompatActivity() {
                     }
                 }
 
-                editor.putString("calories", calories.toString())
+                editor.putInt("calories", calories.toInt())
 
                 when (userPreferences.getString("physicalActivityLifestyle", "")) {
 
@@ -732,24 +737,24 @@ class CalculatorActivity : AppCompatActivity() {
                 }
 
                 proteinCalories = protein * 4
-                editor.putString("protein", protein.toString())
+                editor.putInt("protein", protein.toInt())
 
                 fatCalories = calories * (fatPercentageEditText.text.toString().toDouble() / 100)
                 fat = fatCalories / 9
 
-                editor.putString("fat", fat.toString())
+                editor.putInt("fat", fat.toInt())
 
                 carbsCalories = tdee - (proteinCalories + fatCalories)
                 carbs = carbsCalories / 4
 
-                editor.putString("carbs", carbs.toString())
+                editor.putInt("carbs", carbs.toInt())
 
                 editor.apply()
 
-                caloriesCalculatedTextView.text = userPreferences.getString("calories", "")
-                proteinCalculatedTextView.text = userPreferences.getString("protein", "") + "g"
-                fatsCalculatedTextView.text = userPreferences.getString("fat", "") + "g"
-                carbsCalculatedTextView.text = userPreferences.getString("carbs", "") + "g"
+                caloriesCalculatedTextView.text = userPreferences.getInt("calories", 0).toString()
+                proteinCalculatedTextView.text = userPreferences.getInt("protein", 0).toString() + "g"
+                fatsCalculatedTextView.text = userPreferences.getInt("fat", 0).toString() + "g"
+                carbsCalculatedTextView.text = userPreferences.getInt("carbs", 0).toString() + "g"
             }
         }
     }

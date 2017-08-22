@@ -10,6 +10,8 @@ import android.text.InputType
 import android.view.Gravity
 import android.view.View
 import android.widget.*
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.function.DoubleToLongFunction
@@ -34,6 +36,9 @@ class SettingsActivity : AppCompatActivity() {
         val cmEditText = EditText(this)
         val cmTextView = TextView(this)
         val saveButton = Button(this)
+
+        val decimalFormat = DecimalFormat("#.##")
+        decimalFormat.roundingMode = RoundingMode.FLOOR
 
         saveButton.text = "Save"
         settingsConstraintLayout.addView(saveButton)
@@ -297,8 +302,8 @@ class SettingsActivity : AppCompatActivity() {
                     val cm = totalInches * 2.54
 
                     editor.putString("feet", feetEditText.text.toString())
-                    editor.putString("inches", inchesEditText.text.toString())
-                    editor.putString("cm", cm.toString())
+                    editor.putString("inches", decimalFormat.format(inchesEditText.text.toString().toDouble()).toString())
+                    editor.putString("cm", decimalFormat.format(cm).toString())
                     editor.apply()
                     editor.commit()
                     finish()
@@ -320,9 +325,9 @@ class SettingsActivity : AppCompatActivity() {
                     val feet = feetConversion - feetRemainder
                     val inches = ((cmEditText.text.toString().toFloat()) / 2.54) - (feet * 12) + feetRemainder
 
-                    editor.putString("cm", cmEditText.text.toString())
-                    editor.putString("feet", feet.toString())
-                    editor.putString("inches", inches.toString())
+                    editor.putString("cm", decimalFormat.format(cmEditText.text.toString().toDouble()).toString())
+                    editor.putString("feet", decimalFormat.format(feet).toString())
+                    editor.putString("inches", decimalFormat.format(inches).toString())
                     editor.apply()
                     editor.commit()
                     finish()
