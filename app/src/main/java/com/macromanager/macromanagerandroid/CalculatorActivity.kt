@@ -561,6 +561,8 @@ class CalculatorActivity : AppCompatActivity() {
 
             calculateButton.setOnClickListener {
 
+                editor.putString("fatPercent", fatPercentageEditText.text.toString())
+
                 when (userPreferences.getString("weightMeasurement", "")) {
 
                     "imperial" -> {
@@ -758,13 +760,90 @@ class CalculatorActivity : AppCompatActivity() {
                 editor.putInt("carbs", carbs.toInt())
                 macrosJSONObject.put("carbs", carbs.toInt().toString())
 
-                editor.putString("marcosList", macrosJSONObject.toString())
+                editor.putString("macrosList", macrosJSONObject.toString())
                 editor.apply()
 
                 caloriesCalculatedTextView.text = userPreferences.getInt("calories", 0).toString()
                 proteinCalculatedTextView.text = userPreferences.getInt("protein", 0).toString() + "g"
                 fatsCalculatedTextView.text = userPreferences.getInt("fat", 0).toString() + "g"
                 carbsCalculatedTextView.text = userPreferences.getInt("carbs", 0).toString() + "g"
+            }
+
+            if (userPreferences.contains("pounds") && userPreferences.contains("kg") && userPreferences.contains("stone")) {
+
+                when (userPreferences.getString("weightMeasurement", "")) {
+
+                    "imperial" -> poundsEditText.setText(userPreferences.getString("pounds", ""))
+                    "metric" -> kilogramsEditText.setText(userPreferences.getString("kg", ""))
+                    "stone" -> stoneEditText.setText(userPreferences.getString("stone", ""))
+                }
+            }
+
+            if (userPreferences.contains("dailyActivity")) {
+
+                when(userPreferences.getString("dailyActivity", "")) {
+
+                    "veryLight" -> dailyActivityRadioGroup.check(dailyActivityVeryLightRadioButton.id)
+                    "light" -> dailyActivityRadioGroup.check(dailyActivityLightRadioButton.id)
+                    "moderate" -> dailyActivityRadioGroup.check(dailyActivityModerateRadioButton.id)
+                    "heavy" -> dailyActivityRadioGroup.check(dailyActivityHeavyRadioButton.id)
+                    "veryHeavy" -> dailyActivityRadioGroup.check(dailyActivityVeryHeavyRadioButton.id)
+                }
+            } else {
+
+                dailyActivityRadioGroup.check(dailyActivityVeryLightRadioButton.id)
+            }
+
+            if (userPreferences.contains("physicalActivityLifestyle")) {
+
+                when (userPreferences.getString("physicalActivityLifestyle", "")) {
+
+                    "sedentaryAdult" -> physicalActivityLifeStyleRadioGroup.check(sedentaryAdultRadioButton.id)
+                    "recreationalExerciserAdult" -> physicalActivityLifeStyleRadioGroup.check(recreationalExerciserAdultRadioButton.id)
+                    "competitiveAthleteAdult" -> physicalActivityLifeStyleRadioGroup.check(competitiveAthleteAdultRadioButton.id)
+                    "buildingMuscleAdult" -> physicalActivityLifeStyleRadioGroup.check(buildingMuscleAdultRadioButton.id)
+                    "dietingAthlete" -> physicalActivityLifeStyleRadioGroup.check(dietingAthleteRadioButton.id)
+                    "growingAthleteTeenager" -> physicalActivityLifeStyleRadioGroup.check(growingAthleteTeenager.id)
+                }
+            } else {
+
+                physicalActivityLifeStyleRadioGroup.check(sedentaryAdultRadioButton.id)
+            }
+
+            if (userPreferences.contains("fatPercent")) {
+
+                fatPercentageEditText.setText(userPreferences.getString("fatPercent", ""))
+            } else {
+
+                fatPercentageEditText.setText("15")
+            }
+
+            if (userPreferences.contains("goal")) {
+
+                when (userPreferences.getString("goal", "")) {
+
+                    "weightLossSuggested" -> goalRadioGroup.check(goalWeightLossSuggestedRadioButton.id)
+                    "weightLossAggressive" -> goalRadioGroup.check(goalWeightLossAggressiveRadioButton.id)
+                    "weightLossReckless" -> goalRadioGroup.check(goalWeightLossRecklessRadioButton.id)
+                    "maintain" -> goalRadioGroup.check(goalMaintainRadioButton.id)
+                    "bulkingSuggested" -> goalRadioGroup.check(goalBulkingSuggestedRadioButton.id)
+                    "bulkingAggressive" -> goalRadioGroup.check(goalBulkingAggressiveRadioButton.id)
+                    "bulkingReckless" -> goalRadioGroup.check(goalBulkingRecklessRadioButton.id)
+                }
+            }
+
+            if (userPreferences.contains("calories") && userPreferences.contains("protein") && userPreferences.contains("fat") && userPreferences.contains("carbs")) {
+
+                caloriesCalculatedTextView.text = userPreferences.getInt("calories", 0).toString()
+                proteinCalculatedTextView.text = userPreferences.getInt("protein", 0).toString() + "g"
+                fatsCalculatedTextView.text = userPreferences.getInt("fat", 0).toString() + "g"
+                carbsCalculatedTextView.text = userPreferences.getInt("carbs", 0).toString() + "g"
+            } else {
+
+                caloriesCalculatedTextView.text = "0"
+                proteinCalculatedTextView.text = "0g"
+                fatsCalculatedTextView.text = "0g"
+                carbsCalculatedTextView.text = "0g"
             }
         }
     }
