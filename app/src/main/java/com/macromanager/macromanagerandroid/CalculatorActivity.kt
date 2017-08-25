@@ -612,7 +612,6 @@ class CalculatorActivity : AppCompatActivity() {
                 var carbsCalories = 0.0
                 val dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")//SimpleDateFormat()
                 val age = Years.yearsBetween(dateFormat.parseDateTime(userPreferences.getString("birthDate", "")) as DateTime, DateTime.now())
-                val macrosJSONObject = JSONObject()
 
                 when(userPreferences.getString("gender", "")) {
 
@@ -704,7 +703,6 @@ class CalculatorActivity : AppCompatActivity() {
                 }
 
                 editor.putInt("calories", calories.toInt())
-                macrosJSONObject.put("calories", calories.toInt().toString())
 
                 when (userPreferences.getString("physicalActivityLifestyle", "")) {
 
@@ -733,7 +731,7 @@ class CalculatorActivity : AppCompatActivity() {
                         protein = userPreferences.getString("pounds", "").toDouble() * 0.90
                     }
 
-                    "growingAthelteTeenager" -> {
+                    "growingAthleteTeenager" -> {
 
                         protein = userPreferences.getString("pounds", "").toDouble() * 1.0
                     }
@@ -746,21 +744,17 @@ class CalculatorActivity : AppCompatActivity() {
 
                 proteinCalories = protein * 4
                 editor.putInt("protein", protein.toInt())
-                macrosJSONObject.put("protein", protein.toInt().toString())
 
                 fatCalories = calories * (fatPercentageEditText.text.toString().toDouble() / 100)
                 fat = fatCalories / 9
 
                 editor.putInt("fat", fat.toInt())
-                macrosJSONObject.put("fat", fat.toInt().toString())
 
                 carbsCalories = tdee - (proteinCalories + fatCalories)
                 carbs = carbsCalories / 4
 
                 editor.putInt("carbs", carbs.toInt())
-                macrosJSONObject.put("carbs", carbs.toInt().toString())
 
-                editor.putString("macrosList", macrosJSONObject.toString())
                 editor.apply()
 
                 caloriesCalculatedTextView.text = userPreferences.getInt("calories", 0).toString()

@@ -46,11 +46,11 @@ class DailyMacrosGridViewAdapter(context: Context, macrosArray: ArrayList<JSONOb
 
         macroTitleTextView.text = (getItem(p0) as JSONObject).getString("title").toString()
         macroCurrentTextView.text = (macrosArray[p0] as JSONObject).getString("currentTotal").toString() + " / " +
-                (macrosArray[p0] as JSONObject).getString("dailyTotal").toString()
+                (macrosArray[p0] as JSONObject).getInt("dailyTotal").toString()
 
         Log.d("Title", macrosArray[p0].getString("title"))
         Log.d("Current", macrosArray[p0].getString("currentTotal"))
-        Log.d("Daily", macrosArray[p0].getString("dailyTotal"))
+        Log.d("Daily", macrosArray[p0].getInt("dailyTotal").toString())
 
         return  macroGridCell
     }
