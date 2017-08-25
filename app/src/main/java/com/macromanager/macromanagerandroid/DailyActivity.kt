@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
+import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.Menu
@@ -24,6 +25,7 @@ class DailyActivity : AppCompatActivity() {
 
         val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
         val userFoodRecyclerView = findViewById<RecyclerView>(R.id.userFoodRecyclerView)
+        val addMealFAB = findViewById<FloatingActionButton>(R.id.addMealFloatingActionButton)
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
@@ -127,6 +129,11 @@ class DailyActivity : AppCompatActivity() {
         }
 
         userFoodRecyclerView.adapter = null
+
+        addMealFAB.setOnClickListener {
+
+            val addMealIntent = Intent(this, AddMealActivity::class.java)
+        }
 
         dailyBottomNav.setOnNavigationItemSelectedListener { item ->
 

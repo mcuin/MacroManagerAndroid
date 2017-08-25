@@ -18,7 +18,8 @@
         </activity>
         <activity android:name=".macroCalculatorActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".CalculatorActivity"></activity>
+        <activity android:name=".CalculatorActivity" />
+        <activity android:name=".AddMealActivity"></activity>
     </application>
 
 </manifest>
