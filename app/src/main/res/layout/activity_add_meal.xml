@@ -89,7 +89,7 @@
         android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/mealCaloriesTextView"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintTop_toBottomOf="@+id/mealNameEditText" />
 
     <EditText
         android:id="@+id/mealCarbsEditText"
@@ -144,7 +144,7 @@
         app:layout_constraintTop_toBottomOf="@+id/mealProteinEditText" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingActionButton"
+        android:id="@+id/saveMealFloatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
@@ -164,12 +164,12 @@
         android:layout_marginTop="16dp"
         android:text="Name:"
         app:layout_constraintBottom_toTopOf="@+id/mealCaloriesEditText"
-        app:layout_constraintEnd_toStartOf="@+id/editText"
+        app:layout_constraintEnd_toStartOf="@+id/mealNameEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/mealNameEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
