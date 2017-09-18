@@ -20,13 +20,14 @@
     <GridView
         android:id="@+id/macrosGridView"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:numColumns="3"
         app:layout_constraintBottom_toTopOf="@+id/userFoodRecyclerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/colorPrimary"/>
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/dailyAdView"
@@ -48,7 +49,8 @@
         app:layout_constraintBottom_toTopOf="@+id/dailyBottomNavtigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/macrosGridView" />
+        app:layout_constraintTop_toBottomOf="@+id/macrosGridView"
+        android:background="@color/colorPrimary"/>
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/dailyBottomNavtigation"

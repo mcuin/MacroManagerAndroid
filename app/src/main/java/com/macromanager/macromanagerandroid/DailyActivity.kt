@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.FloatingActionButton
+import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.Menu
@@ -25,15 +26,11 @@ class DailyActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_daily)
 
-        val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
-        val userFoodRecyclerView = findViewById<RecyclerView>(R.id.userFoodRecyclerView)
         val addMealFAB = findViewById<FloatingActionButton>(R.id.addMealFloatingActionButton)
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
         val editor = userPreferences.edit()
-
-        userFoodRecyclerView.adapter = null
 
         addMealFAB.setOnClickListener {
 
@@ -185,6 +182,7 @@ class DailyActivity : AppCompatActivity() {
 
         if (userPreferences.contains("mealsJSONArray")) {
 
+            userFoodRecyclerView.layoutManager = LinearLayoutManager(this)
             userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, JSONArray(userPreferences.getString("mealsJSONArray", "")))
         } else {
 

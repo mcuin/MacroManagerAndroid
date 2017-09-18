@@ -31,7 +31,7 @@ class AddMealActivity : AppCompatActivity() {
                 val mealsJSONArray = JSONArray()
                 val mealJSONObject = JSONObject()
 
-                mealJSONObject.put("title", mealFatEditText.text)
+                mealJSONObject.put("title", mealNameEditText.text)
                 mealJSONObject.put("calories", mealCaloriesEditText.text)
                 mealJSONObject.put("carbs", mealCarbsEditText.text)
                 mealJSONObject.put("fat", mealFatEditText.text)
@@ -46,7 +46,7 @@ class AddMealActivity : AppCompatActivity() {
                 val mealsJSONArray = JSONArray(userPreferences.getString("mealJSONArray", ""))
                 val mealJSONObject = JSONObject()
 
-                mealJSONObject.put("title", mealFatEditText.text)
+                mealJSONObject.put("title", mealNameEditText.text)
                 mealJSONObject.put("calories", mealCaloriesEditText.text)
                 mealJSONObject.put("carbs", mealCarbsEditText.text)
                 mealJSONObject.put("fat", mealFatEditText.text)
