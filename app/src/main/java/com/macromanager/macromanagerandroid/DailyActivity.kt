@@ -19,6 +19,8 @@ import org.json.JSONObject
 
 class DailyActivity : AppCompatActivity() {
 
+    //var dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_daily)
@@ -31,7 +33,47 @@ class DailyActivity : AppCompatActivity() {
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
         val editor = userPreferences.edit()
 
-        if (userPreferences.contains("calories") && userPreferences.contains("carbs") && userPreferences.contains("fat") && userPreferences.contains("protein")) {
+        userFoodRecyclerView.adapter = null
+
+        addMealFAB.setOnClickListener {
+
+            val addMealIntent = Intent(this, AddMealActivity::class.java)
+
+            startActivity(addMealIntent)
+        }
+
+        dailyBottomNav.setOnNavigationItemSelectedListener { item ->
+
+            when(item.itemId) {
+
+                R.id.calculator -> {
+
+                    val calculatorIntent = Intent(this, CalculatorActivity::class.java)
+
+                    startActivity(calculatorIntent)
+                }
+
+                R.id.home -> {
+
+                }
+
+                R.id.search -> {
+
+                }
+            }
+
+            true
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
+        val userPreferences = this.getSharedPreferences("userPreferences", 0)
+        val editor = userPreferences.edit()
+
+        if (userPreferences.contains("mealsJSONArray")) {
 
             val macrosArrayList = ArrayList<JSONObject>()
 
@@ -74,30 +116,41 @@ class DailyActivity : AppCompatActivity() {
                 val caloriesJSONObject = JSONObject()
                 caloriesJSONObject.put("title", "Calories")
                 caloriesJSONObject.put("currentTotal", userPreferences.getString("dailyCaloriesTotal", ""))
-                caloriesJSONObject.put("dailyTotal", userPreferences.getInt("calories", 0))
+                caloriesJSONObject.put("dailyTotal", userPreferences.getString("calories", ""))
                 macrosArrayList.add(caloriesJSONObject)
 
                 val carbsJSONObject = JSONObject()
                 carbsJSONObject.put("title", "Carbs")
                 carbsJSONObject.put("currentTotal", userPreferences.getString("dailyCarbsTotal", ""))
-                carbsJSONObject.put("dailyTotal", userPreferences.getInt("carbs", 0))
+                carbsJSONObject.put("dailyTotal", userPreferences.getString("carbs", ""))
                 macrosArrayList.add(carbsJSONObject)
 
                 val fatJSONObject = JSONObject()
                 fatJSONObject.put("title", "Fat")
                 fatJSONObject.put("currentTotal", userPreferences.getString("dailyFatTotal", ""))
-                fatJSONObject.put("dailyTotal", userPreferences.getInt("fat", 0))
+                fatJSONObject.put("dailyTotal", userPreferences.getString("fat", ""))
                 macrosArrayList.add(fatJSONObject)
 
                 val proteinJSONObject = JSONObject()
                 proteinJSONObject.put("title", "Protein")
                 proteinJSONObject.put("currentTotal", userPreferences.getString("dailyProteinTotal", ""))
-                proteinJSONObject.put("dailyTotal", userPreferences.getInt("protein", 0))
+                proteinJSONObject.put("dailyTotal", userPreferences.getString("protein", ""))
                 macrosArrayList.add(proteinJSONObject)
+
+                editor.putString("macrosArrayList", macrosArrayList.toString())
 
                 dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList)
             }
         } else {
+
+            if (!userPreferences.contains("dailyCaloriesTotal") || !userPreferences.contains("dailyCarbsTotal") || !userPreferences.contains("dailyFatTotal")
+                    || !userPreferences.contains("dailyProteinTotal")) {
+                editor.putString("dailyCaloriesTotal", "0")
+                editor.putString("dailyCarbsTotal", "0")
+                editor.putString("dailyFatTotal", "0")
+                editor.putString("dailyProteinTotal", "0")
+                editor.apply()
+            }
 
             val caloriesJSONObject = JSONObject()
             caloriesJSONObject.put("title", "Calories")
@@ -125,37 +178,17 @@ class DailyActivity : AppCompatActivity() {
             Log.d("Calories", emptyMacrosArrayList[0].getString("title").toString())
             Log.d("Carbs", emptyMacrosArrayList[1].getString("title").toString())
 
+            editor.putString("macrosArrayList", emptyMacrosArrayList.toString())
+
             dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, emptyMacrosArrayList)
         }
 
-        userFoodRecyclerView.adapter = null
+        if (userPreferences.contains("mealsJSONArray")) {
 
-        addMealFAB.setOnClickListener {
+            userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, JSONArray(userPreferences.getString("mealsJSONArray", "")))
+        } else {
 
-            val addMealIntent = Intent(this, AddMealActivity::class.java)
-        }
-
-        dailyBottomNav.setOnNavigationItemSelectedListener { item ->
-
-            when(item.itemId) {
-
-                R.id.calculator -> {
-
-                    val calculatorIntent = Intent(this, CalculatorActivity::class.java)
-
-                    startActivity(calculatorIntent)
-                }
-
-                R.id.home -> {
-
-                }
-
-                R.id.search -> {
-
-                }
-            }
-
-            true
+            userFoodRecyclerView.adapter = null
         }
     }
 

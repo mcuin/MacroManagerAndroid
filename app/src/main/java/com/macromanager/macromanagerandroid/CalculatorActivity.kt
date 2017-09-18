@@ -702,7 +702,7 @@ class CalculatorActivity : AppCompatActivity() {
                     }
                 }
 
-                editor.putInt("calories", calories.toInt())
+                editor.putString("calories", calories.toInt().toString())
 
                 when (userPreferences.getString("physicalActivityLifestyle", "")) {
 
@@ -743,17 +743,17 @@ class CalculatorActivity : AppCompatActivity() {
                 }
 
                 proteinCalories = protein * 4
-                editor.putInt("protein", protein.toInt())
+                editor.putString("protein", protein.toInt().toString())
 
                 fatCalories = calories * (fatPercentageEditText.text.toString().toDouble() / 100)
                 fat = fatCalories / 9
 
-                editor.putInt("fat", fat.toInt())
+                editor.putString("fat", fat.toInt().toString())
 
                 carbsCalories = tdee - (proteinCalories + fatCalories)
                 carbs = carbsCalories / 4
 
-                editor.putInt("carbs", carbs.toInt())
+                editor.putString("carbs", carbs.toInt().toString())
 
                 editor.apply()
 
