@@ -1,12 +1,15 @@
 package com.macromanager.macromanagerandroid
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import org.json.JSONArray
 import org.json.JSONObject
@@ -30,10 +33,22 @@ class DailyMealsRecyclerViewAdapter(context: Context, mealsJSONArray: JSONArray)
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
+        Log.d("Meals", mealsJSONArray.length().toString())
         val mealJSONObject = JSONObject(mealsJSONArray[position].toString())
         holder.mealNameTextView.text = mealJSONObject.getString("title")
-        holder.mealServingTextView.text = mealJSONObject.getString("serving")
-        holder.mealCaloriesTextVeiw.text = mealJSONObject.getString("calories")
+        if (mealJSONObject.getString("serving").equals("1")) {
+            holder.mealServingTextView.text = mealJSONObject.getString("serving") + " serving"
+        } else {
+            holder.mealServingTextView.text = mealJSONObject.getString("serving") + " servings"
+        }
+        holder.mealCaloriesTextVeiw.text = mealJSONObject.getString("calories") + " calories"
+
+        holder.mealButton.setOnClickListener {
+
+            val mealIntent = Intent(context, AddMealActivity::class.java)
+            mealIntent.putExtra("meal", position)
+            context.startActivity(mealIntent)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -46,5 +61,6 @@ class DailyMealsRecyclerViewAdapter(context: Context, mealsJSONArray: JSONArray)
         val mealNameTextView = itemView.findViewById<TextView>(R.id.mealTitleTextView)
         val mealServingTextView = itemView.findViewById<TextView>(R.id.mealServingTextView)
         val mealCaloriesTextVeiw = itemView.findViewById<TextView>(R.id.mealCaloriesTextView)
+        val mealButton = itemView.findViewById<Button>(R.id.mealButton)
     }
 }
