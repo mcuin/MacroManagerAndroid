@@ -42,6 +42,10 @@ class CalculatorActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
+    }
+
+    override fun onResume() {
+        super.onResume()
 
         val calculatorConstraintLayout = findViewById<ConstraintLayout>(R.id.calculatorConstraintLayout)
         val weightTextView = findViewById<TextView>(R.id.weightTextView)
@@ -259,8 +263,8 @@ class CalculatorActivity : AppCompatActivity() {
                 val dailyActivityInfoDialog = AlertDialog.Builder(this)
 
                 dailyActivityInfoDialog.setMessage("Very Light: Sitting, little walking, little other activities in a day " + "\n\n"
-                + "Light: Typing, lab work, some walking in a day" + "\n\n" + "Moderate: Light manual labor job with 1-2 hours weight training or other training"
-                + "\n\n" + "Heavy: Heavy manual labor job with 2-4 hours weight training or sports" + "\n\n" + "Very Heavy: Moderate or heavy for 8 hours or more " +
+                        + "Light: Typing, lab work, some walking in a day" + "\n\n" + "Moderate: Light manual labor job with 1-2 hours weight training or other training"
+                        + "\n\n" + "Heavy: Heavy manual labor job with 2-4 hours weight training or sports" + "\n\n" + "Very Heavy: Moderate or heavy for 8 hours or more " +
                         "a day plus 2-4 hours intense training")
 
                 dailyActivityInfoDialog.setPositiveButton("OK", DialogInterface.OnClickListener { dialogInterface, i ->
@@ -388,7 +392,7 @@ class CalculatorActivity : AppCompatActivity() {
                 val fatPercentDialog = AlertDialog.Builder(this)
 
                 fatPercentDialog.setMessage("13-18: Please stay in the 25-35% range for best results." + "\n\n" + "19+: Please stay in the 20-35% range for best results."
-                + "\n\n" + "Enjoy any percentage regardless of what your current goal is as long as you stay within the suggested ranges." + "\n\n" +
+                        + "\n\n" + "Enjoy any percentage regardless of what your current goal is as long as you stay within the suggested ranges." + "\n\n" +
                         "Note: Try to keep saturated fats under 10%.")
 
                 fatPercentDialog.setPositiveButton("OK", DialogInterface.OnClickListener { dialogInterface, i ->
