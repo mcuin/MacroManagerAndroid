@@ -117,7 +117,7 @@
                 android:ems="10"
                 android:fontFamily="@font/notosansui_regular"
                 android:hint="Calories"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/mealNameEditText" />
 
@@ -130,7 +130,7 @@
                 android:ems="10"
                 android:fontFamily="@font/notosansui_regular"
                 android:hint="Carbs"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/mealCaloriesEditText" />
 
@@ -143,7 +143,7 @@
                 android:ems="10"
                 android:fontFamily="@font/notosansui_regular"
                 android:hint="Fat"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/mealCarbsEditText" />
 
@@ -156,7 +156,7 @@
                 android:ems="10"
                 android:fontFamily="@font/notosansui_regular"
                 android:hint="Protien"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/mealFatEditText" />
 
@@ -170,7 +170,7 @@
                 android:ems="10"
                 android:fontFamily="@font/notosansui_regular"
                 android:hint="Serving Size"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/mealProteinEditText" />
@@ -199,7 +199,7 @@
                 android:ems="10"
                 android:fontFamily="@font/notosansui_regular"
                 android:hint="Meal Name"
-                android:inputType="text"
+                android:inputType="textCapSentences"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
