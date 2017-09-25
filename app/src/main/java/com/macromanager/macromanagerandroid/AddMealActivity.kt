@@ -90,7 +90,7 @@ class AddMealActivity : AppCompatActivity() {
                 editor.apply()
             } else {
 
-                val mealsJSONArray = JSONArray(userPreferences.getString("mealJSONArray", ""))
+                val mealsJSONArray = JSONArray(userPreferences.getString("mealsJSONArray", ""))
                 val mealJSONObject = JSONObject()
 
                 mealJSONObject.put("title", mealNameEditText.text)

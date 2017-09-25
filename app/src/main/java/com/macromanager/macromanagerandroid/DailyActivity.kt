@@ -1,5 +1,8 @@
 package com.macromanager.macromanagerandroid
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
@@ -16,6 +19,7 @@ import android.widget.GridView
 import kotlinx.android.synthetic.main.activity_daily.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.*
 
 
 class DailyActivity : AppCompatActivity() {
@@ -31,6 +35,15 @@ class DailyActivity : AppCompatActivity() {
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
         val editor = userPreferences.edit()
+
+        if (!userPreferences.contains("mealsJSONArray")) {
+
+            val mealsJSONArray = JSONArray()
+
+            editor.putString("mealsJSONArray", mealsJSONArray.toString())
+
+            editor.apply()
+        }
 
         addMealFAB.setOnClickListener {
 
@@ -136,6 +149,8 @@ class DailyActivity : AppCompatActivity() {
 
                 editor.putString("macrosArrayList", macrosArrayList.toString())
 
+                editor.apply()
+
                 dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList)
             }
         } else {
@@ -154,7 +169,7 @@ class DailyActivity : AppCompatActivity() {
             caloriesJSONObject.put("currentTotal", 0)
             caloriesJSONObject.put("dailyTotal", "-")
             val carbsJSONObject = JSONObject()
-            carbsJSONObject.put("title", "Carbohydrates")
+            carbsJSONObject.put("title", "Carbs")
             carbsJSONObject.put("currentTotal", 0)
             carbsJSONObject.put("dailyTotal", "-")
             val fatJSONObject = JSONObject()
@@ -177,6 +192,8 @@ class DailyActivity : AppCompatActivity() {
 
             editor.putString("macrosArrayList", emptyMacrosArrayList.toString())
 
+            editor.apply()
+
             dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, emptyMacrosArrayList)
         }
 
@@ -188,6 +205,16 @@ class DailyActivity : AppCompatActivity() {
 
             userFoodRecyclerView.adapter = null
         }
+
+        val resetTime = Calendar.getInstance(Locale.getDefault())
+        resetTime.timeInMillis = System.currentTimeMillis()
+        resetTime.set(Calendar.HOUR_OF_DAY, 2)
+
+        val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
+        val resetPendingIntent = PendingIntent.getBroadcast(this, 0, resetIntent, 0)
+        val resetAlarm = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        resetAlarm.setInexactRepeating(AlarmManager.RTC, resetTime.timeInMillis, AlarmManager.INTERVAL_DAY, resetPendingIntent)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

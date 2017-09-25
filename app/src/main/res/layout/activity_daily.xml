@@ -27,7 +27,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:background="@color/colorPrimary"/>
+        android:background="@color/colorPrimaryDark"/>
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/dailyAdView"
@@ -50,7 +50,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/macrosGridView"
-        android:background="@color/colorPrimary"/>
+        android:background="@color/colorPrimaryDark"/>
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/dailyBottomNavtigation"
