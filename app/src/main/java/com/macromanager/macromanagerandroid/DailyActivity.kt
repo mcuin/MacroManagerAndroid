@@ -67,9 +67,9 @@ class DailyActivity : AppCompatActivity() {
 
                 }
 
-                R.id.search -> {
+                /*R.id.search -> {
 
-                }
+                }*/
             }
 
             true

@@ -5,10 +5,10 @@
         android:id="@+id/macros"
         android:title="Macros"
         />
-    <item
+    <!--<item
         android:id="@+id/search"
         android:title="Search"
-        />
+        />-->
     <item
         android:id="@+id/calculator"
         android:title="Calculator"
