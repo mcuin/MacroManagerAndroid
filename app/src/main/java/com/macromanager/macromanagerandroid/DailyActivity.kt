@@ -4,18 +4,17 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.FloatingActionButton
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.GridView
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import kotlinx.android.synthetic.main.activity_daily.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -30,8 +29,14 @@ class DailyActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_daily)
 
+        val dailyAdView = findViewById<AdView>(R.id.dailyAdView)
         val addMealFAB = findViewById<FloatingActionButton>(R.id.addMealFloatingActionButton)
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
+
+        val adRequest = AdRequest.Builder().build()
+        dailyAdView.loadAd(adRequest)
+
+        dailyBottomNav.selectedItemId = R.id.home
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
         val editor = userPreferences.edit()
@@ -79,6 +84,9 @@ class DailyActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
+
+        dailyBottomNav.selectedItemId = R.id.home
         val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
         val editor = userPreferences.edit()

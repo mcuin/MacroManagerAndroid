@@ -1,20 +1,22 @@
 package com.macromanager.macromanagerandroid
 
 import android.app.DatePickerDialog
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
 import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
 import android.text.InputType
 import android.view.Gravity
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.RadioGroup
+import android.widget.TextView
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.function.DoubleToLongFunction
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -40,7 +42,7 @@ class SettingsActivity : AppCompatActivity() {
         val decimalFormat = DecimalFormat("#.##")
         decimalFormat.roundingMode = RoundingMode.FLOOR
 
-        saveButton.text = "Save"
+        saveButton.text = getString(R.string.save)
         settingsConstraintLayout.addView(saveButton)
 
         val saveButtonSet = ConstraintSet()
@@ -50,14 +52,14 @@ class SettingsActivity : AppCompatActivity() {
         saveButtonSet.connect(saveButton.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, 16)
         saveButtonSet.applyTo(settingsConstraintLayout)
 
-        var userPreferences = this.getSharedPreferences("userPreferences", 0)
+        val userPreferences = this.getSharedPreferences("userPreferences", 0)
 
         if (userPreferences.contains("birthDate")) {
 
             birthDateTextView.setText(userPreferences.getString("birthDate", ""))
         } else {
 
-            birthDateTextView.setText("Tap to set your birthday.")
+            birthDateTextView.setText(getString(R.string.set_birth_date))
         }
 
         val editor = userPreferences.edit()
@@ -138,9 +140,9 @@ class SettingsActivity : AppCompatActivity() {
                     feetTextView.id = View.generateViewId()
                     inchesTextView.id = View.generateViewId()
 
-                    feetTextView.text = "FT"
+                    feetTextView.text = getString(R.string.feet)
                     feetTextView.gravity = Gravity.CENTER
-                    inchesTextView.text = "IN"
+                    inchesTextView.text = getString(R.string.inches)
                     inchesTextView.gravity = Gravity.CENTER
 
                     settingsConstraintLayout.addView(feetEditText)
@@ -213,7 +215,7 @@ class SettingsActivity : AppCompatActivity() {
                     cmEditText.setRawInputType(InputType.TYPE_CLASS_NUMBER)
                     cmTextView.id = View.generateViewId()
 
-                    cmTextView.text = "CM"
+                    cmTextView.text = getString(R.string.centi)
 
                     settingsConstraintLayout.addView(cmEditText)
                     settingsConstraintLayout.addView(cmTextView)
@@ -286,7 +288,17 @@ class SettingsActivity : AppCompatActivity() {
 
         saveButton.setOnClickListener {
 
-            if (heightRadioGroup.checkedRadioButtonId == R.id.heightImperial) {
+            if (!userPreferences.contains("birthDate")) {
+
+                val birthDateAlert = AlertDialog.Builder(this)
+                birthDateAlert.setTitle("Birthday Error").setMessage("Please choose a birthday.").setPositiveButton("OK") {
+
+                    dialog, which ->  dialog.cancel()
+                }
+
+                birthDateAlert.show()
+
+            } else if (heightRadioGroup.checkedRadioButtonId == R.id.heightImperial) {
 
                 if (feetEditText.text.toString() == "" || inchesEditText.text.toString() == "" || (inchesEditText.text.toString().toDouble()) >= 13
                         || (inchesEditText.text.toString().toDouble()) < 0) {
@@ -296,6 +308,8 @@ class SettingsActivity : AppCompatActivity() {
 
                         dialog, which ->  dialog.cancel()
                     }
+
+                    heightAlert.show()
                 } else {
 
                     val totalInches = ((Integer.valueOf(feetEditText.text.toString())) * 12) + (inchesEditText.text.toString().toDouble())
@@ -318,6 +332,8 @@ class SettingsActivity : AppCompatActivity() {
 
                         dialog, which ->  dialog.cancel()
                     }
+
+                    heightAlert.show()
                 } else {
 
                     val feetConversion = (cmEditText.text.toString().toFloat()) / 30.48

@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorAccent"
     tools:layout_editor_absoluteX="0dp"
-    tools:layout_editor_absoluteY="81dp">
+    tools:layout_editor_absoluteY="81dp"
+    android:background="@color/colorAccent">
 
     <TextView
         android:id="@+id/macroCurretTextView"
@@ -22,7 +22,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:fontFamily="@font/notosansui_regular"
-        android:textSize="@dimen/numbers"/>
+        android:textSize="@dimen/numbers"
+        android:textColor="#FFFFFF"/>
 
     <TextView
         android:id="@+id/macroTitleTextView"
@@ -40,5 +41,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:fontFamily="@font/notosansui_bold"
-        android:textSize="@dimen/macro_title"/>
+        android:textSize="@dimen/macro_title"
+        android:textColor="#FFFFFF"/>
 </android.support.constraint.ConstraintLayout>

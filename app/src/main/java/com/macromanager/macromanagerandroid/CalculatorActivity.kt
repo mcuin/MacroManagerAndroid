@@ -1,47 +1,51 @@
 package com.macromanager.macromanagerandroid
 
-import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
-import android.graphics.drawable.GradientDrawable
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
-import android.support.constraint.solver.Goal
-
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
+import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import kotlinx.android.synthetic.main.activity_settings.*
 import org.joda.time.DateTime
-import org.joda.time.JodaTimePermission
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
-import org.json.JSONArray
-import org.json.JSONObject
-import org.w3c.dom.Text
 import java.math.RoundingMode
 import java.text.DecimalFormat
-import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.Period
-import java.time.Year
-import java.time.format.DateTimeFormatter
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class CalculatorActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
+
+        val calculatorBottomNav = findViewById<BottomNavigationView>(R.id.calculatorBottomNav)
+
+        calculatorBottomNav.selectedItemId = R.id.calculator
+        calculatorBottomNav.setOnNavigationItemSelectedListener { item ->
+
+            when(item.itemId) {
+
+                R.id.home -> {
+
+                    val homeIntent = Intent(this, DailyActivity::class.java)
+
+                    startActivity(homeIntent)
+                }
+
+                R.id.calculator -> {
+
+                }
+            }
+
+            true
+        }
     }
 
     override fun onResume() {
@@ -49,7 +53,6 @@ class CalculatorActivity : AppCompatActivity() {
 
         val calculatorConstraintLayout = findViewById<ConstraintLayout>(R.id.calculatorConstraintLayout)
         val weightTextView = findViewById<TextView>(R.id.weightTextView)
-        val calculatorBottomNav = findViewById<BottomNavigationView>(R.id.calculatorBottomNav)
         var previousView = View(this)
         val poundsEditText = EditText(this)
         val kilogramsEditText = EditText(this)
@@ -99,11 +102,12 @@ class CalculatorActivity : AppCompatActivity() {
                 //val poundsEditText = EditText(this)
                 poundsEditText.id = View.generateViewId()
                 calculatorConstraintLayout.addView(poundsEditText)
+                poundsEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
                 val poundsTextView = TextView(this)
                 poundsTextView.id = View.generateViewId()
                 calculatorConstraintLayout.addView(poundsTextView)
 
-                poundsTextView.text = "LBS"
+                poundsTextView.text = getString(R.string.pounds)
 
                 val weightImperialPoundEditTextSet = ConstraintSet()
 
@@ -131,11 +135,12 @@ class CalculatorActivity : AppCompatActivity() {
                 //val kilogramsEditText = EditText(this)
                 kilogramsEditText.id = View.generateViewId()
                 calculatorConstraintLayout.addView(kilogramsEditText)
+                kilogramsEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
                 val kilogramsTextView = TextView(this)
                 kilogramsTextView.id = View.generateViewId()
                 calculatorConstraintLayout.addView(kilogramsTextView)
 
-                kilogramsTextView.text = "KG"
+                kilogramsTextView.text = getString(R.string.kilogram)
 
                 val weightMetricSet = ConstraintSet()
 
@@ -158,6 +163,7 @@ class CalculatorActivity : AppCompatActivity() {
                 //val stoneEditText = EditText(this)
                 stoneEditText.id = View.generateViewId()
                 calculatorConstraintLayout.addView(stoneEditText)
+                stoneEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
                 val stoneTextView = TextView(this)
                 stoneTextView.id = View.generateViewId()
                 calculatorConstraintLayout.addView(stoneTextView)
@@ -168,7 +174,7 @@ class CalculatorActivity : AppCompatActivity() {
                 poundsTextView.id = View.generateViewId()
                 calculatorConstraintLayout.addView(poundsTextView)*/
 
-                stoneTextView.text = "ST"
+                stoneTextView.text = getString(R.string.stone)
                 //poundsTextView.text = "LBS"
 
                 val weightStoneSet = ConstraintSet()
@@ -197,7 +203,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             val dailyActivityTextView = TextView(this)
             dailyActivityTextView.id = View.generateViewId()
-            dailyActivityTextView.text = "Daily Activity Level"
+            dailyActivityTextView.text = getString(R.string.daily_activity_level)
             calculatorConstraintLayout.addView(dailyActivityTextView)
 
             val dailyActivityRadioGroup = RadioGroup(this)
@@ -212,27 +218,28 @@ class CalculatorActivity : AppCompatActivity() {
 
             val dailyActivityVeryLightRadioButton = RadioButton(this)
             dailyActivityVeryLightRadioButton.id = View.generateViewId()
-            dailyActivityVeryLightRadioButton.text = "Very Light"
+            dailyActivityVeryLightRadioButton.text = getString(R.string.very_light)
             dailyActivityRadioGroup.addView(dailyActivityVeryLightRadioButton)
+            dailyActivityVeryLightRadioButton.isSelected = true
 
             val dailyActivityLightRadioButton = RadioButton(this)
             dailyActivityLightRadioButton.id = View.generateViewId()
-            dailyActivityLightRadioButton.text = "Light"
+            dailyActivityLightRadioButton.text = getString(R.string.light)
             dailyActivityRadioGroup.addView(dailyActivityLightRadioButton)
 
             val dailyActivityModerateRadioButton = RadioButton(this)
             dailyActivityModerateRadioButton.id = View.generateViewId()
-            dailyActivityModerateRadioButton.text = "Moderate"
+            dailyActivityModerateRadioButton.text = getString(R.string.moderate)
             dailyActivityRadioGroup.addView(dailyActivityModerateRadioButton)
 
             val dailyActivityHeavyRadioButton = RadioButton(this)
             dailyActivityHeavyRadioButton.id = View.generateViewId()
-            dailyActivityHeavyRadioButton.text = "Heavy"
+            dailyActivityHeavyRadioButton.text = getString(R.string.heavy)
             dailyActivityRadioGroup.addView(dailyActivityHeavyRadioButton)
 
             val dailyActivityVeryHeavyRadioButton = RadioButton(this)
             dailyActivityVeryHeavyRadioButton.id = View.generateViewId()
-            dailyActivityVeryHeavyRadioButton.text = "Very Heavy"
+            dailyActivityVeryHeavyRadioButton.text = getString(R.string.very_heavy)
             dailyActivityRadioGroup.addView(dailyActivityVeryHeavyRadioButton)
 
             val dailyActivitySet = ConstraintSet()
@@ -258,6 +265,22 @@ class CalculatorActivity : AppCompatActivity() {
             dailyActivitySet.connect(dailyActivityVeryHeavyRadioButton.id, ConstraintSet.TOP, dailyActivityHeavyRadioButton.id, ConstraintSet.BOTTOM, 8)
             dailyActivitySet.applyTo(calculatorConstraintLayout)
 
+            if (userPreferences.contains("dailyActivity")) {
+
+                when(userPreferences.getString("dailyActivity", "")) {
+
+                    "veryLight" -> dailyActivityRadioGroup.check(dailyActivityVeryLightRadioButton.id)
+                    "light" -> dailyActivityRadioGroup.check(dailyActivityLightRadioButton.id)
+                    "moderate" -> dailyActivityRadioGroup.check(dailyActivityModerateRadioButton.id)
+                    "heavy" -> dailyActivityRadioGroup.check(dailyActivityHeavyRadioButton.id)
+                    "veryHeavy" -> dailyActivityRadioGroup.check(dailyActivityVeryHeavyRadioButton.id)
+                    "" -> dailyActivityRadioGroup.check(dailyActivityVeryLightRadioButton.id)
+                }
+            } else {
+
+                dailyActivityRadioGroup.check(dailyActivityVeryLightRadioButton.id)
+            }
+
             dailyActivityInfoButton.setOnClickListener {
 
                 val dailyActivityInfoDialog = AlertDialog.Builder(this)
@@ -277,7 +300,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             dailyActivityRadioGroup.setOnCheckedChangeListener(RadioGroup.OnCheckedChangeListener { radioGroup, checkedId ->
 
-                when(checkedId) {
+                when (checkedId) {
 
                     dailyActivityVeryLightRadioButton.id -> editor.putString("dailyActivity", "veryLight")
                     dailyActivityLightRadioButton.id -> editor.putString("dailyActivity", "light")
@@ -289,7 +312,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             val physicalActivityLifeStyleTextView = TextView(this)
             physicalActivityLifeStyleTextView.id = View.generateViewId()
-            physicalActivityLifeStyleTextView.text = "Physical Activity Lifestyle"
+            physicalActivityLifeStyleTextView.text = getString(R.string.physical_activity_lifestyle)
             calculatorConstraintLayout.addView(physicalActivityLifeStyleTextView)
 
             val physicalActivityLifeStyleRadioGroup = RadioGroup(this)
@@ -299,27 +322,28 @@ class CalculatorActivity : AppCompatActivity() {
 
             val sedentaryAdultRadioButton = RadioButton(this)
             sedentaryAdultRadioButton.id = View.generateViewId()
-            sedentaryAdultRadioButton.text = "Sedentary Adult"
+            sedentaryAdultRadioButton.text = getString(R.string.sedentary_adult)
+            sedentaryAdultRadioButton.isSelected = true
             physicalActivityLifeStyleRadioGroup.addView(sedentaryAdultRadioButton)
             val recreationalExerciserAdultRadioButton = RadioButton(this)
             recreationalExerciserAdultRadioButton.id = View.generateViewId()
-            recreationalExerciserAdultRadioButton.text = "Adult Recreational Exerciser"
+            recreationalExerciserAdultRadioButton.text = getString(R.string.adult_recreational_exerciser)
             physicalActivityLifeStyleRadioGroup.addView(recreationalExerciserAdultRadioButton)
             val competitiveAthleteAdultRadioButton = RadioButton(this)
             competitiveAthleteAdultRadioButton.id = View.generateViewId()
-            competitiveAthleteAdultRadioButton.text = "Adult Competitive Athlete"
+            competitiveAthleteAdultRadioButton.text = getString(R.string.adult_competitive_athlete)
             physicalActivityLifeStyleRadioGroup.addView(competitiveAthleteAdultRadioButton)
             val buildingMuscleAdultRadioButton = RadioButton(this)
             buildingMuscleAdultRadioButton.id = View.generateViewId()
-            buildingMuscleAdultRadioButton.text = "Adult Building Muscle"
+            buildingMuscleAdultRadioButton.text = getString(R.string.adult_building_muscle)
             physicalActivityLifeStyleRadioGroup.addView(buildingMuscleAdultRadioButton)
             val dietingAthleteRadioButton = RadioButton(this)
             dietingAthleteRadioButton.id = View.generateViewId()
-            dietingAthleteRadioButton.text = "Dieting Athlete"
+            dietingAthleteRadioButton.text = getString(R.string.dieting_athlete)
             physicalActivityLifeStyleRadioGroup.addView(dietingAthleteRadioButton)
             val growingAthleteTeenager = RadioButton(this)
             growingAthleteTeenager.id = View.generateViewId()
-            growingAthleteTeenager.text = "Teenage Growing Athlete"
+            growingAthleteTeenager.text = getString(R.string.teen_growing_athlete)
             physicalActivityLifeStyleRadioGroup.addView(growingAthleteTeenager)
 
             val physicalActivityLifeStyleSet = ConstraintSet()
@@ -335,10 +359,27 @@ class CalculatorActivity : AppCompatActivity() {
             physicalActivityLifeStyleSet.connect(physicalActivityLifeStyleRadioGroup.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, 16)
             physicalActivityLifeStyleSet.connect(recreationalExerciserAdultRadioButton.id, ConstraintSet.TOP, sedentaryAdultRadioButton.id, ConstraintSet.BOTTOM, 8)
             physicalActivityLifeStyleSet.connect(competitiveAthleteAdultRadioButton.id, ConstraintSet.TOP, recreationalExerciserAdultRadioButton.id, ConstraintSet.BOTTOM, 8)
-            physicalActivityLifeStyleSet.connect(buildingMuscleAdultRadioButton.id, ConstraintSet.TOP, competitiveAthleteAdultRadioButton.id ,ConstraintSet.BOTTOM, 8)
+            physicalActivityLifeStyleSet.connect(buildingMuscleAdultRadioButton.id, ConstraintSet.TOP, competitiveAthleteAdultRadioButton.id, ConstraintSet.BOTTOM, 8)
             physicalActivityLifeStyleSet.connect(dietingAthleteRadioButton.id, ConstraintSet.TOP, buildingMuscleAdultRadioButton.id, ConstraintSet.BOTTOM, 8)
             physicalActivityLifeStyleSet.connect(growingAthleteTeenager.id, ConstraintSet.TOP, dietingAthleteRadioButton.id, ConstraintSet.BOTTOM, 8)
             physicalActivityLifeStyleSet.applyTo(calculatorConstraintLayout)
+
+            if (userPreferences.contains("physicalActivityLifestyle")) {
+
+                when(userPreferences.getString("physicalActivityLifestyle", "")) {
+
+                    "sedentaryAdult" -> physicalActivityLifeStyleRadioGroup.check(sedentaryAdultRadioButton.id)
+                    "recreationalExerciserAdult" -> physicalActivityLifeStyleRadioGroup.check(recreationalExerciserAdultRadioButton.id)
+                    "competitiveAthleteAdult" -> physicalActivityLifeStyleRadioGroup.check(competitiveAthleteAdultRadioButton.id)
+                    "buildingMuscleAdult" -> physicalActivityLifeStyleRadioGroup.check(buildingMuscleAdultRadioButton.id)
+                    "dietingAthlete" -> physicalActivityLifeStyleRadioGroup.check(dietingAthleteRadioButton.id)
+                    "growingAthleteTeenager" -> physicalActivityLifeStyleRadioGroup.check(growingAthleteTeenager.id)
+                    "" -> physicalActivityLifeStyleRadioGroup.check(sedentaryAdultRadioButton.id)
+                }
+            } else {
+
+                physicalActivityLifeStyleRadioGroup.check(sedentaryAdultRadioButton.id)
+            }
 
             physicalActivityLifeStyleRadioGroup.setOnCheckedChangeListener { radioGroup, checkedId ->
 
@@ -355,7 +396,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             val fatPercentageTextView = TextView(this)
             fatPercentageTextView.id = View.generateViewId()
-            fatPercentageTextView.text = "Preferred Fat Percent"
+            fatPercentageTextView.text = getString(R.string.preferred_fat)
             calculatorConstraintLayout.addView(fatPercentageTextView)
 
             val fatPercentageImageButton = ImageButton(this)
@@ -366,6 +407,7 @@ class CalculatorActivity : AppCompatActivity() {
             val fatPercentageEditText = EditText(this)
             fatPercentageEditText.id = View.generateViewId()
             fatPercentageEditText.hint = "Percent"
+            fatPercentageEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
             calculatorConstraintLayout.addView(fatPercentageEditText)
 
             val fatPercentagePercentTextView = TextView(this)
@@ -405,7 +447,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             val goalTextView = TextView(this)
             goalTextView.id = View.generateViewId()
-            goalTextView.text = "Goal"
+            goalTextView.text = getString(R.string.goal)
             calculatorConstraintLayout.addView(goalTextView)
 
             val goalRadioGroup = RadioGroup(this)
@@ -415,37 +457,38 @@ class CalculatorActivity : AppCompatActivity() {
 
             val goalWeightLossSuggestedRadioButton = RadioButton(this)
             goalWeightLossSuggestedRadioButton.id = View.generateViewId()
-            goalWeightLossSuggestedRadioButton.text = "Burn Fat Suggested (-15%)"
+            goalWeightLossSuggestedRadioButton.text = getString(R.string.burn_suggested)
             goalRadioGroup.addView(goalWeightLossSuggestedRadioButton)
 
             val goalWeightLossAggressiveRadioButton = RadioButton(this)
             goalWeightLossAggressiveRadioButton.id = View.generateViewId()
-            goalWeightLossAggressiveRadioButton.text = "Burn Fat Aggressive (-20%)"
+            goalWeightLossAggressiveRadioButton.text = getString(R.string.burn_aggressive)
             goalRadioGroup.addView(goalWeightLossAggressiveRadioButton)
 
             val goalWeightLossRecklessRadioButton = RadioButton(this)
             goalWeightLossRecklessRadioButton.id = View.generateViewId()
-            goalWeightLossRecklessRadioButton.text = "Burn Fat Reckless (-25%)"
+            goalWeightLossRecklessRadioButton.text = getString(R.string.burn_reckless)
             goalRadioGroup.addView(goalWeightLossRecklessRadioButton)
 
             val goalMaintainRadioButton = RadioButton(this)
             goalMaintainRadioButton.id = View.generateViewId()
-            goalMaintainRadioButton.text = "Maintain (+/-0%)"
+            goalMaintainRadioButton.text = getString(R.string.maintain)
+            goalMaintainRadioButton.isSelected = true
             goalRadioGroup.addView(goalMaintainRadioButton)
 
             val goalBulkingSuggestedRadioButton = RadioButton(this)
             goalBulkingSuggestedRadioButton.id = View.generateViewId()
-            goalBulkingSuggestedRadioButton.text = "Build Muscle Suggested (+5%)"
+            goalBulkingSuggestedRadioButton.text = getString(R.string.build_suggested)
             goalRadioGroup.addView(goalBulkingSuggestedRadioButton)
 
             val goalBulkingAggressiveRadioButton = RadioButton(this)
             goalBulkingAggressiveRadioButton.id = View.generateViewId()
-            goalBulkingAggressiveRadioButton.text = "Build Muscle Aggressive (+10%)"
+            goalBulkingAggressiveRadioButton.text = getString(R.string.build_aggressive)
             goalRadioGroup.addView(goalBulkingAggressiveRadioButton)
 
             val goalBulkingRecklessRadioButton = RadioButton(this)
             goalBulkingRecklessRadioButton.id = View.generateViewId()
-            goalBulkingRecklessRadioButton.text = "Build Muscle Reckless (+15%)"
+            goalBulkingRecklessRadioButton.text = getString(R.string.build_reckless)
             goalRadioGroup.addView(goalBulkingRecklessRadioButton)
 
             val goalSet = ConstraintSet()
@@ -468,9 +511,27 @@ class CalculatorActivity : AppCompatActivity() {
             goalSet.connect(goalBulkingRecklessRadioButton.id, ConstraintSet.TOP, goalBulkingAggressiveRadioButton.id, ConstraintSet.BOTTOM, 8)
             goalSet.applyTo(calculatorConstraintLayout)
 
+            if (userPreferences.contains("goal")) {
+
+                when(userPreferences.getString("goal", "")) {
+
+                    "weightLossSuggested" -> goalRadioGroup.check(goalWeightLossSuggestedRadioButton.id)
+                    "weightLossAggressive" -> goalRadioGroup.check(goalWeightLossAggressiveRadioButton.id)
+                    "weightLossReckless" -> goalRadioGroup.check(goalWeightLossRecklessRadioButton.id)
+                    "maintain" -> goalRadioGroup.check(goalMaintainRadioButton.id)
+                    "bulkingSuggested" -> goalRadioGroup.check(goalBulkingSuggestedRadioButton.id)
+                    "bulkingAggressive" -> goalRadioGroup.check(goalBulkingAggressiveRadioButton.id)
+                    "bulkingReckless" -> goalRadioGroup.check(goalBulkingRecklessRadioButton.id)
+                    "" -> goalRadioGroup.check(goalMaintainRadioButton.id)
+                }
+            } else {
+
+                goalRadioGroup.check(goalMaintainRadioButton.id)
+            }
+
             goalRadioGroup.setOnCheckedChangeListener { radioGroup, checkedId ->
 
-                when(checkedId) {
+                when (checkedId) {
 
                     goalWeightLossSuggestedRadioButton.id -> editor.putString("goal", "weightLossSuggested")
                     goalWeightLossAggressiveRadioButton.id -> editor.putString("goal", "weightLossAggressive")
@@ -484,12 +545,12 @@ class CalculatorActivity : AppCompatActivity() {
 
             val calculateButton = Button(this)
             calculateButton.id = View.generateViewId()
-            calculateButton.text = "Calculate"
+            calculateButton.text = getString(R.string.calc)
             calculatorConstraintLayout.addView(calculateButton)
 
             val caloriesTextView = TextView(this)
             caloriesTextView.id = View.generateViewId()
-            caloriesTextView.text = "Calories:"
+            caloriesTextView.text = getString(R.string.calories)
             calculatorConstraintLayout.addView(caloriesTextView)
 
             val caloriesCalculatedTextView = TextView(this)
@@ -498,7 +559,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             val proteinTextView = TextView(this)
             proteinTextView.id = View.generateViewId()
-            proteinTextView.text = "Protein:"
+            proteinTextView.text = getString(R.string.protein)
             calculatorConstraintLayout.addView(proteinTextView)
 
             val proteinCalculatedTextView = TextView(this)
@@ -507,7 +568,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             val fatsTextView = TextView(this)
             fatsTextView.id = View.generateViewId()
-            fatsTextView.text = "Fats:"
+            fatsTextView.text = getString(R.string.fat)
             calculatorConstraintLayout.addView(fatsTextView)
 
             val fatsCalculatedTextView = TextView(this)
@@ -516,7 +577,7 @@ class CalculatorActivity : AppCompatActivity() {
 
             val carbsTextView = TextView(this)
             carbsTextView.id = View.generateViewId()
-            carbsTextView.text = "Carbs:"
+            carbsTextView.text = getString(R.string.carbs)
             calculatorConstraintLayout.addView(carbsTextView)
 
             val carbsCalculatedTextView = TextView(this)
@@ -565,284 +626,296 @@ class CalculatorActivity : AppCompatActivity() {
 
             calculateButton.setOnClickListener {
 
-                editor.putString("fatPercent", fatPercentageEditText.text.toString())
+                if (userPreferences.getString("weightMeasurement", "") == "imperial") {
 
-                when (userPreferences.getString("weightMeasurement", "")) {
+                    if (poundsEditText.text.toString() == "") {
 
-                    "imperial" -> {
+                        val weightErrorDialog = AlertDialog.Builder(this)
 
-                        val pounds = poundsEditText.text.toString().toDouble()
-                        val kg = pounds * 0.454
-                        val stone = (pounds / 14)
+                        weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for your weight.").setPositiveButton("OK") {
 
-                        editor.putString("pounds", decimalFormat.format(pounds).toString())
-                        editor.putString("kg", decimalFormat.format(kg).toString())
-                        editor.putString("stone", decimalFormat.format(stone).toString())
+                            dialog, which ->
+                            dialog.cancel()
+                        }
+
+                        weightErrorDialog.show()
+                    }
+                } else if (userPreferences.getString("weightMeasurement", "") == "metric") {
+
+                    if (kilogramsEditText.text.toString() == "") {
+
+                        val weightErrorDialog = AlertDialog.Builder(this)
+
+                        weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for your weight.").setPositiveButton("OK") {
+
+                            dialog, which ->
+                            dialog.cancel()
+                        }
+
+                        weightErrorDialog.show()
+                    }
+                } else if (userPreferences.getString("weightMeasurement", "") == "stone") {
+
+                    if (stoneEditText.text.toString() == "") {
+
+                        val weightErrorDialog = AlertDialog.Builder(this)
+
+                        weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for your weight.").setPositiveButton("OK") {
+
+                            dialog, which ->
+                            dialog.cancel()
+                        }
+
+                        weightErrorDialog.show()
+                    }
+                } else if (fatPercentageEditText.text.toString() == "") {
+
+                    val fatErrorDialog = AlertDialog.Builder(this)
+
+                    fatErrorDialog.setTitle("Fat Percent Error").setMessage("Please enter a valid entry for fat percentage.").setPositiveButton("OK") {
+
+                        dialogInterface, i ->
+                        dialogInterface.cancel()
                     }
 
-                    "metric" -> {
+                    fatErrorDialog.show()
+                } else {
 
-                        val kg = kilogramsEditText.text.toString().toDouble()
-                        val pounds = kg / 0.454
-                        val stone = kg * .157
+                    editor.putString("fatPercent", fatPercentageEditText.text.toString())
 
-                        editor.putString("pounds", decimalFormat.format(pounds).toString())
-                        editor.putString("kg", decimalFormat.format(kg).toString())
-                        editor.putString("stone", decimalFormat.format(stone).toString())
+                    when (userPreferences.getString("weightMeasurement", "")) {
+
+                        "imperial" -> {
+
+                            val pounds = poundsEditText.text.toString().toDouble()
+                            val kg = pounds * 0.454
+                            val stone = (pounds / 14)
+
+                            editor.putString("pounds", decimalFormat.format(pounds).toString())
+                            editor.putString("kg", decimalFormat.format(kg).toString())
+                            editor.putString("stone", decimalFormat.format(stone).toString())
+                        }
+
+                        "metric" -> {
+
+                            val kg = kilogramsEditText.text.toString().toDouble()
+                            val pounds = kg / 0.454
+                            val stone = kg * .157
+
+                            editor.putString("pounds", decimalFormat.format(pounds).toString())
+                            editor.putString("kg", decimalFormat.format(kg).toString())
+                            editor.putString("stone", decimalFormat.format(stone).toString())
+                        }
+
+                        "stone" -> {
+
+                            val stone = stoneEditText.text.toString().toDouble()
+                            val pounds = stone * 14
+                            val kg = stone * 6.35
+
+                            editor.putString("pounds", decimalFormat.format(pounds).toString())
+                            editor.putString("kg", decimalFormat.format(kg).toString())
+                            editor.putString("stone", decimalFormat.format(stone).toString())
+                        }
                     }
 
-                    "stone" -> {
+                    editor.apply()
 
-                        val stone = stoneEditText.text.toString().toDouble()
-                        val pounds = stone * 14
-                        val kg = stone * 6.35
+                    var bmr = 0.0
+                    val tdee: Double
+                    val calories: Double
+                    val protein: Double
+                    val proteinCalories: Double
+                    val fat: Double
+                    val fatCalories: Double
+                    val carbs: Double
+                    val carbsCalories: Double
+                    val dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")//SimpleDateFormat()
+                    val age = Years.yearsBetween(dateFormat.parseDateTime(userPreferences.getString("birthDate", "")) as DateTime, DateTime.now())
 
-                        editor.putString("pounds", decimalFormat.format(pounds).toString())
-                        editor.putString("kg", decimalFormat.format(kg).toString())
-                        editor.putString("stone", decimalFormat.format(stone).toString())
+                    when (userPreferences.getString("gender", "")) {
+
+                        "male" -> {
+
+                            bmr = (10 * userPreferences.getString("kg", "").toDouble()) + (6.25 * userPreferences.getString("cm", "").toDouble()) - ((5 * age.years) + 5)
+                        }
+
+                        "female" -> {
+
+                            bmr = (10 * userPreferences.getString("kg", "").toDouble()) + (6.25 * userPreferences.getString("cm", "").toDouble()) - ((5 * age.years) - 161)
+                        }
+                    }
+
+                    when (userPreferences.getString("dailyActivity", "")) {
+
+                        "very light" -> {
+
+                            tdee = bmr * 1.20
+                        }
+
+                        "light" -> {
+
+                            tdee = bmr * 1.45
+                        }
+
+                        "moderate" -> {
+
+                            tdee = bmr * 1.55
+                        }
+
+                        "heavy" -> {
+
+                            tdee = bmr * 1.75
+                        }
+
+                        "very heavy" -> {
+
+                            tdee = 2.00
+                        }
+
+                        else -> {
+
+                            tdee = bmr
+                        }
+                    }
+
+                    when (userPreferences.getString("goal", "")) {
+
+                        "weightLossSuggested" -> {
+
+                            calories = tdee - (tdee * 0.15)
+                        }
+
+                        "weightLossAggressive" -> {
+
+                            calories = tdee - (tdee * 0.20)
+                        }
+
+                        "weightLossReckless" -> {
+
+                            calories = tdee - (tdee * 0.25)
+                        }
+
+                        "maintain" -> {
+
+                            calories = tdee
+                        }
+
+                        "bulkingSuggested" -> {
+
+                            calories = tdee + (tdee * 0.05)
+                        }
+
+                        "bulkingAggressive" -> {
+
+                            calories = tdee + (tdee * 0.10)
+                        }
+
+                        "bulkingReckless" -> {
+
+                            calories = tdee + (tdee * 0.15)
+                        }
+
+                        else -> {
+
+                            calories = tdee
+                        }
+                    }
+
+                    editor.putString("calories", calories.toInt().toString())
+
+                    when (userPreferences.getString("physicalActivityLifestyle", "")) {
+
+                        "sedentaryAdult" -> {
+
+                            protein = userPreferences.getString("pounds", "").toDouble() * 0.4
+                        }
+
+                        "recreationalExerciserAdult" -> {
+
+                            protein = userPreferences.getString("pounds", "").toDouble() * 0.75
+                        }
+
+                        "competitiveAthleteAdult" -> {
+
+                            protein = userPreferences.getString("pounds", "").toDouble() * 0.90
+                        }
+
+                        "buildingMuscleAdult" -> {
+
+                            protein = userPreferences.getString("pounds", "").toDouble() * 0.90
+                        }
+
+                        "dietingAthlete" -> {
+
+                            protein = userPreferences.getString("pounds", "").toDouble() * 0.90
+                        }
+
+                        "growingAthleteTeenager" -> {
+
+                            protein = userPreferences.getString("pounds", "").toDouble() * 1.0
+                        }
+
+                        else -> {
+
+                            protein = userPreferences.getString("pounds", "").toDouble() * 0.4
+                        }
+                    }
+
+                    proteinCalories = protein * 4
+                    editor.putString("protein", protein.toInt().toString())
+
+                    fatCalories = calories * (fatPercentageEditText.text.toString().toDouble() / 100)
+                    fat = fatCalories / 9
+
+                    editor.putString("fat", fat.toInt().toString())
+
+                    carbsCalories = tdee - (proteinCalories + fatCalories)
+                    carbs = carbsCalories / 4
+
+                    editor.putString("carbs", carbs.toInt().toString())
+
+                    editor.apply()
+
+                    caloriesCalculatedTextView.text = userPreferences.getInt("calories", 0).toString()
+                    proteinCalculatedTextView.text = userPreferences.getInt("protein", 0).toString() + "g"
+                    fatsCalculatedTextView.text = userPreferences.getInt("fat", 0).toString() + "g"
+                    carbsCalculatedTextView.text = userPreferences.getInt("carbs", 0).toString() + "g"
+                }
+
+                if (userPreferences.contains("pounds") && userPreferences.contains("kg") && userPreferences.contains("stone")) {
+
+                    when (userPreferences.getString("weightMeasurement", "")) {
+
+                        "imperial" -> poundsEditText.setText(userPreferences.getString("pounds", ""))
+                        "metric" -> kilogramsEditText.setText(userPreferences.getString("kg", ""))
+                        "stone" -> stoneEditText.setText(userPreferences.getString("stone", ""))
                     }
                 }
 
-                editor.apply()
+                if (userPreferences.contains("fatPercent")) {
 
-                var bmr = 0.0
-                var tdee = 0.0
-                var calories = 0.0
-                var protein = 0.0
-                var proteinCalories = 0.0
-                var fat = 0.0
-                var fatCalories = 0.0
-                var carbs = 0.0
-                var carbsCalories = 0.0
-                val dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")//SimpleDateFormat()
-                val age = Years.yearsBetween(dateFormat.parseDateTime(userPreferences.getString("birthDate", "")) as DateTime, DateTime.now())
+                    fatPercentageEditText.setText(userPreferences.getString("fatPercent", ""))
+                } else {
 
-                when(userPreferences.getString("gender", "")) {
-
-                    "male" -> {
-
-                        bmr = (10 * userPreferences.getString("kg", "").toDouble()) + (6.25 * userPreferences.getString("cm", "").toDouble()) - ((5 * age.years) + 5)
-                    }
-
-                    "female" -> {
-
-                        bmr = (10 * userPreferences.getString("kg", "").toDouble()) + (6.25 * userPreferences.getString("cm", "").toDouble()) - ((5 * age.years) - 161)
-                    }
+                    fatPercentageEditText.setText("15")
                 }
 
-                when(userPreferences.getString("dailyActivity", "")) {
+                if (userPreferences.contains("calories") && userPreferences.contains("protein") && userPreferences.contains("fat") && userPreferences.contains("carbs")) {
 
-                    "very light" -> {
+                    caloriesCalculatedTextView.text = userPreferences.getInt("calories", 0).toString()
+                    proteinCalculatedTextView.text = userPreferences.getInt("protein", 0).toString() + "g"
+                    fatsCalculatedTextView.text = userPreferences.getInt("fat", 0).toString() + "g"
+                    carbsCalculatedTextView.text = userPreferences.getInt("carbs", 0).toString() + "g"
+                } else {
 
-                        tdee = bmr * 1.20
-                    }
-
-                    "light" -> {
-
-                        tdee = bmr * 1.45
-                    }
-
-                    "moderate" -> {
-
-                        tdee = bmr * 1.55
-                    }
-
-                    "heavy" -> {
-
-                        tdee = bmr * 1.75
-                    }
-
-                    "very heavy" -> {
-
-                        tdee = 2.00
-                    }
-
-                    else -> {
-
-                        tdee = bmr
-                    }
+                    caloriesCalculatedTextView.text = "0"
+                    proteinCalculatedTextView.text = getString(R.string.empty_macros)
+                    fatsCalculatedTextView.text = getString(R.string.empty_macros)
+                    carbsCalculatedTextView.text = getString(R.string.empty_macros)
                 }
-
-                when(userPreferences.getString("goal", "")) {
-
-                    "weightLossSuggested" -> {
-
-                        calories = tdee - (tdee * 0.15)
-                    }
-
-                    "weightLossAggressive" -> {
-
-                        calories = tdee - (tdee * 0.20)
-                    }
-
-                    "weightLossReckless" -> {
-
-                        calories = tdee - (tdee * 0.25)
-                    }
-
-                    "maintain" -> {
-
-                        calories = tdee
-                    }
-
-                    "bulkingSuggested" -> {
-
-                        calories = tdee + (tdee * 0.05)
-                    }
-
-                    "bulkingAggressive" -> {
-
-                        calories = tdee + (tdee * 0.10)
-                    }
-
-                    "bulkingReckless" -> {
-
-                        calories = tdee + (tdee * 0.15)
-                    }
-
-                    else -> {
-
-                        calories = tdee
-                    }
-                }
-
-                editor.putString("calories", calories.toInt().toString())
-
-                when (userPreferences.getString("physicalActivityLifestyle", "")) {
-
-                    "sedentaryAdult" -> {
-
-                        protein = userPreferences.getString("pounds", "").toDouble() * 0.4
-                    }
-
-                    "recreationalExerciserAdult" -> {
-
-                        protein = userPreferences.getString("pounds", "").toDouble() * 0.75
-                    }
-
-                    "competitiveAthleteAdult" -> {
-
-                        protein = userPreferences.getString("pounds", "").toDouble() * 0.90
-                    }
-
-                    "buildingMuscleAdult" -> {
-
-                        protein = userPreferences.getString("pounds", "").toDouble() * 0.90
-                    }
-
-                    "dietingAthlete" -> {
-
-                        protein = userPreferences.getString("pounds", "").toDouble() * 0.90
-                    }
-
-                    "growingAthleteTeenager" -> {
-
-                        protein = userPreferences.getString("pounds", "").toDouble() * 1.0
-                    }
-
-                    else -> {
-
-                        protein = userPreferences.getString("pounds", "").toDouble() * 0.4
-                    }
-                }
-
-                proteinCalories = protein * 4
-                editor.putString("protein", protein.toInt().toString())
-
-                fatCalories = calories * (fatPercentageEditText.text.toString().toDouble() / 100)
-                fat = fatCalories / 9
-
-                editor.putString("fat", fat.toInt().toString())
-
-                carbsCalories = tdee - (proteinCalories + fatCalories)
-                carbs = carbsCalories / 4
-
-                editor.putString("carbs", carbs.toInt().toString())
-
-                editor.apply()
-
-                caloriesCalculatedTextView.text = userPreferences.getInt("calories", 0).toString()
-                proteinCalculatedTextView.text = userPreferences.getInt("protein", 0).toString() + "g"
-                fatsCalculatedTextView.text = userPreferences.getInt("fat", 0).toString() + "g"
-                carbsCalculatedTextView.text = userPreferences.getInt("carbs", 0).toString() + "g"
-            }
-
-            if (userPreferences.contains("pounds") && userPreferences.contains("kg") && userPreferences.contains("stone")) {
-
-                when (userPreferences.getString("weightMeasurement", "")) {
-
-                    "imperial" -> poundsEditText.setText(userPreferences.getString("pounds", ""))
-                    "metric" -> kilogramsEditText.setText(userPreferences.getString("kg", ""))
-                    "stone" -> stoneEditText.setText(userPreferences.getString("stone", ""))
-                }
-            }
-
-            if (userPreferences.contains("dailyActivity")) {
-
-                when(userPreferences.getString("dailyActivity", "")) {
-
-                    "veryLight" -> dailyActivityRadioGroup.check(dailyActivityVeryLightRadioButton.id)
-                    "light" -> dailyActivityRadioGroup.check(dailyActivityLightRadioButton.id)
-                    "moderate" -> dailyActivityRadioGroup.check(dailyActivityModerateRadioButton.id)
-                    "heavy" -> dailyActivityRadioGroup.check(dailyActivityHeavyRadioButton.id)
-                    "veryHeavy" -> dailyActivityRadioGroup.check(dailyActivityVeryHeavyRadioButton.id)
-                }
-            } else {
-
-                dailyActivityRadioGroup.check(dailyActivityVeryLightRadioButton.id)
-            }
-
-            if (userPreferences.contains("physicalActivityLifestyle")) {
-
-                when (userPreferences.getString("physicalActivityLifestyle", "")) {
-
-                    "sedentaryAdult" -> physicalActivityLifeStyleRadioGroup.check(sedentaryAdultRadioButton.id)
-                    "recreationalExerciserAdult" -> physicalActivityLifeStyleRadioGroup.check(recreationalExerciserAdultRadioButton.id)
-                    "competitiveAthleteAdult" -> physicalActivityLifeStyleRadioGroup.check(competitiveAthleteAdultRadioButton.id)
-                    "buildingMuscleAdult" -> physicalActivityLifeStyleRadioGroup.check(buildingMuscleAdultRadioButton.id)
-                    "dietingAthlete" -> physicalActivityLifeStyleRadioGroup.check(dietingAthleteRadioButton.id)
-                    "growingAthleteTeenager" -> physicalActivityLifeStyleRadioGroup.check(growingAthleteTeenager.id)
-                }
-            } else {
-
-                physicalActivityLifeStyleRadioGroup.check(sedentaryAdultRadioButton.id)
-            }
-
-            if (userPreferences.contains("fatPercent")) {
-
-                fatPercentageEditText.setText(userPreferences.getString("fatPercent", ""))
-            } else {
-
-                fatPercentageEditText.setText("15")
-            }
-
-            if (userPreferences.contains("goal")) {
-
-                when (userPreferences.getString("goal", "")) {
-
-                    "weightLossSuggested" -> goalRadioGroup.check(goalWeightLossSuggestedRadioButton.id)
-                    "weightLossAggressive" -> goalRadioGroup.check(goalWeightLossAggressiveRadioButton.id)
-                    "weightLossReckless" -> goalRadioGroup.check(goalWeightLossRecklessRadioButton.id)
-                    "maintain" -> goalRadioGroup.check(goalMaintainRadioButton.id)
-                    "bulkingSuggested" -> goalRadioGroup.check(goalBulkingSuggestedRadioButton.id)
-                    "bulkingAggressive" -> goalRadioGroup.check(goalBulkingAggressiveRadioButton.id)
-                    "bulkingReckless" -> goalRadioGroup.check(goalBulkingRecklessRadioButton.id)
-                }
-            }
-
-            if (userPreferences.contains("calories") && userPreferences.contains("protein") && userPreferences.contains("fat") && userPreferences.contains("carbs")) {
-
-                caloriesCalculatedTextView.text = userPreferences.getInt("calories", 0).toString()
-                proteinCalculatedTextView.text = userPreferences.getInt("protein", 0).toString() + "g"
-                fatsCalculatedTextView.text = userPreferences.getInt("fat", 0).toString() + "g"
-                carbsCalculatedTextView.text = userPreferences.getInt("carbs", 0).toString() + "g"
-            } else {
-
-                caloriesCalculatedTextView.text = "0"
-                proteinCalculatedTextView.text = "0g"
-                fatsCalculatedTextView.text = "0g"
-                carbsCalculatedTextView.text = "0g"
             }
         }
+
     }
 }
