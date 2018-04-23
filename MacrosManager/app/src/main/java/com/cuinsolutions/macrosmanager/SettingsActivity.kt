@@ -10,10 +10,7 @@ import android.text.InputType
 import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.RadioGroup
-import android.widget.TextView
+import android.widget.*
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import java.math.RoundingMode
@@ -22,6 +19,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class SettingsActivity : AppCompatActivity() {
+
+    val showAds = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -363,5 +362,25 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val settingsConstraintLayout: ConstraintLayout = findViewById<ConstraintLayout>(R.id.settingsConstraintLayout)
+        val settingsScrollView = findViewById<ScrollView>(R.id.settingsScrollView)
+        val settingsAdView: AdView = findViewById<AdView>(R.id.settingsAdView)
+
+        if (showAds) {
+            val adRequest = AdRequest.Builder().build()
+            settingsAdView.loadAd(adRequest)
+        } else {
+            settingsAdView.visibility = View.GONE
+            val removeAdSet = ConstraintSet()
+            removeAdSet.clone(settingsConstraintLayout)
+            removeAdSet.connect(settingsScrollView.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+            removeAdSet.applyTo(settingsConstraintLayout)
+        }
+
     }
 }

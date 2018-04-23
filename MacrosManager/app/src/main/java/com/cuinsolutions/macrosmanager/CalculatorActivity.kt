@@ -13,6 +13,8 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import org.joda.time.DateTime
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
@@ -21,13 +23,27 @@ import java.text.DecimalFormat
 
 class CalculatorActivity : AppCompatActivity() {
 
+    val showAds = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
 
         val regexs = Regexs()
 
+        val calculatorConstraintLayout = findViewById<ConstraintLayout>(R.id.calculatorConstraintLayout)
         val calculatorBottomNav = findViewById<BottomNavigationView>(R.id.calculatorBottomNav)
+        val calculatorAdView = findViewById<AdView>(R.id.calculatorAdView)
+
+        if (showAds) {
+            val adRequest = AdRequest.Builder().build()
+            calculatorAdView.loadAd(adRequest)
+        } else {
+            calculatorAdView.visibility = View.GONE
+            val removeAdViewSet = ConstraintSet()
+            removeAdViewSet.clone(calculatorConstraintLayout)
+            removeAdViewSet.connect(calculatorBottomNav.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+            removeAdViewSet.applyTo(calculatorConstraintLayout)
+        }
 
         calculatorBottomNav.selectedItemId = R.id.calculator
         calculatorBottomNav.setOnNavigationItemSelectedListener { item ->

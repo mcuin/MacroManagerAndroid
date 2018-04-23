@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
+import android.support.constraint.ConstraintSet
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
@@ -13,6 +15,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.GridView
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -27,15 +30,16 @@ class DailyActivity : AppCompatActivity() {
 
     //var dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
 
+    val showAds = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_daily)
 
-        val dailyAdView = findViewById<AdView>(R.id.dailyAdView)
+
+
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
 
-        val adRequest = AdRequest.Builder().build()
-        dailyAdView.loadAd(adRequest)
 
         dailyBottomNav.selectedItemId = R.id.home
 
@@ -102,7 +106,20 @@ class DailyActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        val dailyConstraintLayout = findViewById<ConstraintLayout>(R.id.dailyConstraintLayout)
+        val dailyAdView = findViewById<AdView>(R.id.dailyAdView)
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
+
+        if (showAds) {
+            val adRequest = AdRequest.Builder().build()
+            dailyAdView.loadAd(adRequest)
+        } else {
+            dailyAdView.visibility = View.GONE
+            val removeAdSet = ConstraintSet()
+            removeAdSet.clone(dailyConstraintLayout)
+            removeAdSet.connect(dailyBottomNav.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+            removeAdSet.applyTo(dailyConstraintLayout)
+        }
 
         dailyBottomNav.selectedItemId = R.id.home
         val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
