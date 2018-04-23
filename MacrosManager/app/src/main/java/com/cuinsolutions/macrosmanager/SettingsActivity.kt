@@ -14,6 +14,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -33,6 +35,10 @@ class SettingsActivity : AppCompatActivity() {
         val weightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.weightMeasurementRadioGroup)
         val heightTextView: TextView = findViewById<TextView>(R.id.heightTextView)
         val birthDateTextView: TextView = findViewById<TextView>(R.id.birthDateTextView)
+        val settingsAdView: AdView = findViewById<AdView>(R.id.settingsAdView)
+
+        val adRequest = AdRequest.Builder().build()
+        settingsAdView.loadAd(adRequest)
 
         val feetEditText = EditText(this)
         val feetTextView = TextView(this)
@@ -47,6 +53,7 @@ class SettingsActivity : AppCompatActivity() {
 
         saveButton.text = getString(R.string.save)
         settingsConstraintLayout.addView(saveButton)
+        saveButton.id = View.generateViewId()
 
         val saveButtonSet = ConstraintSet()
         saveButtonSet.clone(settingsConstraintLayout)
