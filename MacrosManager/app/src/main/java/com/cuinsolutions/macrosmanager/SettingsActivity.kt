@@ -1,6 +1,8 @@
 package com.cuinsolutions.macrosmanager
 
 import android.app.DatePickerDialog
+import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
@@ -13,6 +15,7 @@ import android.view.View
 import android.widget.*
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.firebase.auth.FirebaseAuth
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -20,11 +23,14 @@ import java.util.*
 
 class SettingsActivity : AppCompatActivity() {
 
-    val showAds = false
+    val showAds = true
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+
+        auth = FirebaseAuth.getInstance()
 
         val regexs = Regexs()
 
@@ -332,7 +338,7 @@ class SettingsActivity : AppCompatActivity() {
                     editor.putString("cm", decimalFormat.format(cm).toString())
                     editor.commit()
 
-                    finish()
+                    //finish()
                 }
 
             } else if (heightRadioGroup.checkedRadioButtonId == R.id.heightMetric) {
@@ -358,14 +364,42 @@ class SettingsActivity : AppCompatActivity() {
                     editor.putString("inches", decimalFormat.format(inches).toString())
                     editor.commit()
 
-                    finish()
+                    //finish()
                 }
             }
+
+            val currentUser = auth.currentUser
+
+            Log.d("Current user", currentUser.toString())
+
+            if (currentUser == null) {
+
+                val createUserDialog = AlertDialog.Builder(this)
+
+                createUserDialog.setTitle("Create Account").setMessage("Would you like to create an account to " +
+                        "store your settings and macros?").setPositiveButton("OK",
+                        DialogInterface.OnClickListener { dialog, which ->
+                            val signUpIntent = Intent(this, SignUpActivity::class.java)
+                            startActivity(signUpIntent)
+
+
+                            finish()
+                }).setNegativeButton("No Thanks", DialogInterface.OnClickListener { dialog, which ->
+                    dialog.dismiss()
+                    finish()
+                })
+
+                createUserDialog.show()
+            }
+
+            //finish()
         }
     }
 
     override fun onResume() {
         super.onResume()
+
+        val currentUser = auth.currentUser
 
         val settingsConstraintLayout: ConstraintLayout = findViewById<ConstraintLayout>(R.id.settingsConstraintLayout)
         val settingsScrollView = findViewById<ScrollView>(R.id.settingsScrollView)
