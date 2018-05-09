@@ -15,6 +15,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.firebase.auth.FirebaseAuth
 import org.joda.time.DateTime
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
@@ -23,10 +24,13 @@ import java.text.DecimalFormat
 
 class CalculatorActivity : AppCompatActivity() {
 
-    val showAds = false
+    private val showAds = false
+    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
+
+        auth = FirebaseAuth.getInstance()
 
         val regexs = Regexs()
 
@@ -68,6 +72,8 @@ class CalculatorActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        val currentUser = auth.currentUser
 
         val regexs = Regexs()
         val calculatorConstraintLayout = findViewById<ConstraintLayout>(R.id.calculatorConstraintLayout)
@@ -971,5 +977,7 @@ class CalculatorActivity : AppCompatActivity() {
         Log.d("Activity Lifestyle", userPreferences.getString("physicalActivityLifestyle", ""))
         Log.d("Activity Level", userPreferences.getString("dailyActivity", ""))
         Log.d("Goal", userPreferences.getString("goal", ""))
+
+
     }
 }

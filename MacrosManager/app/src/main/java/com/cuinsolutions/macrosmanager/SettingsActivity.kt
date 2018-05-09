@@ -380,8 +380,15 @@ class SettingsActivity : AppCompatActivity() {
                         "store your settings and macros?").setPositiveButton("OK",
                         DialogInterface.OnClickListener { dialog, which ->
                             val signUpIntent = Intent(this, SignUpActivity::class.java)
-                            startActivity(signUpIntent)
 
+                            signUpIntent.putExtra("gender", userPreferences.getString("gender", ""))
+                            signUpIntent.putExtra("weightMeasurement", userPreferences.getString("weightMeasurement", ""))
+                            signUpIntent.putExtra("heightMeasurement", userPreferences.getString("heightMeasurement", ""))
+                            signUpIntent.putExtra("feet", userPreferences.getString("feet", ""))
+                            signUpIntent.putExtra("inches", userPreferences.getString("inches", ""))
+                            signUpIntent.putExtra("cm", userPreferences.getString("cm", ""))
+                            signUpIntent.putExtra("birthDate", userPreferences.getString("birthDate", ""))
+                            startActivity(signUpIntent)
 
                             finish()
                 }).setNegativeButton("No Thanks", DialogInterface.OnClickListener { dialog, which ->
