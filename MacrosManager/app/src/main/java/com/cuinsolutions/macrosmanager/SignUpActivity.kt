@@ -134,7 +134,8 @@ class SignUpActivity : AppCompatActivity() {
                     val userData = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "gender" to intent.getStringExtra("gender"),
                             "heightMeasurement" to intent.getStringExtra("heightMeasurement"), "weightMeasurement" to intent.getStringExtra("weightMeasurement"),
                             "feet" to intent.getStringExtra("feet"), "inches" to intent.getStringExtra("inches"), "cm" to intent.getStringExtra("cm"),
-                            "birthDate" to intent.getStringExtra("birthDate"))
+                            "birthDate" to intent.getStringExtra("birthDate"), "physicalActivity" to "veryLight", "physicalActivityLifeStyle" to "sedentaryAdult",
+                            "goal" to "maintain", "pounds" to 0.0, "kg" to 0.0, "stone" to 0.0, "dietFatPercent" to 0.0)
                     users.set(userData as Map<String, Any>).addOnSuccessListener {
 
                         Toast.makeText(this, "Account created successfully.", Toast.LENGTH_SHORT).show()

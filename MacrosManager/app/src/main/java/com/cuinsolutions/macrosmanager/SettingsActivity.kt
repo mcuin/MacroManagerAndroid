@@ -16,6 +16,8 @@ import android.widget.*
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -25,12 +27,27 @@ class SettingsActivity : AppCompatActivity() {
 
     val showAds = true
     private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var birthDate: String
+    private lateinit var gender: String
+    private lateinit var weightMeasurement: String
+    private lateinit var heightMeasurement: String
+    private var feet: Int = 0
+    private var inches = 0.0
+    private var cm = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
         auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val currentUser = auth.currentUser
 
         val regexs = Regexs()
 
@@ -40,10 +57,19 @@ class SettingsActivity : AppCompatActivity() {
         val weightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.weightMeasurementRadioGroup)
         val heightTextView: TextView = findViewById<TextView>(R.id.heightTextView)
         val birthDateTextView: TextView = findViewById<TextView>(R.id.birthDateTextView)
+        val settingsScrollView = findViewById<ScrollView>(R.id.settingsScrollView)
         val settingsAdView: AdView = findViewById<AdView>(R.id.settingsAdView)
 
-        val adRequest = AdRequest.Builder().build()
-        settingsAdView.loadAd(adRequest)
+        if (showAds) {
+            val adRequest = AdRequest.Builder().build()
+            settingsAdView.loadAd(adRequest)
+        } else {
+            settingsAdView.visibility = View.GONE
+            val removeAdSet = ConstraintSet()
+            removeAdSet.clone(settingsConstraintLayout)
+            removeAdSet.connect(settingsScrollView.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+            removeAdSet.applyTo(settingsConstraintLayout)
+        }
 
         val feetEditText = EditText(this)
         val feetTextView = TextView(this)
@@ -69,17 +95,125 @@ class SettingsActivity : AppCompatActivity() {
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
 
-        Log.d("mealsJSONArray Setting", userPreferences.getString("mealsJSONArray", ""))
+        if (currentUser != null) {
+            val db = firestore.collection("users").document(currentUser.uid)
+            db.get().addOnSuccessListener {
+                birthDate = it.getString("birthDate")!!
+                gender = it.getString("gender")!!
+                weightMeasurement = it.getString("weightMeasurement")!!
+                heightMeasurement = it.getString("heightMeasurement")!!
+                feet = it.get("feet") as Int
+                inches = it.getDouble("inches")!!
+                cm = it.getDouble("cm")!!
+            }.addOnFailureListener {
 
-        if (userPreferences.contains("birthDate")) {
-
-            birthDateTextView.setText(userPreferences.getString("birthDate", ""))
+                Toast.makeText(this, "There was an issue retrieving your data. Defaults have been used.", Toast.LENGTH_SHORT).show()
+                birthDate = ""
+                gender = "female"
+                weightMeasurement = "metric"
+                heightMeasurement = "metric"
+                cm = 165.0
+                val feetConversion = cm / 30.48
+                val feetRemainder = feetConversion % 1
+                feet = (feetConversion - feetRemainder).toInt()
+                inches = (cm / 2.54) - (feet * 12) + feetRemainder
+            }
         } else {
 
-            birthDateTextView.setText(getString(R.string.set_birth_date))
+            if (userPreferences.contains("birthDate")) {
+                birthDate = userPreferences.getString("birthDate", "")
+            }
+
+            if (userPreferences.contains("gender")) {
+                gender = userPreferences.getString("gender", "")
+            }
+
+            if (userPreferences.contains("weightMeasurement")) {
+                weightMeasurement = userPreferences.getString("weightMeasurement", "")
+            }
+
+            if (userPreferences.contains("heightMeasurement")) {
+                heightMeasurement = userPreferences.getString("heightMeasurement", "")
+            }
+
+            if (userPreferences.contains("cm")) {
+                cm = userPreferences.getString("cm", "").toDouble()
+            }
+
+            if (userPreferences.contains("feet")) {
+                feet = userPreferences.getInt("feet", 0)
+            }
+
+            if (userPreferences.contains("inches")) {
+                inches = userPreferences.getString("inches", "").toDouble()
+            }
         }
 
-        val editor = userPreferences.edit()
+        if (birthDate != "") {
+
+            birthDateTextView.text = birthDate
+        } else {
+
+            birthDateTextView.text = getString(R.string.set_birth_date)
+        }
+
+        when(gender) {
+
+            "male" -> genderRadioGroup.check(R.id.maleButton)
+            "female" -> genderRadioGroup.check(R.id.femaleButton)
+            else -> genderRadioGroup.check(R.id.femaleButton)
+        }
+
+        /*if (userPreferences.getString("gender", "") == "male") {
+
+            genderRadioGroup.check(R.id.maleButton)
+        } else if (userPreferences.getString("gender", "") == "female") {
+
+            genderRadioGroup.check(R.id.femaleButton)
+        } else {
+
+            genderRadioGroup.check(R.id.femaleButton)
+        }*/
+
+        when(weightMeasurement) {
+
+            "imperial" -> weightRadioGroup.check(R.id.weightImperial)
+            "metric" -> weightRadioGroup.check(R.id.weightMetric)
+            "stone" -> weightRadioGroup.check(R.id.weightStone)
+            else -> weightRadioGroup.check(R.id.weightMetric)
+        }
+
+        /*if (userPreferences.getString("weightMeasurement", "") == "imperial") {
+
+            weightRadioGroup.check(R.id.weightImperial)
+        } else if (userPreferences.getString("weightMeasurement", "") == "metric") {
+
+            weightRadioGroup.check(R.id.weightMetric)
+        } else if (userPreferences.getString("weightMeasurement", "") == "stone") {
+
+            weightRadioGroup.check(R.id.weightStone)
+        } else {
+
+            weightRadioGroup.check(R.id.weightImperial)
+        }*/
+
+        when(heightMeasurement) {
+
+            "imperial" -> heightRadioGroup.check(R.id.heightImperial)
+            "metric" -> heightRadioGroup.check(R.id.heightMetric)
+            else -> heightRadioGroup.check(R.id.heightMetric)
+        }
+
+        /*if (userPreferences.getString("heightMeasurement", "") == "imperial") {
+
+            heightRadioGroup.check(R.id.heightImperial)
+        } else if (userPreferences.getString("heightMeasurement", "") == "metric") {
+
+            heightRadioGroup.check(R.id.heightMetric)
+        } else {
+
+            heightRadioGroup.check(R.id.heightImperial)
+        }*/
 
         birthDateTextView.setOnClickListener {
 
@@ -89,12 +223,10 @@ class SettingsActivity : AppCompatActivity() {
                 val birthCalendar = Calendar.getInstance()
                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                 birthCalendar.set(year, month, date)
-                val birthDate = dateFormat.format(birthCalendar.time)
-                editor.putString("birthDate", birthDate)
+                val enteredBirthDate = dateFormat.format(birthCalendar.time)
 
-                editor.commit()
-
-                birthDateTextView.setText(userPreferences.getString("birthDate", ""))
+                birthDate = enteredBirthDate
+                birthDateTextView.text = birthDate
 
             }, currentCalendar.get(Calendar.YEAR),
                     currentCalendar.get(Calendar.MONTH), currentCalendar.get(Calendar.DATE))
@@ -106,8 +238,8 @@ class SettingsActivity : AppCompatActivity() {
 
             when(checkedId) {
 
-                R.id.maleButton -> editor.putString("gender", "male")
-                R.id.femaleButton -> editor.putString("gender", "female")
+                R.id.maleButton -> gender = "male"
+                R.id.femaleButton -> gender = "female"
             }
         }
 
@@ -115,20 +247,9 @@ class SettingsActivity : AppCompatActivity() {
 
             when(checkedId) {
 
-                R.id.weightImperial -> {
-
-                    editor.putString("weightMeasurement", "imperial");
-                }
-
-                R.id.weightMetric -> {
-
-                    editor.putString("weightMeasurement", "metric")
-                }
-
-                R.id.weightStone -> {
-
-                    editor.putString("weightMeasurement", "stone")
-                }
+                R.id.weightImperial -> weightMeasurement = "imperial"
+                R.id.weightMetric -> weightMeasurement = "metric"
+                R.id.weightStone -> weightMeasurement = "stone"
             }
         }
 
@@ -138,7 +259,7 @@ class SettingsActivity : AppCompatActivity() {
 
                 R.id.heightImperial -> {
 
-                    editor.putString("heightMeasurement", "imperial")
+                    heightMeasurement = "imperial"
 
                     if (cmEditText.visibility == View.VISIBLE) {
 
@@ -203,10 +324,10 @@ class SettingsActivity : AppCompatActivity() {
                     inchesTextViewSet.connect(inchesTextView.id, ConstraintSet.START, inchesEditText.id, ConstraintSet.END)
                     inchesTextViewSet.applyTo(settingsConstraintLayout)
 
-                    if (userPreferences.contains("feet") && userPreferences.contains("inches")) {
+                    if (feet != 0 && inches != 0.0) {
 
-                        feetEditText.setText(userPreferences.getString("feet", ""))
-                        inchesEditText.setText(userPreferences.getString("inches", ""))
+                        feetEditText.setText(feet)
+                        inchesEditText.setText(inches.toString())
                     }
 
                     saveButtonSet.clone(settingsConstraintLayout)
@@ -216,7 +337,7 @@ class SettingsActivity : AppCompatActivity() {
 
                 R.id.heightMetric -> {
 
-                    editor.putString("heightMeasurement", "metric")
+                    heightMeasurement = "metric"
 
                     if (feetEditText.visibility == View.VISIBLE) {
 
@@ -255,9 +376,9 @@ class SettingsActivity : AppCompatActivity() {
                     cmTextViewSet.connect(cmTextView.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
                     cmTextViewSet.applyTo(settingsConstraintLayout)
 
-                    if (userPreferences.contains("cm")) {
+                    if (cm != 0.0) {
 
-                        cmEditText.setText(userPreferences.getString("cm", ""))
+                        cmEditText.setText(cm.toString())
                     }
 
                     saveButtonSet.clone(settingsConstraintLayout)
@@ -267,45 +388,9 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        if (userPreferences.getString("gender", "") == "male") {
-
-            genderRadioGroup.check(R.id.maleButton)
-        } else if (userPreferences.getString("gender", "") == "female") {
-
-            genderRadioGroup.check(R.id.femaleButton)
-        } else {
-
-            genderRadioGroup.check(R.id.femaleButton)
-        }
-
-        if (userPreferences.getString("weightMeasurement", "") == "imperial") {
-
-            weightRadioGroup.check(R.id.weightImperial)
-        } else if (userPreferences.getString("weightMeasurement", "") == "metric") {
-
-            weightRadioGroup.check(R.id.weightMetric)
-        } else if (userPreferences.getString("weightMeasurement", "") == "stone") {
-
-            weightRadioGroup.check(R.id.weightStone)
-        } else {
-
-            weightRadioGroup.check(R.id.weightImperial)
-        }
-
-        if (userPreferences.getString("heightMeasurement", "") == "imperial") {
-
-            heightRadioGroup.check(R.id.heightImperial)
-        } else if (userPreferences.getString("heightMeasurement", "") == "metric") {
-
-            heightRadioGroup.check(R.id.heightMetric)
-        } else {
-
-            heightRadioGroup.check(R.id.heightImperial)
-        }
-
         saveButton.setOnClickListener {
 
-            if (!userPreferences.contains("birthDate")) {
+            if (birthDate == "") {
 
                 val birthDateAlert = AlertDialog.Builder(this)
                 birthDateAlert.setTitle("Birthday Error").setMessage("Please choose a birthday.").setPositiveButton("OK") {
@@ -331,12 +416,11 @@ class SettingsActivity : AppCompatActivity() {
                 } else {
 
                     val totalInches = ((Integer.valueOf(feetEditText.text.toString())) * 12) + (inchesEditText.text.toString().toDouble())
-                    val cm = totalInches * 2.54
+                    val cmCalced = totalInches * 2.54
 
-                    editor.putString("feet", feetEditText.text.toString())
-                    editor.putString("inches", decimalFormat.format(inchesEditText.text.toString().toDouble()).toString())
-                    editor.putString("cm", decimalFormat.format(cm).toString())
-                    editor.commit()
+                    feet = feetEditText.text.toString().toInt()
+                    inches = inchesEditText.toString().toDouble()//editor.putString("inches", decimalFormat.format(inchesEditText.text.toString().toDouble()).toString())
+                    cm = cmCalced//editor.putString("cm", decimalFormat.format(cm).toString())
 
                     //finish()
                 }
@@ -356,21 +440,18 @@ class SettingsActivity : AppCompatActivity() {
 
                     val feetConversion = (cmEditText.text.toString().toFloat()) / 30.48
                     val feetRemainder = feetConversion % 1
-                    val feet = feetConversion - feetRemainder
-                    val inches = ((cmEditText.text.toString().toFloat()) / 2.54) - (feet * 12) + feetRemainder
+                    val feetCalced = feetConversion - feetRemainder
+                    val inchesCalced = ((cmEditText.text.toString().toFloat()) / 2.54) - (feetCalced * 12) + feetRemainder
 
-                    editor.putString("cm", decimalFormat.format(cmEditText.text.toString().toDouble()).toString())
-                    editor.putString("feet", decimalFormat.format(feet).toString())
-                    editor.putString("inches", decimalFormat.format(inches).toString())
-                    editor.commit()
+                    cm = cmEditText.text.toString().toDouble()
+                    feet = feetCalced.toInt()//editor.putString("feet", decimalFormat.format(feet).toString())
+                    inches = inchesCalced
 
                     //finish()
                 }
             }
 
-            val currentUser = auth.currentUser
-
-            Log.d("Current user", currentUser.toString())
+            //val currentUser = auth.currentUser
 
             if (currentUser == null) {
 
@@ -381,46 +462,51 @@ class SettingsActivity : AppCompatActivity() {
                         DialogInterface.OnClickListener { dialog, which ->
                             val signUpIntent = Intent(this, SignUpActivity::class.java)
 
-                            signUpIntent.putExtra("gender", userPreferences.getString("gender", ""))
-                            signUpIntent.putExtra("weightMeasurement", userPreferences.getString("weightMeasurement", ""))
-                            signUpIntent.putExtra("heightMeasurement", userPreferences.getString("heightMeasurement", ""))
-                            signUpIntent.putExtra("feet", userPreferences.getString("feet", ""))
-                            signUpIntent.putExtra("inches", userPreferences.getString("inches", ""))
-                            signUpIntent.putExtra("cm", userPreferences.getString("cm", ""))
-                            signUpIntent.putExtra("birthDate", userPreferences.getString("birthDate", ""))
+                            signUpIntent.putExtra("gender", gender)
+                            signUpIntent.putExtra("weightMeasurement", weightMeasurement)
+                            signUpIntent.putExtra("heightMeasurement", heightMeasurement)
+                            signUpIntent.putExtra("feet", feet)
+                            signUpIntent.putExtra("inches", inches)
+                            signUpIntent.putExtra("cm", cm)
+                            signUpIntent.putExtra("birthDate", birthDate)
                             startActivity(signUpIntent)
 
                             finish()
-                }).setNegativeButton("No Thanks", DialogInterface.OnClickListener { dialog, which ->
+                        }).setNegativeButton("No Thanks", { dialog, which ->
+
+                    val userEditor = userPreferences.edit()
+                    userEditor.putString("gender", gender)
+                    userEditor.putString("weightMeasurement", weightMeasurement)
+                    userEditor.putString("heightMeasurement", heightMeasurement)
+                    userEditor.putInt("feet", feet)
+                    userEditor.putString("inches", inches.toString())
+                    userEditor.putString("cm", cm.toString())
+                    userEditor.putString("birthDate", birthDate)
+                    userEditor.apply()
+
                     dialog.dismiss()
                     finish()
                 })
 
                 createUserDialog.show()
+            } else {
+
+                val userId = auth.currentUser!!.uid
+                val users = firestore.collection("users").document(userId)
+                val userData = hashMapOf("gender" to gender, "weightMeasurement" to weightMeasurement, "heightMeasurement" to heightMeasurement, "feet" to feet,
+                        "inches" to inches, "cm" to cm, "birthDate" to birthDate)
+
+                users.update(userData).addOnSuccessListener {
+
+                    Toast.makeText(this, "Data updated successfully.", Toast.LENGTH_SHORT).show()
+                    finish()
+                }.addOnFailureListener {
+
+                    Toast.makeText(this, "Could not update. Please try again.", Toast.LENGTH_SHORT).show()
+                }
             }
 
             //finish()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        val currentUser = auth.currentUser
-
-        val settingsConstraintLayout: ConstraintLayout = findViewById<ConstraintLayout>(R.id.settingsConstraintLayout)
-        val settingsScrollView = findViewById<ScrollView>(R.id.settingsScrollView)
-        val settingsAdView: AdView = findViewById<AdView>(R.id.settingsAdView)
-
-        if (showAds) {
-            val adRequest = AdRequest.Builder().build()
-            settingsAdView.loadAd(adRequest)
-        } else {
-            settingsAdView.visibility = View.GONE
-            val removeAdSet = ConstraintSet()
-            removeAdSet.clone(settingsConstraintLayout)
-            removeAdSet.connect(settingsScrollView.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
-            removeAdSet.applyTo(settingsConstraintLayout)
         }
 
     }
