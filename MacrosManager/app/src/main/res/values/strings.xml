@@ -19,7 +19,7 @@
     <string name="adult_building_muscle">Adult Building Muscle</string>
     <string name="dieting_athlete">Dieting Athlete</string>
     <string name="teen_growing_athlete">Teenage Growing Athlete</string>
-    <string name="preferred_fat">Preferred Fat Percentage</string>
+    <string name="preferred_fat">Preferred Fat Percentage in Diet</string>
     <string name="goal">Goal</string>
     <string name="burn_suggested">Burn Fat Suggested (-15%)</string>
     <string name="burn_aggressive">Burn Fat Aggressive (-20%)</string>
@@ -36,4 +36,5 @@
     <string name="empty_macros">0g</string>
     <string name="save">Save</string>
     <string name="set_birth_date">Tap to set your birthday.</string>
+    <string name="grams">g</string>
 </resources>

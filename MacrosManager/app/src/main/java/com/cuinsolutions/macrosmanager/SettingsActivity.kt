@@ -22,6 +22,7 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.roundToInt
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -469,6 +470,17 @@ class SettingsActivity : AppCompatActivity() {
                             signUpIntent.putExtra("inches", inches)
                             signUpIntent.putExtra("cm", cm)
                             signUpIntent.putExtra("birthDate", birthDate)
+                            signUpIntent.putExtra("dailyActivity", "veryLight")
+                            signUpIntent.putExtra("physicalActivityLifestyle", "sedentaryAdult")
+                            signUpIntent.putExtra("goal", "maintain")
+                            signUpIntent.putExtra("pounds", 0.0)
+                            signUpIntent.putExtra("kg", 0.0)
+                            signUpIntent.putExtra("stone", 0.0)
+                            signUpIntent.putExtra("dietFatPercent", 0.0)
+                            signUpIntent.putExtra("calories", 0)
+                            signUpIntent.putExtra("carbs", 0)
+                            signUpIntent.putExtra("fat", 0)
+                            signUpIntent.putExtra("protein", 0)
                             startActivity(signUpIntent)
 
                             finish()
