@@ -12,6 +12,8 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -129,6 +131,8 @@ class SignUpActivity : AppCompatActivity() {
 
                     //val user = auth.currentUser
 
+                    val type = object : TypeToken<Pair<String, Any>>() {}.type
+                    val gson = Gson()
                     val currentUser = auth.currentUser!!.uid
                     val users = firestore.collection("users").document(currentUser)
                     val userData = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "gender" to intent.getStringExtra("gender"),
@@ -139,7 +143,8 @@ class SignUpActivity : AppCompatActivity() {
                             "pounds" to intent.getDoubleExtra("pounds", 0.0), "kg" to intent.getDoubleExtra("kg", 0.0),
                             "stone" to intent.getDoubleExtra("stone", 0.0), "dietFatPercent" to intent.getDoubleExtra("dietFatPercent", 0.0),
                             "calories" to intent.getIntExtra("calories", 0), "carbs" to intent.getIntExtra("carbs", 0),
-                            "fat" to intent.getIntExtra("fat", 0), "protein" to intent.getIntExtra("protein", 0))
+                            "fat" to intent.getIntExtra("fat", 0), "protein" to intent.getIntExtra("protein", 0), "showAds" to true,
+                            "dailyMeals" to arrayOf(hashMapOf<String, Any>(gson.fromJson(intent.getStringExtra("dailyMeals"), type))))
                     users.set(userData as Map<String, Any>).addOnSuccessListener {
 
                         Toast.makeText(this, "Account created successfully.", Toast.LENGTH_SHORT).show()

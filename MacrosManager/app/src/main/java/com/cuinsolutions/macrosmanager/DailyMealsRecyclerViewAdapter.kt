@@ -13,12 +13,13 @@ import android.widget.GridView
 import android.widget.TextView
 import org.json.JSONArray
 import org.json.JSONObject
+import java.lang.reflect.Array
 
 /**
  * Created by mykalcuin on 9/13/17.
  */
 
-class DailyMealsRecyclerViewAdapter(context: Context, mealsJSONArray: JSONArray, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
+class DailyMealsRecyclerViewAdapter(context: Context, mealsJSONArray: kotlin.Array<HashMap<String, Any>>, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
 
 
     val context = context
@@ -103,7 +104,7 @@ class DailyMealsRecyclerViewAdapter(context: Context, mealsJSONArray: JSONArray,
 
     override fun getItemCount(): Int {
 
-        return mealsJSONArray.length()
+        return mealsJSONArray.size
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

@@ -18,10 +18,14 @@ import com.google.android.gms.ads.AdView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.math.roundToInt
 
 class SettingsActivity : AppCompatActivity() {
@@ -36,6 +40,7 @@ class SettingsActivity : AppCompatActivity() {
     private var feet: Int = 0
     private var inches = 0.0
     private var cm = 0.0
+    private var gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -470,17 +475,65 @@ class SettingsActivity : AppCompatActivity() {
                             signUpIntent.putExtra("inches", inches)
                             signUpIntent.putExtra("cm", cm)
                             signUpIntent.putExtra("birthDate", birthDate)
-                            signUpIntent.putExtra("dailyActivity", "veryLight")
-                            signUpIntent.putExtra("physicalActivityLifestyle", "sedentaryAdult")
-                            signUpIntent.putExtra("goal", "maintain")
-                            signUpIntent.putExtra("pounds", 0.0)
-                            signUpIntent.putExtra("kg", 0.0)
-                            signUpIntent.putExtra("stone", 0.0)
-                            signUpIntent.putExtra("dietFatPercent", 0.0)
-                            signUpIntent.putExtra("calories", 0)
-                            signUpIntent.putExtra("carbs", 0)
-                            signUpIntent.putExtra("fat", 0)
-                            signUpIntent.putExtra("protein", 0)
+
+                            if (userPreferences.contains("dailyActivity")) {
+                                signUpIntent.putExtra("dailyActivity", userPreferences.getString("dailyActivity", ""))
+                            } else {
+                                signUpIntent.putExtra("dailyActivity", "veryLight")
+                            }
+
+                            if (userPreferences.contains("physicalActivityLifestyle")) {
+                                signUpIntent.putExtra("physicalActivityLifestyle", userPreferences.getString("physicalActivityLifestyle", ""))
+                            } else {
+                                signUpIntent.putExtra("physicalActivityLifestyle", "sedentaryAdult")
+                            }
+
+                            if (userPreferences.contains("goal")) {
+                                signUpIntent.putExtra("goal", userPreferences.getString("goal", ""))
+                            } else {
+                                signUpIntent.putExtra("goal", "maintain")
+                            }
+
+                            if (userPreferences.contains("pounds") && userPreferences.contains("kg") && userPreferences.contains("stone")) {
+                                signUpIntent.putExtra("pounds", userPreferences.getString("pounds", "").toDouble())
+                                signUpIntent.putExtra("kg", userPreferences.getString("kg", "").toDouble())
+                                signUpIntent.putExtra("stone", userPreferences.getString("stone", "").toDouble())
+                            } else {
+                                signUpIntent.putExtra("pounds", 0.0)
+                                signUpIntent.putExtra("kg", 0.0)
+                                signUpIntent.putExtra("stone", 0.0)
+                            }
+
+                            if (userPreferences.contains("dietFatPercent") && userPreferences.contains("calories") && userPreferences.contains("carbs") &&
+                                    userPreferences.contains("fat") && userPreferences.contains("protein")) {
+
+                                signUpIntent.putExtra("dietFatPercent", userPreferences.getString("dietFatPercent", "").toDouble())
+                                signUpIntent.putExtra("calories", userPreferences.getInt("calories", 0))
+                                signUpIntent.putExtra("carbs", userPreferences.getInt("carbs", 0))
+                                signUpIntent.putExtra("fat", userPreferences.getInt("fat", 0))
+                                signUpIntent.putExtra("protein", userPreferences.getInt("protein", 0))
+                            } else {
+
+                                signUpIntent.putExtra("dietFatPercent", 0.0)
+                                signUpIntent.putExtra("calories", 0)
+                                signUpIntent.putExtra("carbs", 0)
+                                signUpIntent.putExtra("fat", 0)
+                                signUpIntent.putExtra("protein", 0)
+                            }
+
+                            if (userPreferences.contains("dailyMeals")) {
+
+                                val type = object : TypeToken<Pair<String, Any>>() {}.type
+                                val dailyMealsString = userPreferences.getString("dailyMeals", "")
+                                val dailyMeals = arrayOf(hashMapOf<String, Any>(gson.fromJson(dailyMealsString, type)))
+
+                                signUpIntent.putExtra("dailyMeals", dailyMeals.toString())
+                            } else {
+
+                                val dailyMeals = arrayOf<HashMap<String, Any>>()
+                                signUpIntent.putExtra("dailyMeals", dailyMeals.toString())
+                            }
+
                             startActivity(signUpIntent)
 
                             finish()
@@ -517,8 +570,6 @@ class SettingsActivity : AppCompatActivity() {
                     Toast.makeText(this, "Could not update. Please try again.", Toast.LENGTH_SHORT).show()
                 }
             }
-
-            //finish()
         }
 
     }

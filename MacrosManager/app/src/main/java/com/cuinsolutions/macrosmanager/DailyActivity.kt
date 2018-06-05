@@ -17,13 +17,19 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.GridView
+import android.widget.Toast
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_daily.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 class DailyActivity : AppCompatActivity() {
@@ -31,45 +37,29 @@ class DailyActivity : AppCompatActivity() {
     //var dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
 
     val showAds = false
+    private lateinit var auth: FirebaseAuth
+    private lateinit var fireStore: FirebaseFirestore
+    private var dailyCaloriesTotal = 0
+    private var currentCaloriesTotal = 0.0
+    private var dailyCarbsTotal = 0
+    private var currentCarbsTotal = 0.0
+    private var dailyFatTotal = 0
+    private var currentFatTotal = 0.0
+    private var dailyProteinTotal = 0
+    private var currentProteinTotal = 0.0
+    private lateinit var dailyMeals: Array<HashMap<String, Any>>
+    private val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_daily)
 
-
+        auth = FirebaseAuth.getInstance()
+        fireStore = FirebaseFirestore.getInstance()
 
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
 
-
         dailyBottomNav.selectedItemId = R.id.home
-
-        val userPreferences = this.getSharedPreferences("userPreferences", 0)
-        val editor = userPreferences.edit()
-
-        if (!userPreferences.contains("calories")) {
-
-            editor.putInt("calories", 0)
-            editor.putInt("carbs", 0)
-            editor.putInt("fat", 0)
-            editor.putInt("protein", 0)
-        }
-
-        if (!userPreferences.contains("dailyCaloriesTotal")) {
-
-            editor.putString("dailyCaloriesTotal", "0")
-            editor.putString("dailyCarbsTotal", "0")
-            editor.putString("dailyFatTotal", "0")
-            editor.putString("dailyProteinTotal", "0")
-        }
-
-        if (!userPreferences.contains("mealsJSONArray")) {
-
-            val mealsJSONArray = JSONArray()
-
-            editor.putString("mealsJSONArray", mealsJSONArray.toString())
-        }
-
-        editor.commit()
 
         dailyBottomNav.setOnNavigationItemSelectedListener { item ->
 
@@ -85,10 +75,6 @@ class DailyActivity : AppCompatActivity() {
                 R.id.home -> {
 
                 }
-
-            /*R.id.search -> {
-
-            }*/
             }
 
             true
@@ -100,11 +86,78 @@ class DailyActivity : AppCompatActivity() {
         if (alarmSet == false) {
             setResetAlarm()
         }
-        /**/
     }
 
     override fun onResume() {
         super.onResume()
+
+        val currentUser = auth.currentUser
+
+        if (currentUser != null) {
+
+            val userId = currentUser.uid
+            val db = fireStore.collection("users").document(userId)
+
+            db.get().addOnSuccessListener {
+
+                dailyCaloriesTotal = it.getString("calories")!!.toInt()
+                dailyCarbsTotal = it.getString("carbs")!!.toInt()
+                dailyFatTotal = it.getString("fat")!!.toInt()
+                dailyProteinTotal = it.getString("protein")!!.toInt()
+                currentCaloriesTotal = it.getDouble("currentCalories")!!
+                currentCarbsTotal = it.getDouble("currentCarbs")!!
+                currentFatTotal = it.getDouble("currentFat")!!
+                currentProteinTotal = it.getDouble("currentProtein")!!
+                dailyMeals = arrayOf(hashMapOf(it.get("dailyMeals") as Pair<String, Any>))
+            }.addOnFailureListener {
+
+                Toast.makeText(this,"There was an issue getting your info. Please try again later.", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+
+            val userPreferences = this.getSharedPreferences("userPreferences", 0)
+
+            if (userPreferences.contains("calories")) {
+                dailyCaloriesTotal = userPreferences.getInt("calories", 0)
+            }
+
+            if (userPreferences.contains("carbs")) {
+                dailyCarbsTotal = userPreferences.getInt("carbs", 0)
+            }
+
+            if (userPreferences.contains("fat")) {
+                dailyFatTotal = userPreferences.getInt("fat", 0)
+            }
+
+            if (userPreferences.contains("protein")) {
+                dailyProteinTotal = userPreferences.getInt("protein", 0)
+            }
+
+            if (userPreferences.contains("currentCaloriesTotal")) {
+                currentCaloriesTotal = userPreferences.getString("currentCaloriesTotal", "").toDouble()
+            }
+
+            if (userPreferences.contains("currentCarbsTotal")) {
+                currentCarbsTotal = userPreferences.getString("currentCarbsTotal", "").toDouble()
+            }
+
+            if (userPreferences.contains("currentFatTotal")) {
+                currentFatTotal = userPreferences.getString("currentFatTotal", "").toDouble()
+            }
+
+            if (userPreferences.contains("currentProteinTotal")) {
+                currentProteinTotal = userPreferences.getString("currentProteinTotal", "").toDouble()
+            }
+
+            if (userPreferences.contains("dailyMeals")) {
+
+                val type = object : TypeToken<Pair<String, Any>>() {}.type
+                dailyMeals = arrayOf(hashMapOf(gson.fromJson(userPreferences.getString("dailyMeals", ""), type)))
+            } else {
+
+                dailyMeals = arrayOf(hashMapOf<String, Any>())
+            }
+         }
 
         val dailyConstraintLayout = findViewById<ConstraintLayout>(R.id.dailyConstraintLayout)
         val dailyAdView = findViewById<AdView>(R.id.dailyAdView)
@@ -124,8 +177,8 @@ class DailyActivity : AppCompatActivity() {
         dailyBottomNav.selectedItemId = R.id.home
         val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
         val addMealFAB = findViewById<FloatingActionButton>(R.id.addMealFloatingActionButton)
-        val userPreferences = this.getSharedPreferences("userPreferences", 0)
-        val mealsJSONArray = JSONArray(userPreferences.getString("mealsJSONArray", ""))
+
+        val mealsJSONArray = dailyMeals
 
         addMealFAB.setOnClickListener {
 
@@ -135,53 +188,18 @@ class DailyActivity : AppCompatActivity() {
             startActivity(addMealIntent)
         }
 
-        //if (userPreferences.contains("mealsJSONArray")) {
+        Log.d("Daily Meals", dailyMeals[0].toString())
+        if (dailyMeals[0].isNotEmpty()) {
 
-        if (mealsJSONArray.length() >= 1) {
-
-
-
-            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList(userPreferences))
+            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
             userFoodRecyclerView.layoutManager = LinearLayoutManager(this)
-            userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, mealsJSONArray, DailyMacrosGridViewAdapter(this, macrosArrayList(userPreferences)))
+            userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, dailyMeals, DailyMacrosGridViewAdapter(this, macrosArrayList()))
             } else {
 
-            /*val caloriesJSONObject = JSONObject()
-            caloriesJSONObject.put("title", "Calories")
-            caloriesJSONObject.put("currentTotal", userPreferences.getString("dailyCaloriesTotal", ""))
-            caloriesJSONObject.put("dailyTotal", userPreferences.getInt("calories", 0))
-            macrosArrayList.add(caloriesJSONObject)
-
-            val carbsJSONObject = JSONObject()
-            carbsJSONObject.put("title", "Carbs")
-            carbsJSONObject.put("currentTotal", userPreferences.getString("dailyCarbsTotal", ""))
-            carbsJSONObject.put("dailyTotal", userPreferences.getInt("carbs", 0))
-            macrosArrayList.add(carbsJSONObject)
-
-            val fatJSONObject = JSONObject()
-            fatJSONObject.put("title", "Fat")
-            fatJSONObject.put("currentTotal", userPreferences.getString("dailyFatTotal", ""))
-            fatJSONObject.put("dailyTotal", userPreferences.getInt("fat", 0))
-            macrosArrayList.add(fatJSONObject)
-
-            val proteinJSONObject = JSONObject()
-            proteinJSONObject.put("title", "Protein")
-            proteinJSONObject.put("currentTotal", userPreferences.getString("dailyProteinTotal", ""))
-            proteinJSONObject.put("dailyTotal", userPreferences.getInt("protein", 0))
-            macrosArrayList.add(proteinJSONObject)*/
-
-            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList(userPreferences))
+            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
             userFoodRecyclerView.adapter = null
         }
 
-        //if (userPreferences.contains("mealsJSONArray")) {
-        /*} else {
-
-            userFoodRecyclerView.adapter = null
-        }*/
-
-        /**/
-        //}
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -220,32 +238,32 @@ class DailyActivity : AppCompatActivity() {
         resetAlarm.setInexactRepeating(AlarmManager.RTC, resetTime.timeInMillis, AlarmManager.INTERVAL_DAY, resetPendingIntent)
     }
 
-    fun macrosArrayList(userPreferences: SharedPreferences): ArrayList<JSONObject> {
+    fun macrosArrayList(): ArrayList<JSONObject> {
 
         val macrosArrayList = ArrayList<JSONObject>()
 
         val caloriesJSONObject = JSONObject()
         caloriesJSONObject.put("title", "Calories")
-        caloriesJSONObject.put("currentTotal", userPreferences.getString("dailyCaloriesTotal", ""))
-        caloriesJSONObject.put("dailyTotal", userPreferences.getInt("calories", 0))
+        caloriesJSONObject.put("currentTotal", currentCaloriesTotal)
+        caloriesJSONObject.put("dailyTotal", dailyCaloriesTotal)
         macrosArrayList.add(caloriesJSONObject)
 
         val carbsJSONObject = JSONObject()
         carbsJSONObject.put("title", "Carbs")
-        carbsJSONObject.put("currentTotal", userPreferences.getString("dailyCarbsTotal", ""))
-        carbsJSONObject.put("dailyTotal", userPreferences.getInt("carbs", 0))
+        carbsJSONObject.put("currentTotal", currentCarbsTotal)
+        carbsJSONObject.put("dailyTotal", dailyCarbsTotal)
         macrosArrayList.add(carbsJSONObject)
 
         val fatJSONObject = JSONObject()
         fatJSONObject.put("title", "Fat")
-        fatJSONObject.put("currentTotal", userPreferences.getString("dailyFatTotal", ""))
-        fatJSONObject.put("dailyTotal", userPreferences.getInt("fat", 0))
+        fatJSONObject.put("currentTotal", currentFatTotal)
+        fatJSONObject.put("dailyTotal", dailyFatTotal)
         macrosArrayList.add(fatJSONObject)
 
         val proteinJSONObject = JSONObject()
         proteinJSONObject.put("title", "Protein")
-        proteinJSONObject.put("currentTotal", userPreferences.getString("dailyProteinTotal", ""))
-        proteinJSONObject.put("dailyTotal", userPreferences.getInt("protein", 0))
+        proteinJSONObject.put("currentTotal", currentProteinTotal)
+        proteinJSONObject.put("dailyTotal", dailyProteinTotal)
         macrosArrayList.add(proteinJSONObject)
 
         return macrosArrayList
