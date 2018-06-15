@@ -1,6 +1,5 @@
 package com.cuinsolutions.macrosmanager
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.support.v7.widget.RecyclerView
@@ -9,22 +8,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.GridView
 import android.widget.TextView
 import org.json.JSONArray
 import org.json.JSONObject
-import java.lang.reflect.Array
 
 /**
  * Created by mykalcuin on 9/13/17.
  */
 
-class DailyMealsRecyclerViewAdapter(context: Context, mealsJSONArray: kotlin.Array<HashMap<String, Any>>, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
+class DailyMealsRecyclerViewAdapter(context: Context, dailyMeals: JSONArray, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
 
 
     val context = context
     //val userPreferences = context.applicationContext.getSharedPreferences("userPreferences", 0)
-    val mealsJSONArray = mealsJSONArray//JSONArray(userPreferences.getString("mealsJSONArray", ""))
+    val mealsJSONArray = dailyMeals//JSONArray(userPreferences.getString("mealsJSONArray", ""))
     val dailyIntakeGridViewAdapter = dailyIntakeGridViewAdapter
     val dailyActivity = DailyActivity()
 
@@ -52,7 +49,7 @@ class DailyMealsRecyclerViewAdapter(context: Context, mealsJSONArray: kotlin.Arr
 
             val mealIntent = Intent(context, AddMealActivity::class.java)
             mealIntent.putExtra("meal", position)
-            mealIntent.putExtra("mealsJSONArray", mealsJSONArray.toString())
+            mealIntent.putExtra("dailyMeals", mealsJSONArray.toString())
             context.startActivity(mealIntent)
         }
 
@@ -104,7 +101,7 @@ class DailyMealsRecyclerViewAdapter(context: Context, mealsJSONArray: kotlin.Arr
 
     override fun getItemCount(): Int {
 
-        return mealsJSONArray.size
+        return mealsJSONArray.length()
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

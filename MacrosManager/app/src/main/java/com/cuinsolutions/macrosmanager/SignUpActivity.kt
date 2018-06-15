@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import org.json.JSONArray
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -144,7 +145,7 @@ class SignUpActivity : AppCompatActivity() {
                             "stone" to intent.getDoubleExtra("stone", 0.0), "dietFatPercent" to intent.getDoubleExtra("dietFatPercent", 0.0),
                             "calories" to intent.getIntExtra("calories", 0), "carbs" to intent.getIntExtra("carbs", 0),
                             "fat" to intent.getIntExtra("fat", 0), "protein" to intent.getIntExtra("protein", 0), "showAds" to true,
-                            "dailyMeals" to arrayOf(hashMapOf<String, Any>(gson.fromJson(intent.getStringExtra("dailyMeals"), type))))
+                            "dailyMeals" to JSONArray(hashMapOf<String, Any>(gson.fromJson(intent.getStringExtra("dailyMeals"), type))))
                     users.set(userData as Map<String, Any>).addOnSuccessListener {
 
                         Toast.makeText(this, "Account created successfully.", Toast.LENGTH_SHORT).show()

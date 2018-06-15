@@ -6,15 +6,38 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.EditText
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_add_meal.*
+import kotlinx.android.synthetic.main.activity_daily.*
 import org.json.JSONArray
 import org.json.JSONObject
 
 class AddMealActivity : AppCompatActivity() {
 
+    private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
+    private var currentCaloriesTotal = 0.0
+    private var currentCarbsTotal = 0.0
+    private var currentFatTotal = 0.0
+    private var currentProteinTotal = 0.0
+    private val gson = Gson()
+    val type = object : TypeToken<Pair<String, Any>>() {}.type
+    private var mealsJSONArray = JSONArray()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_meal)
+
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+    }
+
+    override fun onResume() {
+        super.onResume()
 
         val regexs = Regexs()
 
@@ -27,11 +50,56 @@ class AddMealActivity : AppCompatActivity() {
         val mealServingEditText = findViewById<EditText>(R.id.servingEditText)
         val addMealFAB = findViewById<FloatingActionButton>(R.id.saveMealFloatingActionButton)
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
-        val editor = userPreferences.edit()
+        //val editor = userPreferences.edit()
+
+        val currentUser = auth.currentUser
+
+        if (currentUser != null) {
+
+            val userId = currentUser.uid
+            val db = firestore.collection("users").document(userId)
+
+            db.get().addOnSuccessListener {
+
+                currentCaloriesTotal = it.getDouble("currentCalories")!!
+                currentCarbsTotal = it.getDouble("currentCarbs")!!
+                currentFatTotal = it.getDouble("currentFat")!!
+                currentProteinTotal = it.getDouble("currentProtein")!!
+                //mealsJSONArray = JSONArray(it.get("dailMeals"))
+            }.addOnFailureListener {
+
+                Toast.makeText(this, "There was an issue getting meal data. Please try again later.", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        } else {
+
+            if (userPreferences.contains("currentCaloriesTotal")) {
+
+                currentCaloriesTotal = userPreferences.getString("currentCaloriesTotal", "").toDouble()
+                Log.d("current cals total", currentCaloriesTotal.toString())
+            }
+
+            if (userPreferences.contains("currentCarbsTotal")) {
+
+                currentCarbsTotal = userPreferences.getString("currentCarbsTotal", "").toDouble()
+            }
+
+            if (userPreferences.contains("currentFatTotalTotal")) {
+
+                currentFatTotal = userPreferences.getString("currentFatTotal", "").toDouble()
+            }
+
+            if (userPreferences.contains("currentProteinTotal")) {
+
+                currentProteinTotal = userPreferences.getString("currentProteinTotal", "").toDouble()
+            }
+
+        }
+
 
         if (mealIntent.hasExtra("meal")) {
 
-            val mealsJSONArray = JSONArray(mealIntent.getStringExtra("mealsJSONArray"))
+            mealsJSONArray = JSONArray(mealIntent.getStringExtra("dailyMeals"))
 
             val mealJSONObject = JSONObject(mealsJSONArray[mealIntent.getIntExtra("meal", 0)].toString())
 
@@ -76,28 +144,26 @@ class AddMealActivity : AppCompatActivity() {
                 mealsJSONArray.put(mealJSONObject)
 
                 editor.putString("mealsJSONArray", mealsJSONArray.toString())
-            } else*/ if (mealIntent.hasExtra("meal")) {
 
-                    Log.d("mealsJSONArray Meal", mealIntent.getStringExtra("mealsJSONArray"))
-                    val mealsJSONArray = JSONArray(mealIntent.getStringExtra("mealsJSONArray"))
+            } else*/
+
+                if (mealIntent.hasExtra("meal")) {
+
+                    Log.d("mealsJSONArray Meal", mealIntent.getStringExtra("dailyMeals"))
+                    //val mealsJSONArray = JSONArray(mealIntent.getStringExtra("mealsJSONArray"))
                     val mealJSONObject = JSONObject(mealsJSONArray[mealIntent.getIntExtra("meal", 0)].toString())
 
+                    Log.d("update object", mealJSONObject.toString())
                     val mealServing = mealJSONObject.getString("serving").toDouble()
                     val mealCalories = mealJSONObject.getString("calories").toDouble() * mealServing
                     val mealCarbs = mealJSONObject.getString("carbs").toDouble() * mealServing
                     val mealFat = mealJSONObject.getString("fat").toDouble() * mealServing
                     val mealProtein = mealJSONObject.getString("protein").toDouble() * mealServing
 
-                    val currentTotalCalories = userPreferences.getString("dailyCaloriesTotal", "").toDouble() - mealCalories
-                    val currentTotalCarbs = userPreferences.getString("dailyCarbsTotal", "").toDouble() - mealCarbs
-                    val currentTotalFat = userPreferences.getString("dailyFatTotal", "").toDouble() - mealFat
-                    val currentTotalProtein = userPreferences.getString("dailyProteinTotal", "").toDouble() - mealProtein
-
-                    editor.putString("dailyCaloriesTotal", currentTotalCalories.toString())
-                    editor.putString("dailyCarbsTotal", currentTotalCarbs.toString())
-                    editor.putString("dailyFatTotal", currentTotalFat.toString())
-                    editor.putString("dailyProteinTotal", currentTotalProtein.toString())
-
+                    currentCaloriesTotal = currentCaloriesTotal - mealCalories
+                    currentCarbsTotal = currentCarbsTotal - mealCarbs
+                    currentFatTotal = currentFatTotal - mealFat
+                    currentProteinTotal = currentProteinTotal - mealProtein
 
                     mealJSONObject.put("title", mealNameEditText.text)
                     mealJSONObject.put("calories", mealCaloriesEditText.text)
@@ -106,13 +172,12 @@ class AddMealActivity : AppCompatActivity() {
                     mealJSONObject.put("protein", mealProteinEditText.text)
                     mealJSONObject.put("serving", mealServingEditText.text)
 
-                    mealsJSONArray.put(mealIntent.getIntExtra("meal", 0), mealJSONObject)
-                    editor.putString("mealsJSONArray", mealsJSONArray.toString())
+                    Log.d("Meal object after", mealJSONObject.toString())
+                    mealsJSONArray.put(mealIntent.getIntExtra("meal", 0), mealJSONObject)  //.put(mealIntent.getIntExtra("meal", 0), mealJSONObject)
 
-                    editor.commit()
                 } else {
 
-                    val mealsJSONArray = JSONArray(mealIntent.getStringExtra("mealsJSONArray"))
+                    //val mealsJSONArray = JSONArray(mealIntent.getStringExtra("mealsJSONArray"))
                     Log.d("mealJSONArrayBefore", mealsJSONArray.toString())
                     val mealJSONObject = JSONObject()
 
@@ -124,9 +189,6 @@ class AddMealActivity : AppCompatActivity() {
                     mealJSONObject.put("serving", mealServingEditText.text)
 
                     mealsJSONArray.put(mealJSONObject)
-                    Log.d("mealJSONArrayAfter", mealsJSONArray.toString())
-
-                    editor.putString("mealsJSONArray", mealsJSONArray.toString())
                 }
 
                 val mealServing = mealServingEditText.text.toString().toDouble()
@@ -135,21 +197,50 @@ class AddMealActivity : AppCompatActivity() {
                 val mealFat = mealFatEditText.text.toString().toDouble() * mealServing
                 val mealProtein = mealProteinEditText.text.toString().toDouble() * mealServing
 
-                val currentTotalCalories = mealCalories + userPreferences.getString("dailyCaloriesTotal", "").toDouble()
-                val currentTotalCarbs = mealCarbs + userPreferences.getString("dailyCarbsTotal", "").toDouble()
-                val currentTotalFat = mealFat + userPreferences.getString("dailyFatTotal", "").toDouble()
-                val currentTotalProtein = mealProtein + userPreferences.getString("dailyProteinTotal", "").toDouble()
+                Log.d("Meal Serving", mealServing.toString())
+                Log.d("Current cal", currentCaloriesTotal.toString())
+                Log.d("Meal cal", mealCalories.toString())
+                Log.d("Current carb", currentCarbsTotal.toString())
+                Log.d("meal carbs", mealCarbs.toString())
+                currentCaloriesTotal = mealCalories + currentCaloriesTotal
+                currentCarbsTotal = mealCarbs + currentCarbsTotal
+                currentFatTotal = mealFat + currentFatTotal
+                currentProteinTotal = mealProtein + currentProteinTotal
 
-                editor.putString("dailyCaloriesTotal", currentTotalCalories.toString())
-                editor.putString("dailyCarbsTotal", currentTotalCarbs.toString())
-                editor.putString("dailyFatTotal", currentTotalFat.toString())
-                editor.putString("dailyProteinTotal", currentTotalProtein.toString())
+                if (currentUser != null) {
 
-                Log.d("Added Meal", userPreferences.getString("mealsJSONArray", ""))
+                    val userId = currentUser.uid
+                    val db = firestore.collection("users").document(userId)
+                    val updateData = hashMapOf<String, Any>("currentCalories" to currentCaloriesTotal, "currentCarbs" to currentCarbsTotal, "currentFat"
+                            to currentFatTotal, "currentProtein" to currentProteinTotal, "dailyMeals" to mealsJSONArray)
+                    db.update(updateData).addOnSuccessListener {
 
-                if (editor.commit()) {
-                    finish()
+                        if (intent.hasExtra("meal")) {
+                            Toast.makeText(this, "Meal has been updated.", Toast.LENGTH_SHORT).show()
+                        } else {
+
+                            Toast.makeText(this, "Meal has been added.", Toast.LENGTH_SHORT).show()
+                        }
+
+                        finish()
+                    }.addOnFailureListener {
+
+                        Toast.makeText(this, "There was an issue saving. Please try again later.", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+
+                    val userEditor = userPreferences.edit()
+
+                    userEditor.putString("dailyMeals", mealsJSONArray.toString())
+                    userEditor.putString("currentCaloriesTotal", currentCaloriesTotal.toString())
+                    userEditor.putString("currentCarbsTotal", currentCarbsTotal.toString())
+                    userEditor.putString("currentFatTotal", currentFatTotal.toString())
+                    userEditor.putString("currentProteinTotal", currentProteinTotal.toString())
+
+                    userEditor.apply()
                 }
+
+                finish()
             }
         }
     }

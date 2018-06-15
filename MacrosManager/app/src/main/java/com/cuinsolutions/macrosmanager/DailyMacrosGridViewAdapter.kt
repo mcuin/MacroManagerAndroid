@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import org.json.JSONObject
+import java.text.DecimalFormat
 
 /**
  * Created by mykalcuin on 8/23/17.
@@ -35,6 +36,7 @@ class DailyMacrosGridViewAdapter(context: Context, macrosArray: ArrayList<JSONOb
     override fun getView(p0: Int, p1: View?, p2: ViewGroup?): View {
 
         var macroGridCell = p1
+        val currentFormat = DecimalFormat("##.##")
         if (p1 == null) {
 
             macroGridCell = inflate.inflate(R.layout.intake_grid_cell, p2, false)
@@ -44,7 +46,7 @@ class DailyMacrosGridViewAdapter(context: Context, macrosArray: ArrayList<JSONOb
         val macroCurrentTextView = macroGridCell!!.findViewById<TextView>(R.id.macroCurretTextView)
 
         macroTitleTextView.text = (getItem(p0) as JSONObject).getString("title").toString()
-        macroCurrentTextView.text = (macrosArray[p0] as JSONObject).getString("currentTotal").toString() + " / " +
+        macroCurrentTextView.text = currentFormat.format((macrosArray[p0] as JSONObject).getString("currentTotal").toDouble()).toString() + " / " +
                 (macrosArray[p0] as JSONObject).getString("dailyTotal").toString()
         return  macroGridCell
     }

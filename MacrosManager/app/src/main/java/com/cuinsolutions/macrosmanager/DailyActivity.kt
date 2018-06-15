@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
@@ -47,7 +46,7 @@ class DailyActivity : AppCompatActivity() {
     private var currentFatTotal = 0.0
     private var dailyProteinTotal = 0
     private var currentProteinTotal = 0.0
-    private lateinit var dailyMeals: Array<HashMap<String, Any>>
+    private lateinit var dailyMeals: JSONArray
     private val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,7 +107,7 @@ class DailyActivity : AppCompatActivity() {
                 currentCarbsTotal = it.getDouble("currentCarbs")!!
                 currentFatTotal = it.getDouble("currentFat")!!
                 currentProteinTotal = it.getDouble("currentProtein")!!
-                dailyMeals = arrayOf(hashMapOf(it.get("dailyMeals") as Pair<String, Any>))
+                dailyMeals = JSONArray(it.get("dailyMeals"))
             }.addOnFailureListener {
 
                 Toast.makeText(this,"There was an issue getting your info. Please try again later.", Toast.LENGTH_SHORT).show()
@@ -152,10 +151,10 @@ class DailyActivity : AppCompatActivity() {
             if (userPreferences.contains("dailyMeals")) {
 
                 val type = object : TypeToken<Pair<String, Any>>() {}.type
-                dailyMeals = arrayOf(hashMapOf(gson.fromJson(userPreferences.getString("dailyMeals", ""), type)))
+                dailyMeals = JSONArray(userPreferences.getString("dailyMeals", ""))
             } else {
 
-                dailyMeals = arrayOf(hashMapOf<String, Any>())
+                dailyMeals = JSONArray()
             }
          }
 
@@ -184,12 +183,12 @@ class DailyActivity : AppCompatActivity() {
 
             val addMealIntent = Intent(this, AddMealActivity::class.java)
 
-            addMealIntent.putExtra("mealsJSONArray", mealsJSONArray.toString())
+            addMealIntent.putExtra("dailyMeals", dailyMeals.toString())
             startActivity(addMealIntent)
         }
 
-        Log.d("Daily Meals", dailyMeals[0].toString())
-        if (dailyMeals[0].isNotEmpty()) {
+        Log.d("Daily Meals", dailyMeals.toString())
+        if (dailyMeals.length() != 0) {
 
             dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
             userFoodRecyclerView.layoutManager = LinearLayoutManager(this)
