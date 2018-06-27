@@ -20,6 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import org.json.JSONArray
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -30,13 +31,13 @@ import kotlin.math.roundToInt
 
 class SettingsActivity : AppCompatActivity() {
 
-    val showAds = true
+    private var showAds = true
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
-    private lateinit var birthDate: String
-    private lateinit var gender: String
-    private lateinit var weightMeasurement: String
-    private lateinit var heightMeasurement: String
+    private var birthDate = ""
+    private var gender = ""
+    private var weightMeasurement = ""
+    private var heightMeasurement = ""
     private var feet: Int = 0
     private var inches = 0.0
     private var cm = 0.0
@@ -65,17 +66,6 @@ class SettingsActivity : AppCompatActivity() {
         val birthDateTextView: TextView = findViewById<TextView>(R.id.birthDateTextView)
         val settingsScrollView = findViewById<ScrollView>(R.id.settingsScrollView)
         val settingsAdView: AdView = findViewById<AdView>(R.id.settingsAdView)
-
-        if (showAds) {
-            val adRequest = AdRequest.Builder().build()
-            settingsAdView.loadAd(adRequest)
-        } else {
-            settingsAdView.visibility = View.GONE
-            val removeAdSet = ConstraintSet()
-            removeAdSet.clone(settingsConstraintLayout)
-            removeAdSet.connect(settingsScrollView.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
-            removeAdSet.applyTo(settingsConstraintLayout)
-        }
 
         val feetEditText = EditText(this)
         val feetTextView = TextView(this)
@@ -111,6 +101,7 @@ class SettingsActivity : AppCompatActivity() {
                 feet = it.get("feet") as Int
                 inches = it.getDouble("inches")!!
                 cm = it.getDouble("cm")!!
+                showAds = it.getBoolean("showAds")!!
             }.addOnFailureListener {
 
                 Toast.makeText(this, "There was an issue retrieving your data. Defaults have been used.", Toast.LENGTH_SHORT).show()
@@ -168,6 +159,17 @@ class SettingsActivity : AppCompatActivity() {
             "male" -> genderRadioGroup.check(R.id.maleButton)
             "female" -> genderRadioGroup.check(R.id.femaleButton)
             else -> genderRadioGroup.check(R.id.femaleButton)
+        }
+
+        if (showAds) {
+            val adRequest = AdRequest.Builder().build()
+            settingsAdView.loadAd(adRequest)
+        } else {
+            settingsAdView.visibility = View.GONE
+            val removeAdSet = ConstraintSet()
+            removeAdSet.clone(settingsConstraintLayout)
+            removeAdSet.connect(settingsScrollView.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+            removeAdSet.applyTo(settingsConstraintLayout)
         }
 
         /*if (userPreferences.getString("gender", "") == "male") {
@@ -425,7 +427,7 @@ class SettingsActivity : AppCompatActivity() {
                     val cmCalced = totalInches * 2.54
 
                     feet = feetEditText.text.toString().toInt()
-                    inches = inchesEditText.toString().toDouble()//editor.putString("inches", decimalFormat.format(inchesEditText.text.toString().toDouble()).toString())
+                    inches = inchesEditText.text.toString().toDouble()//editor.putString("inches", decimalFormat.format(inchesEditText.text.toString().toDouble()).toString())
                     cm = cmCalced//editor.putString("cm", decimalFormat.format(cm).toString())
 
                     //finish()
@@ -521,16 +523,31 @@ class SettingsActivity : AppCompatActivity() {
                                 signUpIntent.putExtra("protein", 0)
                             }
 
+                            if (userPreferences.contains("currentCalories") && userPreferences.contains("currentCarbs") && userPreferences.contains("currentFat")
+                            && userPreferences.contains("currentProtein")) {
+
+                                signUpIntent.putExtra("currentCalories", userPreferences.getString("currentCalories", "").toDouble())
+                                signUpIntent.putExtra("currentCarbs", userPreferences.getString("currentCarbs", "").toDouble())
+                                signUpIntent.putExtra("currentFat", userPreferences.getString("currentFat", "").toDouble())
+                                signUpIntent.putExtra("currentProtein", userPreferences.getString("currentProtein", "").toDouble())
+                            } else {
+
+                                signUpIntent.putExtra("currentCalories", 0.0)
+                                signUpIntent.putExtra("currentCarbs", 0.0)
+                                signUpIntent.putExtra("currentFat", 0.0)
+                                signUpIntent.putExtra("currentProtein", 0.0)
+                            }
+
                             if (userPreferences.contains("dailyMeals")) {
 
                                 val type = object : TypeToken<Pair<String, Any>>() {}.type
                                 val dailyMealsString = userPreferences.getString("dailyMeals", "")
-                                val dailyMeals = arrayOf(hashMapOf<String, Any>(gson.fromJson(dailyMealsString, type)))
+                                val dailyMeals: List<HashMap<String, Any>> = gson.fromJson(dailyMealsString, object : TypeToken<List<HashMap<String, Any>>>() {}.type)
 
                                 signUpIntent.putExtra("dailyMeals", dailyMeals.toString())
                             } else {
 
-                                val dailyMeals = arrayOf<HashMap<String, Any>>()
+                                val dailyMeals = listOf<HashMap<String, Any>>()
                                 signUpIntent.putExtra("dailyMeals", dailyMeals.toString())
                             }
 

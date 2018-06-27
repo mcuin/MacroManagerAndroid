@@ -15,6 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.json.JSONArray
+import org.json.JSONObject
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -36,6 +37,9 @@ class SignUpActivity : AppCompatActivity() {
         var lastName: String
         var email: String
         val intent = intent
+        val gson = Gson()
+
+        val dailyMeals: Array<HashMap<String, Any>> = gson.fromJson(intent.getStringExtra("dailyMeals"), object : TypeToken<Array<HashMap<String, Any>>>() {}.type)
 
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
@@ -136,16 +140,18 @@ class SignUpActivity : AppCompatActivity() {
                     val gson = Gson()
                     val currentUser = auth.currentUser!!.uid
                     val users = firestore.collection("users").document(currentUser)
-                    val userData = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "gender" to intent.getStringExtra("gender"),
+                    val userData = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "showAds" to true, "gender" to intent.getStringExtra("gender"),
                             "heightMeasurement" to intent.getStringExtra("heightMeasurement"), "weightMeasurement" to intent.getStringExtra("weightMeasurement"),
-                            "feet" to intent.getStringExtra("feet"), "inches" to intent.getStringExtra("inches"), "cm" to intent.getStringExtra("cm"),
-                            "birthDate" to intent.getStringExtra("birthDate"), "physicalActivity" to intent.getStringExtra("physicalActivity"),
-                            "physicalActivityLifeStyle" to intent.getStringExtra("physicalActivityLifestyle"), "goal" to intent.getStringExtra("goal"),
+                            "feet" to intent.getIntExtra("feet", 0), "inches" to intent.getDoubleExtra("inches", 0.0), "cm" to intent.getDoubleExtra("cm", 0.0),
+                            "birthDate" to intent.getStringExtra("birthDate"), "dailyActivity" to intent.getStringExtra("dailyActivity"),
+                            "physicalActivityLifestyle" to intent.getStringExtra("physicalActivityLifestyle"), "goal" to intent.getStringExtra("goal"),
                             "pounds" to intent.getDoubleExtra("pounds", 0.0), "kg" to intent.getDoubleExtra("kg", 0.0),
                             "stone" to intent.getDoubleExtra("stone", 0.0), "dietFatPercent" to intent.getDoubleExtra("dietFatPercent", 0.0),
                             "calories" to intent.getIntExtra("calories", 0), "carbs" to intent.getIntExtra("carbs", 0),
                             "fat" to intent.getIntExtra("fat", 0), "protein" to intent.getIntExtra("protein", 0), "showAds" to true,
-                            "dailyMeals" to JSONArray(hashMapOf<String, Any>(gson.fromJson(intent.getStringExtra("dailyMeals"), type))))
+                            "dailyMeals" to (gson.fromJson(intent.getStringExtra("dailyMeals"), object : TypeToken<List<HashMap<String, Any>>>() {}.type)),
+                            "currentCalories" to intent.getDoubleExtra("currentCalories", 0.0), "currentCarbs" to intent.getDoubleExtra("currentCarbs", 0.0),
+                            "currentFat" to intent.getDoubleExtra("currentFat", 0.0), "currentProtein" to intent.getDoubleExtra("currentProtein", 0.0))
                     users.set(userData as Map<String, Any>).addOnSuccessListener {
 
                         Toast.makeText(this, "Account created successfully.", Toast.LENGTH_SHORT).show()

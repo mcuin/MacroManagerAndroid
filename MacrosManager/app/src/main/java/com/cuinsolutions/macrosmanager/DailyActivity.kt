@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
@@ -29,13 +30,14 @@ import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 
 class DailyActivity : AppCompatActivity() {
 
     //var dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
 
-    val showAds = false
+    private var showAds = true
     private lateinit var auth: FirebaseAuth
     private lateinit var fireStore: FirebaseFirestore
     private var dailyCaloriesTotal = 0
@@ -46,7 +48,7 @@ class DailyActivity : AppCompatActivity() {
     private var currentFatTotal = 0.0
     private var dailyProteinTotal = 0
     private var currentProteinTotal = 0.0
-    private lateinit var dailyMeals: JSONArray
+    private var dailyMeals = listOf<HashMap<String, Any>>()
     private val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,15 +101,16 @@ class DailyActivity : AppCompatActivity() {
 
             db.get().addOnSuccessListener {
 
-                dailyCaloriesTotal = it.getString("calories")!!.toInt()
-                dailyCarbsTotal = it.getString("carbs")!!.toInt()
-                dailyFatTotal = it.getString("fat")!!.toInt()
-                dailyProteinTotal = it.getString("protein")!!.toInt()
+                dailyCaloriesTotal = it.getDouble("calories")!!.toInt()
+                dailyCarbsTotal = it.getDouble("carbs")!!.toInt()
+                dailyFatTotal = it.getDouble("fat")!!.toInt()
+                dailyProteinTotal = it.getDouble("protein")!!.toInt()
                 currentCaloriesTotal = it.getDouble("currentCalories")!!
                 currentCarbsTotal = it.getDouble("currentCarbs")!!
                 currentFatTotal = it.getDouble("currentFat")!!
                 currentProteinTotal = it.getDouble("currentProtein")!!
-                dailyMeals = JSONArray(it.get("dailyMeals"))
+                showAds = it.getBoolean("showAds")!!
+                dailyMeals = gson.fromJson(it.get("dailyMeals").toString(), object : TypeToken<List<HashMap<String, Any>>>() {}.type)
             }.addOnFailureListener {
 
                 Toast.makeText(this,"There was an issue getting your info. Please try again later.", Toast.LENGTH_SHORT).show()
@@ -151,10 +154,16 @@ class DailyActivity : AppCompatActivity() {
             if (userPreferences.contains("dailyMeals")) {
 
                 val type = object : TypeToken<Pair<String, Any>>() {}.type
-                dailyMeals = JSONArray(userPreferences.getString("dailyMeals", ""))
+                Log.d("Gson Json", userPreferences.getString("dailyMeals", ""))
+                dailyMeals = gson.fromJson(userPreferences.getString("dailyMeals", ""), object : TypeToken<List<HashMap<String, Any>>>() {}.type)
+
+                Log.d("Meals", dailyMeals.toString())
             } else {
 
-                dailyMeals = JSONArray()
+                dailyMeals = listOf<HashMap<String, Any>>()
+
+               //editor.putString(gson.toJson(dailyMeals.toString()), "dailyMeals")
+
             }
          }
 
@@ -177,18 +186,25 @@ class DailyActivity : AppCompatActivity() {
         val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
         val addMealFAB = findViewById<FloatingActionButton>(R.id.addMealFloatingActionButton)
 
-        val mealsJSONArray = dailyMeals
+        //val mealsJSONArray = dailyMeals
 
         addMealFAB.setOnClickListener {
 
+            val userPreferences = this.getSharedPreferences("userPreferences", 0)
+
             val addMealIntent = Intent(this, AddMealActivity::class.java)
 
-            addMealIntent.putExtra("dailyMeals", dailyMeals.toString())
+            /*if (userPreferences.contains("dailyMeals")) {
+                addMealIntent.putExtra("dailyMeals", gson.toJson(dailyMeals.toString()))
+            } else {*/
+                addMealIntent.putExtra("dailyMeals", gson.toJson(dailyMeals))
+            //}
+
             startActivity(addMealIntent)
         }
 
-        Log.d("Daily Meals", dailyMeals.toString())
-        if (dailyMeals.length() != 0) {
+        //Log.d("Daily Meals", dailyMeals.toString())
+        if (dailyMeals.size != 0) {
 
             dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
             userFoodRecyclerView.layoutManager = LinearLayoutManager(this)
