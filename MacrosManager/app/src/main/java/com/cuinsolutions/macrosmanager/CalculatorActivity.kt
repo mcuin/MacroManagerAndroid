@@ -1,5 +1,6 @@
 package com.cuinsolutions.macrosmanager
 
+import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
@@ -65,10 +66,10 @@ class CalculatorActivity : AppCompatActivity() {
 
             when(item.itemId) {
 
-                R.id.home -> {
+                R.id.macros -> {
 
                     val homeIntent = Intent(this, DailyActivity::class.java)
-
+                    homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     startActivity(homeIntent)
                 }
 
