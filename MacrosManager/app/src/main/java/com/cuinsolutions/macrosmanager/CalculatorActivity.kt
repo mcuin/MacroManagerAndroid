@@ -11,6 +11,8 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.InputType
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import com.google.android.gms.ads.AdRequest
@@ -1099,5 +1101,69 @@ class CalculatorActivity : AppCompatActivity() {
 
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        val inflater = menuInflater
+
+        if (auth.currentUser != null) {
+            inflater.inflate(R.menu.action_bar_menu, menu)
+        } else {
+            inflater.inflate(R.menu.no_user_menu, menu)
+        }
+
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+
+        when (item!!.itemId) {
+
+            R.id.action_settings -> {
+                val settingsIntent = Intent(this, SettingsActivity::class.java)
+
+                startActivity(settingsIntent)
+
+                return true
+            }
+
+            R.id.action_sign_in -> {
+
+                val signInAlert = android.app.AlertDialog.Builder(this)
+                val emailEditText = EditText(this)
+                val passwordEditText = EditText(this)
+                emailEditText.hint = "Email"
+                passwordEditText.hint = "Password"
+                emailEditText.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+                val signInLayout = LinearLayout(this)
+                signInLayout.orientation = LinearLayout.VERTICAL
+                signInLayout.addView(emailEditText)
+                signInLayout.addView(passwordEditText)
+                signInAlert.setView(signInLayout)
+
+                signInAlert.setTitle("Sign In").setMessage("Please enter your email and password to sign in.").setPositiveButton("Sign In") {
+                    dialog, which ->  auth.signInWithEmailAndPassword(emailEditText.text.toString(), passwordEditText.text.toString()).addOnSuccessListener {
+                    recreate()
+                }.addOnFailureListener {
+
+                    val loginFailAlert = android.app.AlertDialog.Builder(this)
+                    loginFailAlert.setTitle("Login Failed").setMessage("Your login failed. Please try again later.").setNeutralButton("Ok") {
+                        dialog, which ->  dialog.dismiss()
+                    }
+
+                    loginFailAlert.show()
+                }
+                }.setNegativeButton("Cancel") {
+                    dialog, which ->  dialog.dismiss()
+                }
+
+                signInAlert.show()
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 }
