@@ -1,25 +1,33 @@
 package com.cuinsolutions.macrosmanager
 
 import android.app.AlarmManager
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.drawable.GradientDrawable
+import android.inputmethodservice.Keyboard
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutCompat
 import android.support.v7.widget.LinearLayoutManager
+import android.text.InputType
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.GridView
+import android.widget.LinearLayout
 import android.widget.Toast
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
@@ -172,6 +180,7 @@ class DailyActivity : AppCompatActivity() {
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
 
         if (showAds) {
+            MobileAds.initialize(this, getString(R.string.admob_id))
             val adRequest = AdRequest.Builder().build()
             dailyAdView.loadAd(adRequest)
         } else {
@@ -221,7 +230,12 @@ class DailyActivity : AppCompatActivity() {
         super.onCreateOptionsMenu(menu)
 
         val inflater = menuInflater
-        inflater.inflate(R.menu.action_bar_menu, menu)
+
+        if (auth.currentUser != null) {
+            inflater.inflate(R.menu.action_bar_menu, menu)
+        } else {
+            inflater.inflate(R.menu.no_user_menu, menu)
+        }
         return true
     }
 
@@ -235,6 +249,40 @@ class DailyActivity : AppCompatActivity() {
                 startActivity(settingsIntent)
 
                 return true
+            }
+
+            R.id.action_sign_in -> {
+
+                val signInAlert = AlertDialog.Builder(this)
+                val emailEditText = EditText(this)
+                val passwordEditText = EditText(this)
+                emailEditText.hint = "Email"
+                passwordEditText.hint = "Password"
+                emailEditText.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+                val signInLayout = LinearLayout(this)
+                signInLayout.orientation = LinearLayout.VERTICAL
+                signInLayout.addView(emailEditText)
+                signInLayout.addView(passwordEditText)
+                signInAlert.setView(signInLayout)
+
+                signInAlert.setTitle("Sign In").setMessage("Please enter your email and password to sign in.").setPositiveButton("Sign In") {
+                    dialog, which ->  auth.signInWithEmailAndPassword(emailEditText.text.toString(), passwordEditText.text.toString()).addOnSuccessListener {
+                    recreate()
+                }.addOnFailureListener {
+
+                    val loginFailAlert = AlertDialog.Builder(this)
+                    loginFailAlert.setTitle("Login Failed").setMessage("Your login failed. Please try again later.").setNeutralButton("Ok") {
+                        dialog, which ->  dialog.dismiss()
+                    }
+
+                    loginFailAlert.show()
+                }
+                }.setNegativeButton("Cancel") {
+                    dialog, which ->  dialog.dismiss()
+                }
+
+                signInAlert.show()
             }
         }
 
