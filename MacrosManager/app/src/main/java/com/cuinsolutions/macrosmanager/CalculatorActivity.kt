@@ -193,7 +193,7 @@ class CalculatorActivity : AppCompatActivity() {
         val calculatorAdView = findViewById<AdView>(R.id.calculatorAdView)
 
         if (showAds) {
-            MobileAds.initialize(this)
+            MobileAds.initialize(this, getString(R.string.admob_id))
             val adRequest = AdRequest.Builder().build()
             calculatorAdView.loadAd(adRequest)
         } else {

@@ -546,7 +546,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         if (showAds) {
-            MobileAds.initialize(this)
+            MobileAds.initialize(this, getString(R.string.admob_id))
             val adRequest = AdRequest.Builder().build()
             settingsAdView.loadAd(adRequest)
         } else {

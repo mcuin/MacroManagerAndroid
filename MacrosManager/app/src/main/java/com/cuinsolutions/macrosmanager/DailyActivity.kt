@@ -334,7 +334,7 @@ class DailyActivity : AppCompatActivity() {
 
         if (showAds) {
             Log.d("Ads", "running")
-            MobileAds.initialize(this)
+            MobileAds.initialize(this, getString(R.string.admob_id))
             val adRequest = AdRequest.Builder().build()
             dailyAdView.loadAd(adRequest)
         } else {
