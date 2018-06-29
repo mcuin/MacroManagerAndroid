@@ -75,19 +75,18 @@ class SettingsActivity : AppCompatActivity() {
         val cmTextView = TextView(this)
         val saveButton = Button(this)
 
+        saveButton.text = getString(R.string.save)
+        saveButton.id = View.generateViewId()
+
         val decimalFormat = DecimalFormat("#.##")
         decimalFormat.roundingMode = RoundingMode.FLOOR
 
-        saveButton.text = getString(R.string.save)
-        settingsConstraintLayout.addView(saveButton)
-        saveButton.id = View.generateViewId()
-
         val saveButtonSet = ConstraintSet()
-        saveButtonSet.clone(settingsConstraintLayout)
+        /*saveButtonSet.clone(settingsConstraintLayout)
         saveButtonSet.constrainHeight(saveButton.id, ConstraintSet.WRAP_CONTENT)
         saveButtonSet.constrainWidth(saveButton.id, ConstraintSet.WRAP_CONTENT)
         saveButtonSet.connect(saveButton.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, 16)
-        saveButtonSet.applyTo(settingsConstraintLayout)
+        saveButtonSet.applyTo(settingsConstraintLayout)*/
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
 
@@ -102,6 +101,8 @@ class SettingsActivity : AppCompatActivity() {
                 inches = it.getDouble("inches")!!
                 cm = it.getDouble("cm")!!
                 showAds = it.getBoolean("showAds")!!
+
+                createUI()
             }.addOnFailureListener {
 
                 Toast.makeText(this, "There was an issue retrieving your data. Defaults have been used.", Toast.LENGTH_SHORT).show()
@@ -144,102 +145,8 @@ class SettingsActivity : AppCompatActivity() {
             if (userPreferences.contains("inches")) {
                 inches = userPreferences.getString("inches", "").toDouble()
             }
-        }
 
-        if (birthDate != "") {
-
-            birthDateTextView.text = birthDate
-        } else {
-
-            birthDateTextView.text = getString(R.string.set_birth_date)
-        }
-
-        when(gender) {
-
-            "male" -> genderRadioGroup.check(R.id.maleButton)
-            "female" -> genderRadioGroup.check(R.id.femaleButton)
-            else -> genderRadioGroup.check(R.id.femaleButton)
-        }
-
-        if (showAds) {
-            val adRequest = AdRequest.Builder().build()
-            settingsAdView.loadAd(adRequest)
-        } else {
-            settingsAdView.visibility = View.GONE
-            val removeAdSet = ConstraintSet()
-            removeAdSet.clone(settingsConstraintLayout)
-            removeAdSet.connect(settingsScrollView.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
-            removeAdSet.applyTo(settingsConstraintLayout)
-        }
-
-        /*if (userPreferences.getString("gender", "") == "male") {
-
-            genderRadioGroup.check(R.id.maleButton)
-        } else if (userPreferences.getString("gender", "") == "female") {
-
-            genderRadioGroup.check(R.id.femaleButton)
-        } else {
-
-            genderRadioGroup.check(R.id.femaleButton)
-        }*/
-
-        when(weightMeasurement) {
-
-            "imperial" -> weightRadioGroup.check(R.id.weightImperial)
-            "metric" -> weightRadioGroup.check(R.id.weightMetric)
-            "stone" -> weightRadioGroup.check(R.id.weightStone)
-            else -> weightRadioGroup.check(R.id.weightMetric)
-        }
-
-        /*if (userPreferences.getString("weightMeasurement", "") == "imperial") {
-
-            weightRadioGroup.check(R.id.weightImperial)
-        } else if (userPreferences.getString("weightMeasurement", "") == "metric") {
-
-            weightRadioGroup.check(R.id.weightMetric)
-        } else if (userPreferences.getString("weightMeasurement", "") == "stone") {
-
-            weightRadioGroup.check(R.id.weightStone)
-        } else {
-
-            weightRadioGroup.check(R.id.weightImperial)
-        }*/
-
-        when(heightMeasurement) {
-
-            "imperial" -> heightRadioGroup.check(R.id.heightImperial)
-            "metric" -> heightRadioGroup.check(R.id.heightMetric)
-            else -> heightRadioGroup.check(R.id.heightMetric)
-        }
-
-        /*if (userPreferences.getString("heightMeasurement", "") == "imperial") {
-
-            heightRadioGroup.check(R.id.heightImperial)
-        } else if (userPreferences.getString("heightMeasurement", "") == "metric") {
-
-            heightRadioGroup.check(R.id.heightMetric)
-        } else {
-
-            heightRadioGroup.check(R.id.heightImperial)
-        }*/
-
-        birthDateTextView.setOnClickListener {
-
-            val currentCalendar = Calendar.getInstance()
-            val birthdayPicker = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { datePicker, year, month, date ->
-
-                val birthCalendar = Calendar.getInstance()
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                birthCalendar.set(year, month, date)
-                val enteredBirthDate = dateFormat.format(birthCalendar.time)
-
-                birthDate = enteredBirthDate
-                birthDateTextView.text = birthDate
-
-            }, currentCalendar.get(Calendar.YEAR),
-                    currentCalendar.get(Calendar.MONTH), currentCalendar.get(Calendar.DATE))
-
-            birthdayPicker.show()
+            createUI()
         }
 
         genderRadioGroup.setOnCheckedChangeListener { group, checkedId ->
@@ -262,6 +169,10 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         heightRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+
+            if (saveButton.parent != null) {
+                settingsConstraintLayout.removeView(saveButton)
+            }
 
             when(checkedId) {
 
@@ -334,11 +245,15 @@ class SettingsActivity : AppCompatActivity() {
 
                     if (feet != 0 && inches != 0.0) {
 
-                        feetEditText.setText(feet)
+                        feetEditText.setText(feet.toString())
                         inchesEditText.setText(inches.toString())
                     }
 
+                    settingsConstraintLayout.addView(saveButton)
                     saveButtonSet.clone(settingsConstraintLayout)
+                    saveButtonSet.constrainHeight(saveButton.id, ConstraintSet.WRAP_CONTENT)
+                    saveButtonSet.constrainWidth(saveButton.id, ConstraintSet.WRAP_CONTENT)
+                    saveButtonSet.connect(saveButton.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, 16)
                     saveButtonSet.connect(saveButton.id, ConstraintSet.TOP, feetEditText.id, ConstraintSet.BOTTOM, 16)
                     saveButtonSet.applyTo(settingsConstraintLayout)
                 }
@@ -389,7 +304,11 @@ class SettingsActivity : AppCompatActivity() {
                         cmEditText.setText(cm.toString())
                     }
 
+                    settingsConstraintLayout.addView(saveButton)
                     saveButtonSet.clone(settingsConstraintLayout)
+                    saveButtonSet.constrainHeight(saveButton.id, ConstraintSet.WRAP_CONTENT)
+                    saveButtonSet.constrainWidth(saveButton.id, ConstraintSet.WRAP_CONTENT)
+                    saveButtonSet.connect(saveButton.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, 16)
                     saveButtonSet.connect(saveButton.id, ConstraintSet.TOP, cmEditText.id, ConstraintSet.BOTTOM, 16)
                     saveButtonSet.applyTo(settingsConstraintLayout)
                 }
@@ -589,5 +508,121 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    fun createUI() {
+
+        val settingsConstraintLayout: ConstraintLayout = findViewById<ConstraintLayout>(R.id.settingsConstraintLayout)
+        val genderRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.genderRadioGroup)
+        val heightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.heightMeasurementRadioGroup)
+        val weightRadioGroup: RadioGroup = findViewById<RadioGroup>(R.id.weightMeasurementRadioGroup)
+        val heightTextView: TextView = findViewById<TextView>(R.id.heightTextView)
+        val birthDateTextView: TextView = findViewById<TextView>(R.id.birthDateTextView)
+        val settingsScrollView = findViewById<ScrollView>(R.id.settingsScrollView)
+        val settingsAdView: AdView = findViewById<AdView>(R.id.settingsAdView)
+
+        val feetEditText = EditText(this)
+        val feetTextView = TextView(this)
+        val inchesEditText = EditText(this)
+        val inchesTextView = TextView(this)
+        val cmEditText = EditText(this)
+        val cmTextView = TextView(this)
+        val saveButton = Button(this)
+
+        if (birthDate != "") {
+
+            birthDateTextView.text = birthDate
+        } else {
+
+            birthDateTextView.text = getString(R.string.set_birth_date)
+        }
+
+        when(gender) {
+
+            "male" -> genderRadioGroup.check(R.id.maleButton)
+            "female" -> genderRadioGroup.check(R.id.femaleButton)
+            else -> genderRadioGroup.check(R.id.femaleButton)
+        }
+
+        if (showAds) {
+            val adRequest = AdRequest.Builder().build()
+            settingsAdView.loadAd(adRequest)
+        } else {
+            settingsAdView.visibility = View.GONE
+            val removeAdSet = ConstraintSet()
+            removeAdSet.clone(settingsConstraintLayout)
+            removeAdSet.connect(settingsScrollView.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+            removeAdSet.applyTo(settingsConstraintLayout)
+        }
+
+        /*if (userPreferences.getString("gender", "") == "male") {
+
+            genderRadioGroup.check(R.id.maleButton)
+        } else if (userPreferences.getString("gender", "") == "female") {
+
+            genderRadioGroup.check(R.id.femaleButton)
+        } else {
+
+            genderRadioGroup.check(R.id.femaleButton)
+        }*/
+
+        when(weightMeasurement) {
+
+            "imperial" -> weightRadioGroup.check(R.id.weightImperial)
+            "metric" -> weightRadioGroup.check(R.id.weightMetric)
+            "stone" -> weightRadioGroup.check(R.id.weightStone)
+            else -> weightRadioGroup.check(R.id.weightMetric)
+        }
+
+        /*if (userPreferences.getString("weightMeasurement", "") == "imperial") {
+
+            weightRadioGroup.check(R.id.weightImperial)
+        } else if (userPreferences.getString("weightMeasurement", "") == "metric") {
+
+            weightRadioGroup.check(R.id.weightMetric)
+        } else if (userPreferences.getString("weightMeasurement", "") == "stone") {
+
+            weightRadioGroup.check(R.id.weightStone)
+        } else {
+
+            weightRadioGroup.check(R.id.weightImperial)
+        }*/
+
+        when(heightMeasurement) {
+
+            "imperial" -> heightRadioGroup.check(R.id.heightImperial)
+            "metric" -> heightRadioGroup.check(R.id.heightMetric)
+            else -> heightRadioGroup.check(R.id.heightMetric)
+        }
+
+        /*if (userPreferences.getString("heightMeasurement", "") == "imperial") {
+
+            heightRadioGroup.check(R.id.heightImperial)
+        } else if (userPreferences.getString("heightMeasurement", "") == "metric") {
+
+            heightRadioGroup.check(R.id.heightMetric)
+        } else {
+
+            heightRadioGroup.check(R.id.heightImperial)
+        }*/
+
+        birthDateTextView.setOnClickListener {
+
+            val currentCalendar = Calendar.getInstance()
+            val birthdayPicker = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { datePicker, year, month, date ->
+
+                val birthCalendar = Calendar.getInstance()
+                val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+                birthCalendar.set(year, month, date)
+                val enteredBirthDate = dateFormat.format(birthCalendar.time)
+
+                birthDate = enteredBirthDate
+                birthDateTextView.text = birthDate
+
+            }, currentCalendar.get(Calendar.YEAR),
+                    currentCalendar.get(Calendar.MONTH), currentCalendar.get(Calendar.DATE))
+
+            birthdayPicker.show()
+        }
     }
 }
