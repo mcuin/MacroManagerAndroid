@@ -66,29 +66,6 @@ class DailyActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         fireStore = FirebaseFirestore.getInstance()
 
-        val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
-
-        dailyBottomNav.selectedItemId = R.id.home
-
-        dailyBottomNav.setOnNavigationItemSelectedListener { item ->
-
-            when(item.itemId) {
-
-                R.id.calculator -> {
-
-                    val calculatorIntent = Intent(this, CalculatorActivity::class.java)
-
-                    startActivity(calculatorIntent)
-                }
-
-                R.id.home -> {
-
-                }
-            }
-
-            true
-        }
-
         val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
         val alarmSet = (PendingIntent.getBroadcast(this, 243, resetIntent, PendingIntent.FLAG_UPDATE_CURRENT) != null)
 
@@ -109,6 +86,7 @@ class DailyActivity : AppCompatActivity() {
 
             db.get().addOnSuccessListener {
 
+                Log.d("Firestore", "Success")
                 dailyCaloriesTotal = it.getDouble("calories")!!.toInt()
                 dailyCarbsTotal = it.getDouble("carbs")!!.toInt()
                 dailyFatTotal = it.getDouble("fat")!!.toInt()
@@ -119,12 +97,26 @@ class DailyActivity : AppCompatActivity() {
                 currentProteinTotal = it.getDouble("currentProtein")!!
                 showAds = it.getBoolean("showAds")!!
                 dailyMeals = gson.fromJson(it.get("dailyMeals").toString(), object : TypeToken<List<HashMap<String, Any>>>() {}.type)
+
+                Log.d("Firestore", dailyCaloriesTotal.toString())
+                Log.d("Firestore", dailyCarbsTotal.toString())
+                Log.d("Firestore", dailyFatTotal.toString())
+                Log.d("Firestore", dailyProteinTotal.toString())
+                Log.d("Firestore", currentCaloriesTotal.toString())
+                Log.d("Firestore", currentCarbsTotal.toString())
+                Log.d("Firestore", currentFatTotal.toString())
+                Log.d("Firestore", currentProteinTotal.toString())
+                Log.d("Firestore", showAds.toString())
+                Log.d("Firestore", dailyMeals.toString())
+
+                createUI()
             }.addOnFailureListener {
 
                 Toast.makeText(this,"There was an issue getting your info. Please try again later.", Toast.LENGTH_SHORT).show()
             }
         } else {
 
+            Log.d("No", "firestore")
             val userPreferences = this.getSharedPreferences("userPreferences", 0)
 
             if (userPreferences.contains("calories")) {
@@ -173,27 +165,38 @@ class DailyActivity : AppCompatActivity() {
                //editor.putString(gson.toJson(dailyMeals.toString()), "dailyMeals")
 
             }
+
+            createUI()
          }
 
-        val dailyConstraintLayout = findViewById<ConstraintLayout>(R.id.dailyConstraintLayout)
-        val dailyAdView = findViewById<AdView>(R.id.dailyAdView)
-        val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
 
-        if (showAds) {
-            MobileAds.initialize(this, getString(R.string.admob_id))
-            val adRequest = AdRequest.Builder().build()
-            dailyAdView.loadAd(adRequest)
-        } else {
-            dailyAdView.visibility = View.GONE
-            val removeAdSet = ConstraintSet()
-            removeAdSet.clone(dailyConstraintLayout)
-            removeAdSet.connect(dailyBottomNav.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
-            removeAdSet.applyTo(dailyConstraintLayout)
-        }
+        val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
+        val addMealFAB = findViewById<FloatingActionButton>(R.id.addMealFloatingActionButton)
+
+        //val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
 
         dailyBottomNav.selectedItemId = R.id.home
-        val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
-        val addMealFAB = findViewById<FloatingActionButton>(R.id.addMealFloatingActionButton)
+
+        dailyBottomNav.setOnNavigationItemSelectedListener { item ->
+
+            when(item.itemId) {
+
+                R.id.calculator -> {
+
+                    val calculatorIntent = Intent(this, CalculatorActivity::class.java)
+
+                    startActivity(calculatorIntent)
+                }
+
+                R.id.home -> {
+
+                }
+            }
+
+            true
+        }
+
+        //dailyBottomNav.selectedItemId = R.id.home
 
         //val mealsJSONArray = dailyMeals
 
@@ -213,16 +216,6 @@ class DailyActivity : AppCompatActivity() {
         }
 
         //Log.d("Daily Meals", dailyMeals.toString())
-        if (dailyMeals.size != 0) {
-
-            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
-            userFoodRecyclerView.layoutManager = LinearLayoutManager(this)
-            userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, dailyMeals, DailyMacrosGridViewAdapter(this, macrosArrayList()))
-            } else {
-
-            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
-            userFoodRecyclerView.adapter = null
-        }
 
     }
 
@@ -330,5 +323,36 @@ class DailyActivity : AppCompatActivity() {
         macrosArrayList.add(proteinJSONObject)
 
         return macrosArrayList
+    }
+
+    fun createUI() {
+
+        val dailyConstraintLayout = findViewById<ConstraintLayout>(R.id.dailyConstraintLayout)
+        val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
+        val dailyAdView = findViewById<AdView>(R.id.dailyAdView)
+        val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
+
+        if (showAds) {
+            MobileAds.initialize(this, getString(R.string.admob_id))
+            val adRequest = AdRequest.Builder().build()
+            dailyAdView.loadAd(adRequest)
+        } else {
+            dailyAdView.visibility = View.GONE
+            val removeAdSet = ConstraintSet()
+            removeAdSet.clone(dailyConstraintLayout)
+            removeAdSet.connect(dailyBottomNav.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+            removeAdSet.applyTo(dailyConstraintLayout)
+        }
+
+        if (dailyMeals.size != 0) {
+
+            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
+            userFoodRecyclerView.layoutManager = LinearLayoutManager(this)
+            userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, dailyMeals, DailyMacrosGridViewAdapter(this, macrosArrayList()))
+        } else {
+
+            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
+            userFoodRecyclerView.adapter = null
+        }
     }
 }

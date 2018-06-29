@@ -37,4 +37,6 @@
     <string name="save">Save</string>
     <string name="set_birth_date">Tap to set your birthday.</string>
     <string name="grams">g</string>
+    
+    <string name="admob_id">ca-app-pub-6601965971959563~1619744217</string>
 </resources>

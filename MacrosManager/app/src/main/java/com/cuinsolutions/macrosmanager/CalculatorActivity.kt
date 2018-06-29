@@ -26,7 +26,7 @@ import kotlin.math.roundToInt
 
 class CalculatorActivity : AppCompatActivity() {
 
-    private val showAds = false
+    private var showAds = true
     private lateinit var auth: FirebaseAuth
     private lateinit var fireStore: FirebaseFirestore
     private lateinit var weightMeasurement: String
@@ -44,6 +44,7 @@ class CalculatorActivity : AppCompatActivity() {
     private var carbs = 0
     private var fat = 0
     private var protein = 0
+    lateinit var calculatorBottomNav: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,20 +55,8 @@ class CalculatorActivity : AppCompatActivity() {
 
         val regexs = Regexs()
 
-        val calculatorConstraintLayout = findViewById<ConstraintLayout>(R.id.calculatorConstraintLayout)
-        val calculatorBottomNav = findViewById<BottomNavigationView>(R.id.calculatorBottomNav)
-        val calculatorAdView = findViewById<AdView>(R.id.calculatorAdView)
 
-        if (showAds) {
-            val adRequest = AdRequest.Builder().build()
-            calculatorAdView.loadAd(adRequest)
-        } else {
-            calculatorAdView.visibility = View.GONE
-            val removeAdViewSet = ConstraintSet()
-            removeAdViewSet.clone(calculatorConstraintLayout)
-            removeAdViewSet.connect(calculatorBottomNav.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
-            removeAdViewSet.applyTo(calculatorConstraintLayout)
-        }
+        calculatorBottomNav = findViewById<BottomNavigationView>(R.id.calculatorBottomNav)
 
         calculatorBottomNav.selectedItemId = R.id.calculator
         calculatorBottomNav.setOnNavigationItemSelectedListener { item ->
@@ -112,10 +101,11 @@ class CalculatorActivity : AppCompatActivity() {
                 physicalActivityLifestyle = it.getString("physicalActivityLifestyle")!!
                 goal = it.getString("goal")!!
                 dietFatPercent = it.getDouble("dietFatPercent")!!
-                calories = it.getString("calories")!!.toInt()
-                carbs = it.getString("carbs")!!.toInt()
-                fat = it.getString("fat")!!.toInt()
-                protein = it.getString("protein")!!.toInt()
+                calories = it.get("calories").toString().toInt()
+                carbs = it.get("carbs").toString().toInt()
+                fat = it.get("fat").toString().toInt()
+                protein = it.get("protein").toString().toInt()
+                showAds = it.getBoolean("showAds")!!
                 loadUI(weightMeasurement, birthDate, gender, cm, userPreferences)
             }.addOnFailureListener {
 
@@ -194,6 +184,20 @@ class CalculatorActivity : AppCompatActivity() {
 
             errorDialog.show()
         }
+
+        val calculatorConstraintLayout = findViewById<ConstraintLayout>(R.id.calculatorConstraintLayout)
+        val calculatorAdView = findViewById<AdView>(R.id.calculatorAdView)
+
+        if (showAds) {
+            val adRequest = AdRequest.Builder().build()
+            calculatorAdView.loadAd(adRequest)
+        } else {
+            calculatorAdView.visibility = View.GONE
+            val removeAdViewSet = ConstraintSet()
+            removeAdViewSet.clone(calculatorConstraintLayout)
+            removeAdViewSet.connect(calculatorBottomNav.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+            removeAdViewSet.applyTo(calculatorConstraintLayout)
+        }
     }
 
     private fun calculate(fatPercentageEditText: EditText, poundsEditText: EditText, kilogramsEditText: EditText, stoneEditText: EditText, decimalFormat: DecimalFormat,
@@ -239,16 +243,17 @@ class CalculatorActivity : AppCompatActivity() {
         val dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")//SimpleDateFormat()
         val age = Years.yearsBetween(dateFormat.parseDateTime(birthDate) as DateTime, DateTime.now())
 
+        Log.d("Age", age.toString())
         when (gender) {
 
             "male" -> {
 
-                bmr = (10 * userPreferences.getString("kg", "").toDouble()) + (6.25 * cm) - ((5 * age.years) + 5)
+                bmr = (10 * kg) + (6.25 * cm) - ((5 * age.years) + 5)
             }
 
             "female" -> {
 
-                bmr = (10 * userPreferences.getString("kg", "").toDouble()) + (6.25 * cm) - ((5 * age.years) - 161)
+                bmr = (10 * kg) + (6.25 * cm) - ((5 * age.years) - 161)
             }
         }
 

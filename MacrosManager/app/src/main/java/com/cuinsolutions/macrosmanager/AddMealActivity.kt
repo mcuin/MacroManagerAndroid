@@ -166,7 +166,7 @@ class AddMealActivity : AppCompatActivity() {
                     currentFatTotal = currentFatTotal - mealFat
                     currentProteinTotal = currentProteinTotal - mealProtein
 
-                    mealMap.put("title", "\"" + mealNameEditText.text.toString() + "\"")
+                    mealMap.put("title", gson.toJson(mealNameEditText.text.toString()))
                     mealMap.put("calories", mealCaloriesEditText.text.toString().toDouble())
                     mealMap.put("carbs", mealCarbsEditText.text.toString().toDouble())
                     mealMap.put("fat", mealFatEditText.text.toString().toDouble())
@@ -182,7 +182,7 @@ class AddMealActivity : AppCompatActivity() {
                     Log.d("mealJSONArrayBefore", dailyMeals.toString())
                     val mealMap = hashMapOf<String, Any>()
 
-                    mealMap.put("title", "\"" + mealNameEditText.text.toString() + "\"")
+                    mealMap.put("title", gson.toJson(mealNameEditText.text.toString()))
                     mealMap.put("calories", mealCaloriesEditText.text.toString().toDouble())
                     mealMap.put("carbs", mealCarbsEditText.text.toString().toDouble())
                     mealMap.put("fat", mealFatEditText.text.toString().toDouble())

@@ -98,7 +98,7 @@ class SettingsActivity : AppCompatActivity() {
                 gender = it.getString("gender")!!
                 weightMeasurement = it.getString("weightMeasurement")!!
                 heightMeasurement = it.getString("heightMeasurement")!!
-                feet = it.get("feet") as Int
+                feet = it.getLong("feet")!!.toInt()
                 inches = it.getDouble("inches")!!
                 cm = it.getDouble("cm")!!
                 showAds = it.getBoolean("showAds")!!

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import com.google.gson.Gson
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -16,14 +17,14 @@ import org.json.JSONObject
  * Created by mykalcuin on 9/13/17.
  */
 
-class DailyMealsRecyclerViewAdapter(context: Context, dailyMeals: JSONArray, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
+class DailyMealsRecyclerViewAdapter(val context: Context, val dailyMeals: List<HashMap<String, Any>>, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
 
 
-    val context = context
+    /*val context = context
     //val userPreferences = context.applicationContext.getSharedPreferences("userPreferences", 0)
     val mealsJSONArray = dailyMeals//JSONArray(userPreferences.getString("mealsJSONArray", ""))
     val dailyIntakeGridViewAdapter = dailyIntakeGridViewAdapter
-    val dailyActivity = DailyActivity()
+    val dailyActivity = DailyActivity()*/
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -34,22 +35,23 @@ class DailyMealsRecyclerViewAdapter(context: Context, dailyMeals: JSONArray, dai
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        Log.d("mealsJSONArray Adapter", mealsJSONArray[position].toString())
+        Log.d("mealsJSONArray Adapter", dailyMeals[position].toString())
 
-        val mealJSONObject = JSONObject(mealsJSONArray[position].toString())
-        holder.mealNameTextView.text = mealJSONObject.getString("title")
-        if (mealJSONObject.getString("serving").equals("1")) {
-            holder.mealServingTextView.text = mealJSONObject.getString("serving") + " serving"
+        val mealJSONObject = dailyMeals[position]
+        val gson = Gson()
+        holder.mealNameTextView.text = mealJSONObject["title"].toString()
+        if (mealJSONObject["serving"]!!.equals("1")) {
+            holder.mealServingTextView.text = mealJSONObject["serving"].toString() + " serving"
         } else {
-            holder.mealServingTextView.text = mealJSONObject.getString("serving") + " servings"
+            holder.mealServingTextView.text = mealJSONObject["serving"].toString() + " servings"
         }
-        holder.mealCaloriesTextVeiw.text = mealJSONObject.getString("calories") + " calories"
+        holder.mealCaloriesTextVeiw.text = mealJSONObject["calories"].toString() + " calories"
 
         holder.mealButton.setOnClickListener {
 
             val mealIntent = Intent(context, AddMealActivity::class.java)
             mealIntent.putExtra("meal", position)
-            mealIntent.putExtra("dailyMeals", mealsJSONArray.toString())
+            mealIntent.putExtra("dailyMeals", gson.toJson(dailyMeals))
             context.startActivity(mealIntent)
         }
 
@@ -101,7 +103,7 @@ class DailyMealsRecyclerViewAdapter(context: Context, dailyMeals: JSONArray, dai
 
     override fun getItemCount(): Int {
 
-        return mealsJSONArray.length()
+        return dailyMeals.size
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
