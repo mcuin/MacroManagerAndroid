@@ -18,6 +18,7 @@ import android.view.View
 import android.widget.*
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import org.joda.time.DateTime
@@ -192,6 +193,7 @@ class CalculatorActivity : AppCompatActivity() {
         val calculatorAdView = findViewById<AdView>(R.id.calculatorAdView)
 
         if (showAds) {
+            MobileAds.initialize(this)
             val adRequest = AdRequest.Builder().build()
             calculatorAdView.loadAd(adRequest)
         } else {

@@ -333,7 +333,8 @@ class DailyActivity : AppCompatActivity() {
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
 
         if (showAds) {
-            MobileAds.initialize(this, getString(R.string.admob_id))
+            Log.d("Ads", "running")
+            MobileAds.initialize(this)
             val adRequest = AdRequest.Builder().build()
             dailyAdView.loadAd(adRequest)
         } else {

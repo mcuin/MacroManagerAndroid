@@ -15,6 +15,7 @@ import android.view.View
 import android.widget.*
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
@@ -545,6 +546,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         if (showAds) {
+            MobileAds.initialize(this)
             val adRequest = AdRequest.Builder().build()
             settingsAdView.loadAd(adRequest)
         } else {
