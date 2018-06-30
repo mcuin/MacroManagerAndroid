@@ -45,6 +45,8 @@ class DailyResetAlarmReciever : BroadcastReceiver() {
             editor.putString("currentFatTotal", (0.0).toString())
             editor.putString("currentProteinTotal", (0.0).toString())
             editor.apply()
+
+            Log.d("Daily pref", "reset")
         }
     }
 

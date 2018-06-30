@@ -71,6 +71,8 @@ class DailyActivity : AppCompatActivity() {
 
         if (alarmSet == false) {
             setResetAlarm()
+        } else {
+            setResetAlarm()
         }
     }
 
@@ -286,10 +288,13 @@ class DailyActivity : AppCompatActivity() {
         val resetTime = Calendar.getInstance(Locale.getDefault())
         resetTime.timeInMillis = System.currentTimeMillis()
         resetTime.set(Calendar.HOUR_OF_DAY, 2)
+        resetTime.set(Calendar.MINUTE, 0)
+        resetTime.set(Calendar.SECOND, 0)
 
         val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
         val resetPendingIntent = PendingIntent.getBroadcast(this, 243, resetIntent, PendingIntent.FLAG_UPDATE_CURRENT)
         val resetAlarm = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        Log.d("Reset", "set")
 
         resetAlarm.setInexactRepeating(AlarmManager.RTC, resetTime.timeInMillis, AlarmManager.INTERVAL_DAY, resetPendingIntent)
     }
