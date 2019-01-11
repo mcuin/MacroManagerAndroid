@@ -2,7 +2,7 @@ package com.cuinsolutions.macrosmanager
 
 import android.content.Context
 import android.content.Intent
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,14 +10,12 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import com.google.gson.Gson
-import org.json.JSONArray
-import org.json.JSONObject
 
 /**
  * Created by mykalcuin on 9/13/17.
  */
 
-class DailyMealsRecyclerViewAdapter(val context: Context, val dailyMeals: List<HashMap<String, Any>>, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
+class DailyMealsRecyclerViewAdapter(val context: Context, val dailyMeals: List<HashMap<String, Any>>, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): androidx.recyclerview.widget.RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
 
 
     /*val context = context
@@ -39,7 +37,7 @@ class DailyMealsRecyclerViewAdapter(val context: Context, val dailyMeals: List<H
 
         val mealJSONObject = dailyMeals[position]
         val gson = Gson()
-        holder.mealNameTextView.text = mealJSONObject["title"].toString()
+        holder.mealNameTextView.text = mealJSONObject["title"].toString().replace("_", " ")
         if (mealJSONObject["serving"]!!.equals("1")) {
             holder.mealServingTextView.text = mealJSONObject["serving"].toString() + " serving"
         } else {
@@ -106,7 +104,7 @@ class DailyMealsRecyclerViewAdapter(val context: Context, val dailyMeals: List<H
         return dailyMeals.size
     }
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
 
         val mealNameTextView = itemView.findViewById<TextView>(R.id.mealTitleTextView)
         val mealServingTextView = itemView.findViewById<TextView>(R.id.mealServingTextView)

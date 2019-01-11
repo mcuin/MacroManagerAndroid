@@ -1,9 +1,9 @@
 package com.cuinsolutions.macrosmanager
 
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
@@ -11,7 +11,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.android.synthetic.main.activity_add_meal.*
 
 class AddMealActivity : AppCompatActivity() {
 
@@ -85,7 +84,7 @@ class AddMealActivity : AppCompatActivity() {
                 currentCarbsTotal = userPreferences.getString("currentCarbsTotal", "").toDouble()
             }
 
-            if (userPreferences.contains("currentFatTotalTotal")) {
+            if (userPreferences.contains("currentFatTotal")) {
 
                 currentFatTotal = userPreferences.getString("currentFatTotal", "").toDouble()
             }
@@ -104,7 +103,7 @@ class AddMealActivity : AppCompatActivity() {
 
             val mealMap = dailyMeals[mealIntent.getIntExtra("meal", 0)]//.toString())
 
-            mealNameEditText.setText(mealMap["title"].toString())
+            mealNameEditText.setText(mealMap["title"].toString().replace("_", " "))
             mealCaloriesEditText.setText(mealMap["calories"].toString())
             mealCarbsEditText.setText(mealMap["carbs"].toString())
             mealFatEditText.setText(mealMap["fat"].toString())
@@ -117,7 +116,7 @@ class AddMealActivity : AppCompatActivity() {
             if (mealNameEditText.text.toString() == "" || mealCaloriesEditText.text.toString() == "" || !regexs.validNumber(mealCaloriesEditText.text.toString())
                     || mealCarbsEditText.text.toString() == "" || !regexs.validNumber(mealCarbsEditText.text.toString()) || mealFatEditText.text.toString() == ""
                     || !regexs.validNumber(mealFatEditText.text.toString()) || mealProteinEditText.text.toString() == "" ||
-                    !regexs.validNumber(mealProteinEditText.text.toString()) || servingEditText.text.toString() == "" ||
+                    !regexs.validNumber(mealProteinEditText.text.toString()) || mealServingEditText.text.toString() == "" ||
                     !regexs.validNumber(mealServingEditText.text.toString())) {
 
                 val mealDialogError = AlertDialog.Builder(this)
@@ -166,7 +165,7 @@ class AddMealActivity : AppCompatActivity() {
                     currentFatTotal = currentFatTotal - mealFat
                     currentProteinTotal = currentProteinTotal - mealProtein
 
-                    mealMap.put("title", gson.toJson(mealNameEditText.text.toString()))
+                    mealMap.put("title", mealNameEditText.text.toString().replace(" ", "_"))
                     mealMap.put("calories", mealCaloriesEditText.text.toString().toDouble())
                     mealMap.put("carbs", mealCarbsEditText.text.toString().toDouble())
                     mealMap.put("fat", mealFatEditText.text.toString().toDouble())
@@ -182,7 +181,7 @@ class AddMealActivity : AppCompatActivity() {
                     Log.d("mealJSONArrayBefore", dailyMeals.toString())
                     val mealMap = hashMapOf<String, Any>()
 
-                    mealMap.put("title", gson.toJson(mealNameEditText.text.toString()))
+                    mealMap.put("title", mealNameEditText.text.toString().replace(" ", "_"))
                     mealMap.put("calories", mealCaloriesEditText.text.toString().toDouble())
                     mealMap.put("carbs", mealCarbsEditText.text.toString().toDouble())
                     mealMap.put("fat", mealFatEditText.text.toString().toDouble())

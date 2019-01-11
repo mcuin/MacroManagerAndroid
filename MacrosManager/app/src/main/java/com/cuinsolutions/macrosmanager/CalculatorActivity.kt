@@ -1,15 +1,17 @@
 package com.cuinsolutions.macrosmanager
 
-import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
+import android.icu.util.LocaleData
+import android.icu.util.TimeUnit
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
-import android.support.constraint.ConstraintSet
-import android.support.design.widget.BottomNavigationView
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
@@ -26,6 +28,14 @@ import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
+import java.time.Duration
+import java.time.LocalDate
+import java.time.Year
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.*
 import kotlin.math.roundToInt
 
 class CalculatorActivity : AppCompatActivity() {
@@ -33,13 +43,16 @@ class CalculatorActivity : AppCompatActivity() {
     private var showAds = true
     private lateinit var auth: FirebaseAuth
     private lateinit var fireStore: FirebaseFirestore
+    private lateinit var heightMeasurement: String
     private lateinit var weightMeasurement: String
     private lateinit var gender: String
-    private lateinit var birthDate: String
+    private lateinit var birthDate: Date
     private var cm = 0.0
-    private lateinit var dailyActivity: String
-    private lateinit var physicalActivityLifestyle: String
-    private lateinit var goal: String
+    private var dailyActivity = ""
+    private var physicalActivityLifestyle = ""
+    private var goal = ""
+    private var feet: Int = 0
+    private var inches = 0.0
     private var pounds = 0.0
     private var kg = 0.0
     private var stone = 0.0
@@ -94,9 +107,13 @@ class CalculatorActivity : AppCompatActivity() {
             val userId = currentUser.uid
             val data = fireStore.collection("users").document(userId)
             data.get().addOnSuccessListener {
+                heightMeasurement = it.getString("heightMeasurement")!!
                 weightMeasurement = it.getString("weightMeasurement")!!
-                birthDate = it.getString("birthDate")!!
+                val timeStamp = it.getTimestamp("birthDate")
+                birthDate = timeStamp!!.toDate()
                 gender = it.getString("gender")!!
+                feet = it.getLong("feet")!!.toInt()
+                inches = it.getDouble("inches")!!
                 cm = it.getDouble("cm")!!
                 kg = it.getDouble("kg")!!
                 pounds = it.getDouble("pounds")!!
@@ -117,12 +134,24 @@ class CalculatorActivity : AppCompatActivity() {
                 finish()
             }
         } else if (userPreferences.contains("weightMeasurement") && userPreferences.contains("birthDate") && userPreferences.contains("gender") &&
-                userPreferences.contains("heightMeasurement") && userPreferences.contains("cm")){
+                userPreferences.contains("heightMeasurement")){
 
+            heightMeasurement = userPreferences.getString("heightMeasurement", "")
             weightMeasurement = userPreferences.getString("weightMeasurement", "")
-            birthDate = userPreferences.getString("birthDate", "")
+            birthDate = Date(userPreferences.getLong("birthDate", 0))
             gender = userPreferences.getString("gender", "")
-            cm = userPreferences.getString("cm", "").toDouble()
+            if (userPreferences.contains("feet")) {
+                feet = userPreferences.getInt("feet", 0)
+            }
+
+            if (userPreferences.contains("inches")) {
+                inches = userPreferences.getString("inches", "").toDouble()
+            }
+
+            if (userPreferences.contains("cm")) {
+                cm = userPreferences.getString("cm", "").toDouble()
+            }
+
             if (userPreferences.contains("kg")) {
                 kg = userPreferences.getString("kg", "").toDouble()
             }
@@ -205,8 +234,8 @@ class CalculatorActivity : AppCompatActivity() {
         }
     }
 
-    private fun calculate(fatPercentageEditText: EditText, poundsEditText: EditText, kilogramsEditText: EditText, stoneEditText: EditText, decimalFormat: DecimalFormat,
-                          weightMeasurement: String, birthDate: String, gender: String, cm: Double) {
+    private fun calculate(feetEditText: EditText, inchesEditText: EditText, cmEditText: EditText, fatPercentageEditText: EditText, poundsEditText: EditText, kilogramsEditText: EditText, stoneEditText: EditText, decimalFormat: DecimalFormat,
+                          weightMeasurement: String, birthDate: Date, gender: String) {
 
         val userPreferences = this.getSharedPreferences("userPreferences", 0)
 
@@ -236,6 +265,31 @@ class CalculatorActivity : AppCompatActivity() {
             }
         }
 
+        when (heightMeasurement) {
+
+            "imperial" -> {
+
+                val totalInches = ((Integer.valueOf(feetEditText.text.toString())) * 12) + (inchesEditText.text.toString().toDouble())
+                val cmCalced = totalInches * 2.54
+
+                feet = feetEditText.text.toString().toInt()
+                inches = inchesEditText.text.toString().toDouble()//editor.putString("inches", decimalFormat.format(inchesEditText.text.toString().toDouble()).toString())
+                cm = cmCalced//editor.putString("cm", decimalFormat.format(cm).toString())
+            }
+
+            "metric"-> {
+
+                val feetConversion = (cmEditText.text.toString().toFloat()) / 30.48
+                val feetRemainder = feetConversion % 1
+                val feetCalced = feetConversion - feetRemainder
+                val inchesCalced = ((cmEditText.text.toString().toFloat()) / 2.54) - (feetCalced * 12) + feetRemainder
+
+                cm = cmEditText.text.toString().toDouble()
+                feet = feetCalced.toInt()//editor.putString("feet", decimalFormat.format(feet).toString())
+                inches = inchesCalced
+            }
+        }
+
         var bmr = 0.0
         val tdee: Double
         val calories: Double
@@ -245,20 +299,29 @@ class CalculatorActivity : AppCompatActivity() {
         val fatCalories: Double
         val carbs: Double
         val carbsCalories: Double
-        val dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")//SimpleDateFormat()
-        val age = Years.yearsBetween(dateFormat.parseDateTime(birthDate) as DateTime, DateTime.now())
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy")//SimpleDateFormat()
+        val age = if (Date().month >= birthDate.month) {
+            Date().year - birthDate.year
+        } else {
+            Date().year - birthDate.year - 1//(java.util.concurrent.TimeUnit.DAYS.convert(dateFormat.parse(DateTime.now().toString()).time -
+        }
+                //dateFormat.format(birthDate), java.util.concurrent.TimeUnit.MILLISECONDS) / 365)
 
-        Log.d("Age", age.toString())
+        Log.d("Current Date", Date().toString())
+        Log.d("Birth Date", birthDate.toString())
+        Log.d("Current Year", Date().year.toString())
+        Log.d("Birth Year", birthDate.year.toString())
+        Log.d("Caled_Age", age.toString())
         when (gender) {
 
             "male" -> {
 
-                bmr = (10 * kg) + (6.25 * cm) - ((5 * age.years) + 5)
+                bmr = (10 * kg) + (6.25 * cm) - ((5 * age) + 5)
             }
 
             "female" -> {
 
-                bmr = (10 * kg) + (6.25 * cm) - ((5 * age.years) - 161)
+                bmr = (10 * kg) + (6.25 * cm) - ((5 * age) - 161)
             }
         }
 
@@ -414,10 +477,10 @@ class CalculatorActivity : AppCompatActivity() {
                         signUpIntent.putExtra("gender", userPreferences.getString("gender", ""))
                         signUpIntent.putExtra("weightMeasurement", weightMeasurement)
                         signUpIntent.putExtra("heightMeasurement", userPreferences.getString("heightMeasurement", ""))
-                        signUpIntent.putExtra("feet", userPreferences.getInt("feet", 0))
-                        signUpIntent.putExtra("inches", userPreferences.getString("inches", ""))
+                        signUpIntent.putExtra("feet", feet)
+                        signUpIntent.putExtra("inches", inches)
                         signUpIntent.putExtra("cm", cm)
-                        signUpIntent.putExtra("birthDate", birthDate)
+                        signUpIntent.putExtra("birthDate", birthDate.time)
                         signUpIntent.putExtra("dailyActivity", dailyActivity)
                         signUpIntent.putExtra("physicalActivityLifestyle", physicalActivityLifestyle)
                         signUpIntent.putExtra("goal", goal)
@@ -429,6 +492,21 @@ class CalculatorActivity : AppCompatActivity() {
                         signUpIntent.putExtra("carbs", carbs.roundToInt())
                         signUpIntent.putExtra("fat", fat.roundToInt())
                         signUpIntent.putExtra("protein", protein.roundToInt())
+                        signUpIntent.putExtra("dailyMeals", userPreferences.getString("dailyMeals", ""))
+                        if (userPreferences.contains("currentCaloriesTotal") && userPreferences.contains("currentCarbsTotal") && userPreferences.contains("currentFatTotal")
+                                && userPreferences.contains("currentProteinTotal")) {
+
+                            signUpIntent.putExtra("currentCalories", userPreferences.getString("currentCaloriesTotal", "").toDouble())
+                            signUpIntent.putExtra("currentCarbs", userPreferences.getString("currentCarbsTotal", "").toDouble())
+                            signUpIntent.putExtra("currentFat", userPreferences.getString("currentFatTotal", "").toDouble())
+                            signUpIntent.putExtra("currentProtein", userPreferences.getString("currentProteinTotal", "").toDouble())
+                        } else {
+
+                            signUpIntent.putExtra("currentCalories", 0.0)
+                            signUpIntent.putExtra("currentCarbs", 0.0)
+                            signUpIntent.putExtra("currentFat", 0.0)
+                            signUpIntent.putExtra("currentProtein", 0.0)
+                        }
                         startActivity(signUpIntent)
 
                         finish()
@@ -436,6 +514,9 @@ class CalculatorActivity : AppCompatActivity() {
 
                 val userEditor = userPreferences.edit()
 
+                userEditor.putInt("feet", feet)
+                userEditor.putString("inches", inches.toString())
+                userEditor.putString("cm", cm.toString())
                 userEditor.putString("dailyActivity", dailyActivity)
                 userEditor.putString("physicalActivityLifestyle", physicalActivityLifestyle)
                 userEditor.putString("goal", goal)
@@ -457,31 +538,153 @@ class CalculatorActivity : AppCompatActivity() {
         }
     }
 
-    fun loadUI(weightMeasurement: String, birthDate: String, gender: String, cm: Double, userPreferences: SharedPreferences) {
+    fun loadUI(weightMeasurement: String, birthDate: Date, gender: String, cm: Double, userPreferences: SharedPreferences) {
 
         val regexs = Regexs()
         val calculatorConstraintLayout = findViewById<ConstraintLayout>(R.id.calculatorConstraintLayout)
-        val weightTextView = findViewById<TextView>(R.id.weightTextView)
+        val heightTextView = TextView(this)
+        val feetEditText = EditText(this)
+        val feetTextView = TextView(this)
+        val inchesEditText = EditText(this)
+        val inchesTextView = TextView(this)
+        val cmEditText = EditText(this)
+        val cmTextView = TextView(this)
+        val weightTextView = TextView(this)
         var previousView = View(this)
         val poundsEditText = EditText(this)
         val kilogramsEditText = EditText(this)
         val stoneEditText = EditText(this)
         val stonePoundsEditText = EditText(this)
+        var previousHeightEditText = feetEditText
 
         val decimalFormat = DecimalFormat("#.##")
         decimalFormat.roundingMode = RoundingMode.FLOOR
 
+        when(heightMeasurement) {
+
+            "imperial" -> {
+
+                heightLabelLayout(heightTextView, calculatorConstraintLayout)
+
+                feetEditText.id = View.generateViewId()
+                feetEditText.inputType = (InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+                feetEditText.hint = "Feet"
+                inchesEditText.id = View.generateViewId()
+                inchesEditText.inputType = (InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+                inchesEditText.hint = "Inches"
+                /*feetTextView.id = View.generateViewId()
+                inchesTextView.id = View.generateViewId()
+
+                feetTextView.text = getString(R.string.feet)
+                feetTextView.gravity = (Gravity.BOTTOM)
+                feetTextView.textSize = resources.getDimension(R.dimen.textview)
+                inchesTextView.text = getString(R.string.inches)
+                inchesTextView.setTextSize(resources.getDimension(R.dimen.textview))
+                inchesTextView.gravity = Gravity.BOTTOM*/
+
+                calculatorConstraintLayout.addView(feetEditText)
+                //calculatorConstraintLayout.addView(feetTextView)
+                calculatorConstraintLayout.addView(inchesEditText)
+                //calculatorConstraintLayout.addView(inchesTextView)
+
+                val feetEditTextSet = ConstraintSet()
+                feetEditTextSet.clone(calculatorConstraintLayout)
+                feetEditTextSet.constrainHeight(feetEditText.id, ConstraintSet.WRAP_CONTENT)
+                feetEditTextSet.constrainWidth(feetEditText.id, ConstraintSet.WRAP_CONTENT)
+                feetEditTextSet.setMargin(ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
+                feetEditTextSet.connect(feetEditText.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
+                feetEditTextSet.connect(feetEditText.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
+                feetEditTextSet.connect(feetEditText.id, ConstraintSet.END, inchesEditText.id, ConstraintSet.START, 8)
+                feetEditTextSet.applyTo(calculatorConstraintLayout)
+
+                /*val feetTextViewSet = ConstraintSet()
+                feetTextViewSet.clone(calculatorConstraintLayout)
+                feetTextViewSet.constrainWidth(feetTextView.id, ConstraintSet.WRAP_CONTENT)
+                feetTextViewSet.constrainHeight(feetTextView.id, feetEditText.height)
+                feetTextViewSet.connect(feetTextView.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
+                feetTextViewSet.connect(feetTextView.id, ConstraintSet.START, feetEditText.id, ConstraintSet.END, 8)
+                feetTextViewSet.connect(feetTextView.id, ConstraintSet.END, inchesEditText.id, ConstraintSet.START, 8)
+                feetTextViewSet.applyTo(calculatorConstraintLayout)*/
+
+                val inchesEditTextSet = ConstraintSet()
+                inchesEditTextSet.clone(calculatorConstraintLayout)
+                inchesEditTextSet.constrainWidth(inchesEditText.id, ConstraintSet.WRAP_CONTENT)
+                inchesEditTextSet.constrainHeight(inchesEditText.id, ConstraintSet.WRAP_CONTENT)
+                inchesEditTextSet.connect(inchesEditText.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
+                inchesEditTextSet.connect(inchesEditText.id, ConstraintSet.START, feetEditText.id, ConstraintSet.END, 8)
+                //inchesEditTextSet.connect(inchesEditText.id, ConstraintSet.END, inchesTextView.id, ConstraintSet.START, 8)
+                inchesEditTextSet.applyTo(calculatorConstraintLayout)
+
+                /*val inchesTextViewSet = ConstraintSet()
+                inchesTextViewSet.clone(calculatorConstraintLayout)
+                inchesTextViewSet.constrainWidth(inchesTextView.id, ConstraintSet.WRAP_CONTENT)
+                inchesTextViewSet.constrainHeight(inchesTextView.id, inchesEditText.height)
+                inchesTextViewSet.connect(inchesTextView.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
+                inchesTextViewSet.connect(inchesTextView.id, ConstraintSet.START, inchesEditText.id, ConstraintSet.END, 8)
+                inchesTextViewSet.applyTo(calculatorConstraintLayout)*/
+
+                if (feet != 0 && inches != 0.0) {
+
+                    feetEditText.setText(feet.toString())
+                    inchesEditText.setText(inches.toString())
+                }
+
+                previousHeightEditText = feetEditText
+            }
+
+            "metric" -> {
+
+                heightLabelLayout(heightTextView, calculatorConstraintLayout)
+
+                cmEditText.id = View.generateViewId()
+                cmEditText.inputType = (InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+                cmEditText.hint = "Centimeters"
+                /*cmTextView.id = View.generateViewId()
+
+                cmTextView.text = getString(R.string.centi)*/
+
+                calculatorConstraintLayout.addView(cmEditText)
+                //calculatorConstraintLayout.addView(cmTextView)
+
+                val cmEditTextSet = ConstraintSet()
+                cmEditTextSet.clone(calculatorConstraintLayout)
+                cmEditTextSet.constrainHeight(cmEditText.id, ConstraintSet.WRAP_CONTENT)
+                cmEditTextSet.constrainWidth(cmEditText.id, ConstraintSet.WRAP_CONTENT)
+                cmEditTextSet.setMargin(ConstraintSet.PARENT_ID, ConstraintSet.START, R.dimen.height_text_margin)
+                cmEditTextSet.connect(cmEditText.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
+                cmEditTextSet.connect(cmEditText.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
+                //cmEditTextSet.connect(cmEditText.id, ConstraintSet.END, cmTextView.id, ConstraintSet.START)
+                cmEditTextSet.applyTo(calculatorConstraintLayout)
+
+                /*val cmTextViewSet = ConstraintSet()
+                cmTextViewSet.clone(calculatorConstraintLayout)
+                cmTextViewSet.constrainWidth(cmTextView.id, ConstraintSet.WRAP_CONTENT)
+                cmTextViewSet.constrainHeight(cmTextView.id, ConstraintSet.WRAP_CONTENT)
+                cmTextViewSet.connect(cmTextView.id, ConstraintSet.START, cmEditText.id, ConstraintSet.END)
+                cmTextViewSet.connect(cmTextView.id, ConstraintSet.TOP, heightTextView.id, ConstraintSet.BOTTOM, 16)
+                cmTextViewSet.applyTo(calculatorConstraintLayout)*/
+
+                if (cm != 0.0) {
+
+                    cmEditText.setText(cm.toString())
+                }
+
+                previousHeightEditText = cmEditText
+            }
+        }
+
         if (weightMeasurement == "imperial") {
 
-            //val poundsEditText = EditText(this)
+            weightLabelLayout(weightTextView, calculatorConstraintLayout, previousHeightEditText)
             poundsEditText.id = View.generateViewId()
+            poundsEditText.hint = "Pounds"
             calculatorConstraintLayout.addView(poundsEditText)
             poundsEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            val poundsTextView = TextView(this)
+            /*val poundsTextView = TextView(this)
             poundsTextView.id = View.generateViewId()
             calculatorConstraintLayout.addView(poundsTextView)
 
-            poundsTextView.text = getString(R.string.pounds)
+            poundsTextView.text = getString(R.string.pounds)*/
 
             val weightImperialPoundEditTextSet = ConstraintSet()
 
@@ -492,41 +695,42 @@ class CalculatorActivity : AppCompatActivity() {
             weightImperialPoundEditTextSet.connect(poundsEditText.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
             weightImperialPoundEditTextSet.applyTo(calculatorConstraintLayout)
 
-            val weightImperialPoundTextView = ConstraintSet()
+            /*val weightImperialPoundTextView = ConstraintSet()
 
             weightImperialPoundTextView.clone(calculatorConstraintLayout)
             weightImperialPoundTextView.constrainWidth(poundsTextView.id, ConstraintSet.WRAP_CONTENT)
             weightImperialPoundTextView.constrainHeight(poundsTextView.id, ConstraintSet.WRAP_CONTENT)
             weightImperialPoundTextView.connect(poundsTextView.id, ConstraintSet.START, poundsEditText.id, ConstraintSet.END, 16)
             weightImperialPoundTextView.connect(poundsTextView.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
-            weightImperialPoundTextView.applyTo(calculatorConstraintLayout)
+            weightImperialPoundTextView.applyTo(calculatorConstraintLayout)*/
 
             previousView = poundsEditText
         }
 
         if (weightMeasurement == "metric") {
 
-            //val kilogramsEditText = EditText(this)
+            weightLabelLayout(weightTextView, calculatorConstraintLayout, previousHeightEditText)
             kilogramsEditText.id = View.generateViewId()
+            kilogramsEditText.hint = "Kilograms"
             calculatorConstraintLayout.addView(kilogramsEditText)
             kilogramsEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            val kilogramsTextView = TextView(this)
+            /*val kilogramsTextView = TextView(this)
             kilogramsTextView.id = View.generateViewId()
             calculatorConstraintLayout.addView(kilogramsTextView)
 
-            kilogramsTextView.text = getString(R.string.kilogram)
+            kilogramsTextView.text = getString(R.string.kilogram)*/
 
             val weightMetricSet = ConstraintSet()
 
             weightMetricSet.clone(calculatorConstraintLayout)
             weightMetricSet.constrainHeight(kilogramsEditText.id, ConstraintSet.WRAP_CONTENT)
             weightMetricSet.constrainWidth(kilogramsEditText.id, ConstraintSet.WRAP_CONTENT)
-            weightMetricSet.constrainHeight(kilogramsTextView.id, ConstraintSet.WRAP_CONTENT)
-            weightMetricSet.constrainWidth(kilogramsTextView.id, ConstraintSet.WRAP_CONTENT)
+            /*weightMetricSet.constrainHeight(kilogramsTextView.id, ConstraintSet.WRAP_CONTENT)
+            weightMetricSet.constrainWidth(kilogramsTextView.id, ConstraintSet.WRAP_CONTENT)*/
             weightMetricSet.connect(kilogramsEditText.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
             weightMetricSet.connect(kilogramsEditText.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
-            weightMetricSet.connect(kilogramsTextView.id, ConstraintSet.START, kilogramsEditText.id, ConstraintSet.END, 16)
-            weightMetricSet.connect(kilogramsTextView.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
+            /*weightMetricSet.connect(kilogramsTextView.id, ConstraintSet.START, kilogramsEditText.id, ConstraintSet.END, 16)
+            weightMetricSet.connect(kilogramsTextView.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)*/
             weightMetricSet.applyTo(calculatorConstraintLayout)
 
             previousView = kilogramsEditText
@@ -536,9 +740,10 @@ class CalculatorActivity : AppCompatActivity() {
 
             //val stoneEditText = EditText(this)
             stoneEditText.id = View.generateViewId()
+            stoneEditText.hint = "Stone"
             calculatorConstraintLayout.addView(stoneEditText)
             stoneEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            val stoneTextView = TextView(this)
+            /*val stoneTextView = TextView(this)
             stoneTextView.id = View.generateViewId()
             calculatorConstraintLayout.addView(stoneTextView)
             //val poundsEditText = EditText(this)
@@ -549,23 +754,23 @@ class CalculatorActivity : AppCompatActivity() {
             calculatorConstraintLayout.addView(poundsTextView)*/
 
             stoneTextView.text = getString(R.string.stone)
-            //poundsTextView.text = "LBS"
+            //poundsTextView.text = "LBS"*/
 
             val weightStoneSet = ConstraintSet()
 
             weightStoneSet.clone(calculatorConstraintLayout)
             weightStoneSet.constrainWidth(stoneEditText.id, ConstraintSet.WRAP_CONTENT)
             weightStoneSet.constrainHeight(stoneEditText.id, ConstraintSet.WRAP_CONTENT)
-            weightStoneSet.constrainWidth(stoneTextView.id, ConstraintSet.WRAP_CONTENT)
-            weightStoneSet.constrainHeight(stoneTextView.id, ConstraintSet.WRAP_CONTENT)
+            /*weightStoneSet.constrainWidth(stoneTextView.id, ConstraintSet.WRAP_CONTENT)
+            weightStoneSet.constrainHeight(stoneTextView.id, ConstraintSet.WRAP_CONTENT)*/
             weightStoneSet.constrainWidth(stonePoundsEditText.id, ConstraintSet.WRAP_CONTENT)
             weightStoneSet.constrainHeight(stonePoundsEditText.id, ConstraintSet.WRAP_CONTENT)
             /*weightStoneSet.constrainWidth(poundsTextView.id, ConstraintSet.WRAP_CONTENT)
             weightStoneSet.constrainHeight(poundsTextView.id, ConstraintSet.WRAP_CONTENT)*/
             weightStoneSet.connect(stoneEditText.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
             weightStoneSet.connect(stoneEditText.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
-            weightStoneSet.connect(stoneTextView.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
-            weightStoneSet.connect(stoneTextView.id, ConstraintSet.START, stoneEditText.id, ConstraintSet.END, 16)
+            /*weightStoneSet.connect(stoneTextView.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
+            weightStoneSet.connect(stoneTextView.id, ConstraintSet.START, stoneEditText.id, ConstraintSet.END, 16)*/
             /*weightStoneSet.connect(stonePoundsEditText.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
             weightStoneSet.connect(stonePoundsEditText.id, ConstraintSet.START, stoneTextView.id, ConstraintSet.END, 16)
             weightStoneSet.connect(poundsTextView.id, ConstraintSet.TOP, weightTextView.id, ConstraintSet.BOTTOM, 16)
@@ -588,6 +793,7 @@ class CalculatorActivity : AppCompatActivity() {
         val dailyActivityInfoButton = ImageButton(this)
         dailyActivityInfoButton.id = View.generateViewId()
         dailyActivityInfoButton.setImageResource(R.drawable.ic_info)
+        dailyActivityInfoButton.setBackgroundColor(Color.WHITE)
         calculatorConstraintLayout.addView(dailyActivityInfoButton)
 
         val dailyActivityVeryLightRadioButton = RadioButton(this)
@@ -777,18 +983,19 @@ class CalculatorActivity : AppCompatActivity() {
         val fatPercentageImageButton = ImageButton(this)
         fatPercentageImageButton.id = View.generateViewId()
         fatPercentageImageButton.setImageResource(R.drawable.ic_info)
+        fatPercentageImageButton.setBackgroundColor(Color.WHITE)
         calculatorConstraintLayout.addView(fatPercentageImageButton)
 
         val fatPercentageEditText = EditText(this)
         fatPercentageEditText.id = View.generateViewId()
-        //fatPercentageEditText.hint = "Percent"
+        fatPercentageEditText.hint = "Diet fat perecent"
         fatPercentageEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
         calculatorConstraintLayout.addView(fatPercentageEditText)
 
-        val fatPercentagePercentTextView = TextView(this)
+        /*val fatPercentagePercentTextView = TextView(this)
         fatPercentagePercentTextView.id = View.generateViewId()
         fatPercentagePercentTextView.text = "%"
-        calculatorConstraintLayout.addView(fatPercentagePercentTextView)
+        calculatorConstraintLayout.addView(fatPercentagePercentTextView)*/
 
         val fatPercentageSet = ConstraintSet()
         fatPercentageSet.clone(calculatorConstraintLayout)
@@ -800,8 +1007,8 @@ class CalculatorActivity : AppCompatActivity() {
         fatPercentageSet.connect(fatPercentageImageButton.id, ConstraintSet.TOP, physicalActivityLifeStyleRadioGroup.id, ConstraintSet.BOTTOM, 16)
         fatPercentageSet.connect(fatPercentageEditText.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
         fatPercentageSet.connect(fatPercentageEditText.id, ConstraintSet.TOP, fatPercentageTextView.id, ConstraintSet.BOTTOM, 16)
-        fatPercentageSet.connect(fatPercentagePercentTextView.id, ConstraintSet.START, fatPercentageEditText.id, ConstraintSet.END, 16)
-        fatPercentageSet.connect(fatPercentagePercentTextView.id, ConstraintSet.TOP, fatPercentageTextView.id, ConstraintSet.BOTTOM, 16)
+        /*fatPercentageSet.connect(fatPercentagePercentTextView.id, ConstraintSet.START, fatPercentageEditText.id, ConstraintSet.END, 16)
+        fatPercentageSet.connect(fatPercentagePercentTextView.id, ConstraintSet.TOP, fatPercentageTextView.id, ConstraintSet.BOTTOM, 16)*/
         fatPercentageSet.applyTo(calculatorConstraintLayout)
 
         fatPercentageImageButton.setOnClickListener {
@@ -1032,76 +1239,47 @@ class CalculatorActivity : AppCompatActivity() {
 
             Log.d("Calculate", "button")
 
-            if (weightMeasurement == "imperial") {
+            when (heightMeasurement) {
 
-                if (poundsEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(poundsEditText.text.toString())
-                        || !regexs.validNumber(fatPercentageEditText.text.toString())) {
+                "imperial" -> {
 
-                    val weightErrorDialog = AlertDialog.Builder(this)
+                    if (feetEditText.text.toString() == "" || inchesEditText.text.toString() == "" || (inchesEditText.text.toString().toDouble()) >= 13
+                            || (inchesEditText.text.toString().toDouble()) < 0 || !regexs.validNumber(feetEditText.text.toString()) ||
+                            !regexs.validNumber(inchesEditText.text.toString())) {
 
-                    weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for all fields.").setPositiveButton("OK") {
+                        val heightAlert = AlertDialog.Builder(this)
+                        heightAlert.setTitle("Height Error").setMessage("Please enter a valid number for both entries.").setPositiveButton("OK") {
 
-                        dialog, which ->
-                        dialog.cancel()
+                            dialog, which ->  dialog.cancel()
+                        }
+
+                        heightAlert.show()
+                    } else {
+
+                        weightCheck(poundsEditText, fatPercentageEditText, regexs, feetEditText, inchesEditText, cmEditText,
+                                kilogramsEditText, stoneEditText, decimalFormat, caloriesCalculatedTextView,
+                                proteinCalculatedTextView, fatsCalculatedTextView, carbsCalculatedTextView)
                     }
-
-                    weightErrorDialog.show()
-                } else {
-
-                    calculate(fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender, cm)
-                    caloriesCalculatedTextView.text = calories.toString()
-                    proteinCalculatedTextView.text = protein.toString() + "g"
-                    fatsCalculatedTextView.text = fat.toString() + "g"
-                    carbsCalculatedTextView.text = carbs.toString() + "g"
                 }
-            } else if (weightMeasurement == "metric") {
 
-                if (kilogramsEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(kilogramsEditText.text.toString())
-                        || !regexs.validNumber(fatPercentageEditText.toString())) {
+                "metric" -> {
 
-                    val weightErrorDialog = AlertDialog.Builder(this)
+                    if (cmEditText.text.toString() == "" || !regexs.validNumber(cmEditText.text.toString())) {
 
-                    weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for all fields.").setPositiveButton("OK") {
+                        val heightAlert = AlertDialog.Builder(this)
+                        heightAlert.setTitle("Height Error").setMessage("Please enter a valid number for entry.").setPositiveButton("OK") {
 
-                        dialog, which ->
-                        dialog.cancel()
+                            dialog, which ->
+                            dialog.cancel()
+                        }
+
+                        heightAlert.show()
+                    } else {
+                        weightCheck(poundsEditText, fatPercentageEditText, regexs, feetEditText, inchesEditText, cmEditText,
+                                kilogramsEditText, stoneEditText, decimalFormat, caloriesCalculatedTextView,
+                                proteinCalculatedTextView, fatsCalculatedTextView, carbsCalculatedTextView)
                     }
-
-                    weightErrorDialog.show()
-                } else {
-
-                    calculate(fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender, cm)
-                    caloriesCalculatedTextView.text = calories.toString()
-                    proteinCalculatedTextView.text = protein.toString() + "g"
-                    fatsCalculatedTextView.text = fat.toString() + "g"
-                    carbsCalculatedTextView.text = carbs.toString() + "g"
                 }
-            } else if (weightMeasurement == "stone") {
-
-                if (stoneEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(stoneEditText.text.toString())
-                        || !regexs.validNumber(fatPercentageEditText.text.toString())) {
-
-                    val weightErrorDialog = AlertDialog.Builder(this)
-
-                    weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry fo all fields").setPositiveButton("OK") {
-
-                        dialog, which ->
-                        dialog.cancel()
-                    }
-
-                    weightErrorDialog.show()
-                } else {
-
-                    calculate(fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender, cm)
-                    caloriesCalculatedTextView.text = calories.toString()
-                    proteinCalculatedTextView.text = protein.toString() + "g"
-                    fatsCalculatedTextView.text = fat.toString() + "g"
-                    carbsCalculatedTextView.text = carbs.toString() + "g"
-                }
-            } else {
-
-                Log.d("Inside calc", "calculator")
-
             }
         }
     }
@@ -1168,5 +1346,106 @@ class CalculatorActivity : AppCompatActivity() {
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    fun heightLabelLayout(heightTextView: TextView, calculatorConstraintLayout: ConstraintLayout) {
+        heightTextView.id = View.generateViewId()
+        heightTextView.text = "Height"
+        calculatorConstraintLayout.addView(heightTextView)
+        val heightTextViewSet = ConstraintSet()
+        heightTextViewSet.constrainHeight(heightTextView.id, ConstraintSet.WRAP_CONTENT)
+        heightTextViewSet.constrainWidth(heightTextView.id, 0)
+        heightTextViewSet.connect(heightTextView.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP, 10)
+        heightTextViewSet.connect(heightTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
+        heightTextViewSet.applyTo(calculatorConstraintLayout)
+    }
+
+    fun weightLabelLayout(weightTextView: TextView, calculatorConstraintLayout: ConstraintLayout, previousHeightEditText: View) {
+        weightTextView.id = View.generateViewId()
+        weightTextView.text = "Weight"
+        calculatorConstraintLayout.addView(weightTextView)
+        val weightTextViewSet = ConstraintSet()
+        weightTextViewSet.constrainHeight(weightTextView.id, ConstraintSet.WRAP_CONTENT)
+        weightTextViewSet.constrainWidth(weightTextView.id, 0)
+        weightTextViewSet.connect(weightTextView.id, ConstraintSet.TOP, previousHeightEditText.id, ConstraintSet.BOTTOM, 16)
+        weightTextViewSet.connect(weightTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 16)
+        weightTextViewSet.applyTo(calculatorConstraintLayout)
+    }
+
+    fun weightCheck(poundsEditText: EditText, fatPercentageEditText: EditText, regexs: Regexs, feetEditText: EditText, inchesEditText: EditText, cmEditText: EditText,
+                    kilogramsEditText: EditText, stoneEditText: EditText, decimalFormat: DecimalFormat, caloriesCalculatedTextView: TextView,
+                    proteinCalculatedTextView: TextView, fatsCalculatedTextView: TextView, carbsCalculatedTextView: TextView) {
+
+        if (weightMeasurement == "imperial") {
+
+            if (poundsEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(poundsEditText.text.toString())
+                    || !regexs.validNumber(fatPercentageEditText.text.toString())) {
+
+                val weightErrorDialog = AlertDialog.Builder(this)
+
+                weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for all fields.").setPositiveButton("OK") {
+
+                    dialog, which ->
+                    dialog.cancel()
+                }
+
+                weightErrorDialog.show()
+            } else {
+
+                calculate(feetEditText, inchesEditText, cmEditText, fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender)
+                caloriesCalculatedTextView.text = calories.toString()
+                proteinCalculatedTextView.text = protein.toString() + "g"
+                fatsCalculatedTextView.text = fat.toString() + "g"
+                carbsCalculatedTextView.text = carbs.toString() + "g"
+            }
+        } else if (weightMeasurement == "metric") {
+
+            if (kilogramsEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(kilogramsEditText.text.toString())
+                    || !regexs.validNumber(fatPercentageEditText.toString())) {
+
+                val weightErrorDialog = AlertDialog.Builder(this)
+
+                weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for all fields.").setPositiveButton("OK") {
+
+                    dialog, which ->
+                    dialog.cancel()
+                }
+
+                weightErrorDialog.show()
+            } else {
+
+                calculate(feetEditText, inchesEditText, cmEditText, fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender)
+                caloriesCalculatedTextView.text = calories.toString()
+                proteinCalculatedTextView.text = protein.toString() + "g"
+                fatsCalculatedTextView.text = fat.toString() + "g"
+                carbsCalculatedTextView.text = carbs.toString() + "g"
+            }
+        } else if (weightMeasurement == "stone") {
+
+            if (stoneEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(stoneEditText.text.toString())
+                    || !regexs.validNumber(fatPercentageEditText.text.toString())) {
+
+                val weightErrorDialog = AlertDialog.Builder(this)
+
+                weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry fo all fields").setPositiveButton("OK") {
+
+                    dialog, which ->
+                    dialog.cancel()
+                }
+
+                weightErrorDialog.show()
+            } else {
+
+                calculate(feetEditText, inchesEditText, cmEditText, fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender)
+                caloriesCalculatedTextView.text = calories.toString()
+                proteinCalculatedTextView.text = protein.toString() + "g"
+                fatsCalculatedTextView.text = fat.toString() + "g"
+                carbsCalculatedTextView.text = carbs.toString() + "g"
+            }
+        } else {
+
+            Log.d("Inside calc", "calculator")
+
+        }
     }
 }

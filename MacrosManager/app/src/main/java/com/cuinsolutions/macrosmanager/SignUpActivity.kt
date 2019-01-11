@@ -1,21 +1,19 @@
 package com.cuinsolutions.macrosmanager
 
-import android.content.DialogInterface
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.json.JSONArray
-import org.json.JSONObject
+import java.util.*
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -143,7 +141,7 @@ class SignUpActivity : AppCompatActivity() {
                     val userData = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "showAds" to true, "gender" to intent.getStringExtra("gender"),
                             "heightMeasurement" to intent.getStringExtra("heightMeasurement"), "weightMeasurement" to intent.getStringExtra("weightMeasurement"),
                             "feet" to intent.getIntExtra("feet", 0), "inches" to intent.getDoubleExtra("inches", 0.0), "cm" to intent.getDoubleExtra("cm", 0.0),
-                            "birthDate" to intent.getStringExtra("birthDate"), "dailyActivity" to intent.getStringExtra("dailyActivity"),
+                            "birthDate" to Timestamp(Date(intent.getLongExtra("birthDate", 0))), "dailyActivity" to intent.getStringExtra("dailyActivity"),
                             "physicalActivityLifestyle" to intent.getStringExtra("physicalActivityLifestyle"), "goal" to intent.getStringExtra("goal"),
                             "pounds" to intent.getDoubleExtra("pounds", 0.0), "kg" to intent.getDoubleExtra("kg", 0.0),
                             "stone" to intent.getDoubleExtra("stone", 0.0), "dietFatPercent" to intent.getDoubleExtra("dietFatPercent", 0.0),

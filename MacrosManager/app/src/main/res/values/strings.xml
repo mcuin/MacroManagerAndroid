@@ -1,11 +1,5 @@
 <resources>
     <string name="app_name">MacrosManager</string>
-    <string name="pounds">LBS</string>
-    <string name="kilogram">KG</string>
-    <string name="stone">ST</string>
-    <string name="feet">FT</string>
-    <string name="inches">IN</string>
-    <string name="centi">CM</string>
     <string name="daily_activity_level">Daily Activity Level</string>
     <string name="very_light">Very Light</string>
     <string name="light">Light</string>

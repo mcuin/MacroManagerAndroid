@@ -5,17 +5,14 @@ import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.graphics.drawable.GradientDrawable
-import android.inputmethodservice.Keyboard
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
-import android.support.constraint.ConstraintSet
-import android.support.design.widget.BottomNavigationView
-import android.support.design.widget.FloatingActionButton
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutCompat
-import android.support.v7.widget.LinearLayoutManager
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
@@ -25,20 +22,19 @@ import android.widget.EditText
 import android.widget.GridView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.android.synthetic.main.activity_daily.*
-import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 
 
 class DailyActivity : AppCompatActivity() {
@@ -65,6 +61,8 @@ class DailyActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         fireStore = FirebaseFirestore.getInstance()
+        val settings = FirebaseFirestoreSettings.Builder().setTimestampsInSnapshotsEnabled(true).build()
+        fireStore.firestoreSettings = settings
 
         val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
         val alarmSet = (PendingIntent.getBroadcast(this, 243, resetIntent, PendingIntent.FLAG_UPDATE_CURRENT) != null)
@@ -336,6 +334,7 @@ class DailyActivity : AppCompatActivity() {
         val dailyMacrosGridView = findViewById<GridView>(R.id.macrosGridView)
         val dailyAdView = findViewById<AdView>(R.id.dailyAdView)
         val dailyBottomNav = findViewById<BottomNavigationView>(R.id.dailyBottomNavtigation)
+        val userFoodRecyclerView = findViewById<RecyclerView>(R.id.userFoodRecyclerView)
 
         if (showAds) {
             Log.d("Ads", "running")
@@ -353,7 +352,7 @@ class DailyActivity : AppCompatActivity() {
         if (dailyMeals.size != 0) {
 
             dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
-            userFoodRecyclerView.layoutManager = LinearLayoutManager(this)
+            userFoodRecyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
             userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, dailyMeals, DailyMacrosGridViewAdapter(this, macrosArrayList()))
         } else {
 
