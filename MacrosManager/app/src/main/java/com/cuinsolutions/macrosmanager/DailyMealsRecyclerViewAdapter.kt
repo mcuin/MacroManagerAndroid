@@ -2,13 +2,13 @@ package com.cuinsolutions.macrosmanager
 
 import android.content.Context
 import android.content.Intent
-import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 
 /**
@@ -45,13 +45,13 @@ class DailyMealsRecyclerViewAdapter(val context: Context, val dailyMeals: List<H
         }
         holder.mealCaloriesTextVeiw.text = mealJSONObject["calories"].toString() + " calories"
 
-        holder.mealButton.setOnClickListener {
+        /*holder.mealButton.setOnClickListener {
 
             val mealIntent = Intent(context, AddMealActivity::class.java)
             mealIntent.putExtra("meal", position)
             mealIntent.putExtra("dailyMeals", gson.toJson(dailyMeals))
             context.startActivity(mealIntent)
-        }
+        }*/
 
         /*holder.mealButton.setOnLongClickListener {
 

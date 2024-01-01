@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MacrosManagerAndroid.iml" filepath="$PROJECT_DIR$/MacrosManagerAndroid.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/MacroManagerAndroid.iml" filepath="$PROJECT_DIR$/.idea/MacroManagerAndroid.iml" />
     </modules>
   </component>
 </project>

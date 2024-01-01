@@ -5,4 +5,12 @@
     <dimen name="numbers">16sp</dimen>
     <dimen name="meal_title">20sp</dimen>
     <dimen name="add_meal_title">20sp</dimen>
+    <dimen name="margin_standard">16dp</dimen>
+    <dimen name="margin_standard_minus">14dp</dimen>
+    <dimen name="margin_small">10dp</dimen>
+    <dimen name="margin_small_minus">8dp</dimen>
+    <dimen name="title">34sp</dimen>
+    <dimen name="body">16sp</dimen>
+    <dimen name="header">24sp</dimen>
+    <dimen name="zero">0dp</dimen>
 </resources>

@@ -6,7 +6,6 @@ import android.content.Intent
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import org.json.JSONArray
 
 /**
  * Created by mykalcuin on 9/21/17.

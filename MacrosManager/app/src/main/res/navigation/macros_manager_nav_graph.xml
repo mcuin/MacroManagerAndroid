@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/macros_manager_nav_graph"
+    app:startDestination="@id/daily_info_fragment">
+
+    <action
+        android:id="@+id/navigate_to_sign_up"
+        app:destination="@id/sign_up_fragment" />
+
+    <action
+        android:id="@+id/navigate_to_settings"
+        app:destination="@id/settings_fragment" />
+
+    <fragment
+        android:id="@+id/daily_info_fragment"
+        android:name="com.cuinsolutions.macrosmanager.DailyInfoFragment"
+        tools:layout="@layout/fragment_daily_info">
+
+        <action
+            android:id="@+id/navigate_to_macros_calculator"
+            app:destination="@id/macros_calculator_fragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/macros_calculator_fragment"
+        android:name="com.cuinsolutions.macrosmanager.MacrosCalculatorFragment"
+        tools:layout="@layout/fragment_macros_calculator" />
+
+    <fragment
+        android:id="@+id/sign_up_fragment"
+        android:name="com.cuinsolutions.macrosmanager.SignUpFragment"
+        tools:layout="@layout/fragment_sign_up" />
+
+    <fragment
+        android:id="@+id/settings_fragment"
+        android:name="com.cuinsolutions.macrosmanager.SettingsFragment"
+        tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/add_meal_fragment"
+        android:name="com.cuinsolutions.macrosmanager.AddMealFragment"
+        tools:layout="@layout/fragment_add_meal" />
+
+</navigation>

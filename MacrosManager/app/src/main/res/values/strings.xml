@@ -1,4 +1,7 @@
 <resources>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_in">Sign In</string>
+    <string name="settings">Settings</string>
     <string name="app_name">MacrosManager</string>
     <string name="daily_activity_level">Daily Activity Level</string>
     <string name="very_light">Very Light</string>
@@ -31,6 +34,42 @@
     <string name="save">Save</string>
     <string name="set_birth_date">Tap to set your birthday.</string>
     <string name="grams">g</string>
-    
+    <string name="sign_up_description">Sign up to get access to your data across devices, and receive other features.</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="password_confirm">Confirm Password</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
+    <string name="gender">Gender</string>
+    <string name="height_measurement">Height Measurement</string>
+    <string name="weight_measurement">Weight Measurement</string>
+    <string name="imperial">Imperial</string>
+    <string name="metric">Metric</string>
+    <string name="stone">Stone</string>
+    <string name="birthday">Birthday</string>
+    <string name="servings_size">Serving Size</string>
+    <string name="meal_name">Meal Name</string>
+    <string name="height">Height</string>
+    <string name="feet">Feet</string>
+    <string name="inches">Inches</string>
+    <string name="centimeters">Centimeters</string>
+    <string name="ft">ft</string>
+    <string name="in">in</string>
+    <string name="cm">cm</string>
+    <string name="weight">Weight</string>
+    <string name="pounds">Pounds</string>
+    <string name="lbs">lbs</string>
+    <string name="kilograms">Kilograms</string>
+    <string name="daily_activity_level_explanation">Very Light: Sitting, little walking, little other activities in a day\n\nLight: Typing, lab work, some walking in a day\n\nModerate: Light manual labor job with 1–2 hours weight training or other training\n\nHeavy: Heavy manual labor job with 2–4 hours weight training or sports\n\nVery Heavy: Moderate or heavy for 8 hours or more a day plus 2–4 hours intense training</string>
+    <string name="diet_fat_percent">Diet Fat Percent</string>
+    <string name="twenty_five_percent">25%</string>
+    <string name="thirty_percent">30%</string>
+    <string name="thirty_five_percent">35%</string>
+    <string name="custom">Custom</string>
+    <string name="percent">Percent</string>
+    <string name="fat_percent_explanation">13–18: Please stay in the 25–35% range for best results.\n\n19+: Please stay in the 20–35% range for best results.\n\nEnjoy any percentage regardless of what your current goal is as long as you stay within the suggested ranges.\n\nNote: Try to keep saturated fats under 10%.</string>
+
     <string name="admob_id">ca-app-pub-6601965971959563~1619744217</string>
 </resources>
