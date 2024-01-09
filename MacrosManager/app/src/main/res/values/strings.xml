@@ -70,6 +70,14 @@
     <string name="custom">Custom</string>
     <string name="percent">Percent</string>
     <string name="fat_percent_explanation">13–18: Please stay in the 25–35% range for best results.\n\n19+: Please stay in the 20–35% range for best results.\n\nEnjoy any percentage regardless of what your current goal is as long as you stay within the suggested ranges.\n\nNote: Try to keep saturated fats under 10%.</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="height_error">Height Error</string>
+    <string name="height_entry_errors">Please enter a valid number for both height entries.</string>
+    <string name="height_entry_error">Please enter a valid number for height.</string>
+    <string name="weight_error">Weight Error</string>
+    <string name="weight_entry_error">Please enter a valid number for weight.</string>
+    <string name="weight_entry_errors">Please enter a valid number for both weight entries.</string>
 
     <string name="admob_id">ca-app-pub-6601965971959563~1619744217</string>
 </resources>

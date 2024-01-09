@@ -13,6 +13,10 @@
         android:id="@+id/navigate_to_settings"
         app:destination="@id/settings_fragment" />
 
+    <action
+        android:id="@+id/navigate_to_sign_in"
+        app:destination="@id/sign_in_dialog" />
+
     <fragment
         android:id="@+id/daily_info_fragment"
         android:name="com.cuinsolutions.macrosmanager.DailyInfoFragment"
@@ -43,5 +47,10 @@
         android:id="@+id/add_meal_fragment"
         android:name="com.cuinsolutions.macrosmanager.AddMealFragment"
         tools:layout="@layout/fragment_add_meal" />
+
+    <dialog
+        android:id="@+id/sign_in_dialog"
+        android:name="com.cuinsolutions.macrosmanager.SignInDialogFragment"
+        tools:layout="@layout/fragment_sign_in_dialog" />
 
 </navigation>

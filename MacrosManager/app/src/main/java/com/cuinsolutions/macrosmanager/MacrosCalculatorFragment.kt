@@ -95,37 +95,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                     }
 
                     R.id.action_sign_in -> {
-
-                        val signInAlert = android.app.AlertDialog.Builder(requireContext())
-                        val emailEditText = EditText(this)
-                        val passwordEditText = EditText(this)
-                        emailEditText.hint = "Email"
-                        passwordEditText.hint = "Password"
-                        emailEditText.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-                        passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
-                        val signInLayout = LinearLayout(requireContext())
-                        signInLayout.orientation = LinearLayout.VERTICAL
-                        signInLayout.addView(emailEditText)
-                        signInLayout.addView(passwordEditText)
-                        signInAlert.setView(signInLayout)
-
-                        signInAlert.setTitle("Sign In").setMessage("Please enter your email and password to sign in.").setPositiveButton("Sign In") {
-                                dialog, which ->  macrosManagerViewModel.auth.signInWithEmailAndPassword(emailEditText.text.toString(), passwordEditText.text.toString()).addOnSuccessListener {
-                            recreate()
-                        }.addOnFailureListener {
-
-                            val loginFailAlert = android.app.AlertDialog.Builder(requireContext())
-                            loginFailAlert.setTitle("Login Failed").setMessage("Your login failed. Please try again later.").setNeutralButton("Ok") {
-                                    dialog, which ->  dialog.dismiss()
-                            }
-
-                            loginFailAlert.show()
-                        }
-                        }.setNegativeButton("Cancel") {
-                                dialog, which ->  dialog.dismiss()
-                        }
-
-                        signInAlert.show()
+                        findNavController().navigate(MacrosCalculatorFragmentDirections.navigateToSignIn())
                     }
                 }
 
@@ -181,60 +151,111 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
             binding.calculatorDailyActivityLevelInfo -> {
                 val dailyActivityInfoDialog = AlertDialog.Builder(requireContext())
                 dailyActivityInfoDialog.setMessage(R.string.daily_activity_level_explanation)
-                dailyActivityInfoDialog.setPositiveButton("OK", null)
+                dailyActivityInfoDialog.setPositiveButton(R.string.ok, null)
                 dailyActivityInfoDialog.show()
             }
             binding.calculatorDietFatPercentInfo -> {
                 val fatPercentDialog = AlertDialog.Builder(requireContext())
                 fatPercentDialog.setMessage(R.string.fat_percent_explanation)
-                fatPercentDialog.setPositiveButton("OK", null)
+                fatPercentDialog.setPositiveButton(R.string.ok, null)
                 fatPercentDialog.show()
             }
             binding.calculatorCalculate -> {
-                Log.d("Calculate", "button")
-
                 when (heightMeasurement) {
-
                     "imperial" -> {
+                        if (binding.calculatorHeightFeetEdit.text.toString().isBlank() ||
+                            binding.calculatorHeightInchesEdit.text.toString().isBlank() ||
+                            !(0.0..12.0).contains(binding.calculatorHeightInchesEdit.text.toString().toDouble())
+                            || !Regexs().validNumber(binding.calculatorHeightFeetEdit.text.toString()) ||
+                            !Regexs().validNumber(binding.calculatorHeightInchesEdit.text.toString())) {
 
-                        if (feetEditText.text.toString() == "" || inchesEditText.text.toString() == "" || (inchesEditText.text.toString().toDouble()) >= 13
-                            || (inchesEditText.text.toString().toDouble()) < 0 || !regexs.validNumber(feetEditText.text.toString()) ||
-                            !regexs.validNumber(inchesEditText.text.toString())) {
+                            AlertDialog.Builder(requireContext())
+                            .setTitle(R.string.height_error)
+                            .setMessage(R.string.height_entry_errors)
+                            .setPositiveButton(R.string.ok) { dialog, _ ->
+                                dialog.cancel()
+                            }.show()
 
-                            val heightAlert = AlertDialog.Builder(this)
-                            heightAlert.setTitle("Height Error").setMessage("Please enter a valid number for both entries.").setPositiveButton("OK") {
-
-                                    dialog, which ->  dialog.cancel()
-                            }
-
-                            heightAlert.show()
-                        } else {
-
-                            weightCheck(poundsEditText, fatPercentageEditText, regexs, feetEditText, inchesEditText, cmEditText,
-                                kilogramsEditText, stoneEditText, decimalFormat, caloriesCalculatedTextView,
-                                proteinCalculatedTextView, fatsCalculatedTextView, carbsCalculatedTextView)
+                            return
                         }
                     }
 
                     "metric" -> {
+                        if (binding.calculatorHeightCentimetersEdit.text.toString().isBlank() ||
+                            !Regexs().validNumber(binding.calculatorHeightCentimetersEdit.text.toString())) {
 
-                        if (cmEditText.text.toString() == "" || !regexs.validNumber(cmEditText.text.toString())) {
+                            AlertDialog.Builder(requireContext())
+                                .setTitle(R.string.height_error)
+                                .setMessage(R.string.height_entry_error)
+                                .setPositiveButton(R.string.ok) { dialog, _ ->
+                                    dialog.cancel()
+                                }.show()
 
-                            val heightAlert = AlertDialog.Builder(this)
-                            heightAlert.setTitle("Height Error").setMessage("Please enter a valid number for entry.").setPositiveButton("OK") {
-
-                                    dialog, which ->
-                                dialog.cancel()
-                            }
-
-                            heightAlert.show()
-                        } else {
-                            weightCheck(poundsEditText, fatPercentageEditText, regexs, feetEditText, inchesEditText, cmEditText,
-                                kilogramsEditText, stoneEditText, decimalFormat, caloriesCalculatedTextView,
-                                proteinCalculatedTextView, fatsCalculatedTextView, carbsCalculatedTextView)
+                            return
                         }
                     }
                 }
+
+                when(weightMeasurement) {
+                    "imperial" -> {
+                        if (binding.calculatorWeightPoundsEdit.text.toString().isBlank() ||
+                             !Regexs().validNumber(binding.calculatorWeightPoundsEdit.text.toString())) {
+
+                            AlertDialog.Builder(requireContext())
+                                .setTitle(R.string.weight_error)
+                                .setMessage(R.string.weight_entry_error)
+                                .setPositiveButton(R.string.ok) { dialog, _ ->
+                                    dialog.cancel()
+                                }.show()
+
+                            return
+                        }
+                    }
+                    "metric" -> {
+
+                        if (binding.calculatorWeightKilogramsEdit.text.toString().isBlank() ||
+                            !Regexs().validNumber(binding.calculatorWeightKilogramsEdit.text.toString())) {
+
+                            val weightErrorDialog = AlertDialog.Builder(requireContext())
+
+                            weightErrorDialog.setTitle("Weight Error")
+                                .setMessage("Please enter a valid entry for all fields.")
+                                .setPositiveButton("OK") {
+
+                                        dialog, which ->
+                                    dialog.cancel()
+                                }
+
+                            weightErrorDialog.show()
+                        }
+                    }
+                    "stone" -> {
+
+                        if (stoneEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(stoneEditText.text.toString())
+                            || !regexs.validNumber(fatPercentageEditText.text.toString())) {
+
+                            val weightErrorDialog = AlertDialog.Builder(requireContext())
+
+                            weightErrorDialog.setTitle("Weight Error")
+                                .setMessage("Please enter a valid entry fo all fields")
+                                .setPositiveButton("OK") {
+
+                                        dialog, which ->
+                                    dialog.cancel()
+                                }
+
+                            weightErrorDialog.show()
+                        }
+                    }
+                }
+
+                fatPercentageEditText.text.toString() == "" !regexs.validNumber(fatPercentageEditText.text.toString())
+
+                calculate(feetEditText, inchesEditText, cmEditText, fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender)
+                caloriesCalculatedTextView.text = calories.toString()
+                proteinCalculatedTextView.text = protein.toString() + "g"
+                fatsCalculatedTextView.text = fat.toString() + "g"
+                carbsCalculatedTextView.text = carbs.toString() + "g"
             }
         }
     }
@@ -271,7 +292,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 protein = it.get("protein").toString().toInt()
             }.addOnFailureListener {
 
-                Toast.makeText(this, "There was an issue getting your data. Please try again later.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "There was an issue getting your data. Please try again later.", Toast.LENGTH_SHORT).show()
                 finish()
             }
         } else if (userPreferences.contains("weightMeasurement") && userPreferences.contains("birthDate") && userPreferences.contains("gender") &&
@@ -339,7 +360,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
             loadUI(weightMeasurement, birthDate, gender, cm, userPreferences)
         } else {
-            val errorDialog = AlertDialog.Builder(this)
+            val errorDialog = AlertDialog.Builder(requireContext())
 
             errorDialog.setTitle("Settings Error").setMessage("Please visit the settings page first to fill out some information about yourself for use in " +
                     "calculations.")
@@ -604,83 +625,6 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
             })
 
             createUserDialog.show()
-        }
-    }
-
-    fun weightCheck(poundsEditText: EditText, fatPercentageEditText: EditText, regexs: Regexs, feetEditText: EditText, inchesEditText: EditText, cmEditText: EditText,
-                    kilogramsEditText: EditText, stoneEditText: EditText, decimalFormat: DecimalFormat, caloriesCalculatedTextView: TextView,
-                    proteinCalculatedTextView: TextView, fatsCalculatedTextView: TextView, carbsCalculatedTextView: TextView) {
-
-        if (weightMeasurement == "imperial") {
-
-            if (poundsEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(poundsEditText.text.toString())
-                    || !regexs.validNumber(fatPercentageEditText.text.toString())) {
-
-                val weightErrorDialog = AlertDialog.Builder(this)
-
-                weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for all fields.").setPositiveButton("OK") {
-
-                    dialog, which ->
-                    dialog.cancel()
-                }
-
-                weightErrorDialog.show()
-            } else {
-
-                calculate(feetEditText, inchesEditText, cmEditText, fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender)
-                caloriesCalculatedTextView.text = calories.toString()
-                proteinCalculatedTextView.text = protein.toString() + "g"
-                fatsCalculatedTextView.text = fat.toString() + "g"
-                carbsCalculatedTextView.text = carbs.toString() + "g"
-            }
-        } else if (weightMeasurement == "metric") {
-
-            if (kilogramsEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(kilogramsEditText.text.toString())
-                    || !regexs.validNumber(fatPercentageEditText.toString())) {
-
-                val weightErrorDialog = AlertDialog.Builder(this)
-
-                weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry for all fields.").setPositiveButton("OK") {
-
-                    dialog, which ->
-                    dialog.cancel()
-                }
-
-                weightErrorDialog.show()
-            } else {
-
-                calculate(feetEditText, inchesEditText, cmEditText, fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender)
-                caloriesCalculatedTextView.text = calories.toString()
-                proteinCalculatedTextView.text = protein.toString() + "g"
-                fatsCalculatedTextView.text = fat.toString() + "g"
-                carbsCalculatedTextView.text = carbs.toString() + "g"
-            }
-        } else if (weightMeasurement == "stone") {
-
-            if (stoneEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(stoneEditText.text.toString())
-                    || !regexs.validNumber(fatPercentageEditText.text.toString())) {
-
-                val weightErrorDialog = AlertDialog.Builder(this)
-
-                weightErrorDialog.setTitle("Weight Error").setMessage("Please enter a valid entry fo all fields").setPositiveButton("OK") {
-
-                    dialog, which ->
-                    dialog.cancel()
-                }
-
-                weightErrorDialog.show()
-            } else {
-
-                calculate(feetEditText, inchesEditText, cmEditText, fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender)
-                caloriesCalculatedTextView.text = calories.toString()
-                proteinCalculatedTextView.text = protein.toString() + "g"
-                fatsCalculatedTextView.text = fat.toString() + "g"
-                carbsCalculatedTextView.text = carbs.toString() + "g"
-            }
-        } else {
-
-            Log.d("Inside calc", "calculator")
-
         }
     }
 }
