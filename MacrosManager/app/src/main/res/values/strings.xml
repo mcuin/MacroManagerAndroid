@@ -74,10 +74,12 @@
     <string name="ok">OK</string>
     <string name="height_error">Height Error</string>
     <string name="height_entry_errors">Please enter a valid number for both height entries.</string>
-    <string name="height_entry_error">Please enter a valid number for height.</string>
+    <string name="height_entry_error">Please enter a valid number for your height.</string>
     <string name="weight_error">Weight Error</string>
-    <string name="weight_entry_error">Please enter a valid number for weight.</string>
+    <string name="weight_entry_error">Please enter a valid number for your weight.</string>
     <string name="weight_entry_errors">Please enter a valid number for both weight entries.</string>
+    <string name="custom_fat_error">Custom Fat Percent Error</string>
+    <string name="custom_fat_entry_error">Please enter a valid fat perfect for your diet, or select one of the other options.</string>
 
     <string name="admob_id">ca-app-pub-6601965971959563~1619744217</string>
 </resources>

@@ -22,6 +22,7 @@ import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.cuinsolutions.macrosmanager.databinding.FragmentMacrosCalculatorBinding
 import com.google.android.gms.ads.AdRequest
@@ -44,6 +45,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
     val macrosManagerViewModel: MacrosManagerViewModel by activityViewModels {
         MacrosManagerViewModel.MacrosManagerFactory(requireActivity().application)
     }
+    val macrosCalculatorViewModel: MacrosCalculatorViewModel by viewModels()
     private lateinit var heightMeasurement: String
     private lateinit var weightMeasurement: String
     private lateinit var gender: String
@@ -129,6 +131,9 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
         binding.calculatorFatPercentGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.calculator_fat_percent_twenty_five -> {}
+                R.id.calculator_fat_percent_thirty -> {}
+                R.id.calculator_fat_percent_thirty_five -> {}
+                R.id.calculator_fat_percent_custom -> {}
             }
         }
 
@@ -161,6 +166,8 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 fatPercentDialog.show()
             }
             binding.calculatorCalculate -> {
+                var centimeters = -1.0
+                var kilograms = -1.0
                 when (heightMeasurement) {
                     "imperial" -> {
                         if (binding.calculatorHeightFeetEdit.text.toString().isBlank() ||
@@ -178,6 +185,9 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
                             return
                         }
+
+                        centimeters = macrosCalculatorViewModel.heightImperialToMetric(binding.calculatorHeightFeetEdit.text.toString().toInt(),
+                            binding.calculatorHeightInchesEdit.text.toString().toDouble())
                     }
 
                     "metric" -> {
@@ -193,6 +203,8 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
                             return
                         }
+
+                        centimeters = binding.calculatorHeightCentimetersEdit.text.toString().toDouble()
                     }
                 }
 
@@ -210,46 +222,59 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
                             return
                         }
+
+                        kilograms = macrosCalculatorViewModel.weightImperialToMetric(binding.calculatorWeightPoundsEdit.text.toString().toDouble())
                     }
                     "metric" -> {
-
                         if (binding.calculatorWeightKilogramsEdit.text.toString().isBlank() ||
                             !Regexs().validNumber(binding.calculatorWeightKilogramsEdit.text.toString())) {
 
-                            val weightErrorDialog = AlertDialog.Builder(requireContext())
-
-                            weightErrorDialog.setTitle("Weight Error")
-                                .setMessage("Please enter a valid entry for all fields.")
-                                .setPositiveButton("OK") {
-
-                                        dialog, which ->
+                            AlertDialog.Builder(requireContext())
+                                .setTitle(R.string.weight_error)
+                                .setMessage(R.string.weight_entry_error)
+                                .setPositiveButton(R.string.ok) { dialog, _ ->
                                     dialog.cancel()
-                                }
+                                }.show()
 
-                            weightErrorDialog.show()
+                            return
                         }
+
+                        kilograms = binding.calculatorWeightKilogramsEdit.text.toString().toDouble()
                     }
                     "stone" -> {
+                        if (binding.calculatorWeightStoneEdit.text.toString().isBlank() ||
+                            !Regexs().validNumber(binding.calculatorWeightStoneEdit.text.toString())) {
 
-                        if (stoneEditText.text.toString() == "" || fatPercentageEditText.text.toString() == "" || !regexs.validNumber(stoneEditText.text.toString())
-                            || !regexs.validNumber(fatPercentageEditText.text.toString())) {
-
-                            val weightErrorDialog = AlertDialog.Builder(requireContext())
-
-                            weightErrorDialog.setTitle("Weight Error")
-                                .setMessage("Please enter a valid entry fo all fields")
-                                .setPositiveButton("OK") {
-
-                                        dialog, which ->
+                            AlertDialog.Builder(requireContext())
+                                .setTitle(R.string.weight_error)
+                                .setMessage(R.string.weight_entry_errors)
+                                .setPositiveButton(R.string.ok) { dialog, _ ->
                                     dialog.cancel()
-                                }
+                                }.show()
 
-                            weightErrorDialog.show()
+                            return
                         }
+
+                        kilograms = macrosCalculatorViewModel.weightStoneToMetric(binding.calculatorWeightStoneEdit.text.toString().toInt(),
+                            binding.calculatorWeightPoundsEdit.text.toString().toDouble())
                     }
                 }
 
-                fatPercentageEditText.text.toString() == "" !regexs.validNumber(fatPercentageEditText.text.toString())
+                if (binding.calculatorFatPercentCustom.isChecked &&
+                    (binding.calculatorFatPercentCustomEdit.text.toString().isBlank() || !
+                    Regexs().validNumber(binding.calculatorFatPercentCustomEdit.text.toString()))) {
+
+                    AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.custom_fat_error)
+                        .setMessage(R.string.custom_fat_entry_error)
+                        .setPositiveButton(R.string.ok) { dialog, _ ->
+                            dialog.cancel()
+                        }.show()
+
+                    return
+                }
+
+
 
                 calculate(feetEditText, inchesEditText, cmEditText, fatPercentageEditText, poundsEditText, kilogramsEditText, stoneEditText, decimalFormat, weightMeasurement, birthDate, gender)
                 caloriesCalculatedTextView.text = calories.toString()
@@ -378,253 +403,6 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
             })
 
             errorDialog.show()
-        }
-    }
-
-    private fun calculate(feetEditText: EditText, inchesEditText: EditText, cmEditText: EditText, fatPercentageEditText: EditText, poundsEditText: EditText, kilogramsEditText: EditText, stoneEditText: EditText, decimalFormat: DecimalFormat,
-                          weightMeasurement: String, birthDate: Date, gender: String) {
-
-        val userPreferences = PreferencesManager().getInstance()
-
-        dietFatPercent = fatPercentageEditText.text.toString().toDouble()
-
-        when (weightMeasurement) {
-
-            "imperial" -> {
-
-                pounds = poundsEditText.text.toString().toDouble()
-                kg = pounds * 0.454
-                stone = (pounds / 14)
-            }
-
-            "metric" -> {
-
-                kg = kilogramsEditText.text.toString().toDouble()
-                pounds = kg / 0.454
-                stone = kg * .157
-            }
-
-            "stone" -> {
-
-                stone = stoneEditText.text.toString().toDouble()
-                pounds = stone * 14
-                kg = stone * 6.35
-            }
-        }
-
-        when (heightMeasurement) {
-
-            "imperial" -> {
-
-                val totalInches = ((Integer.valueOf(feetEditText.text.toString())) * 12) + (inchesEditText.text.toString().toDouble())
-                val cmCalced = totalInches * 2.54
-
-                feet = feetEditText.text.toString().toInt()
-                inches = inchesEditText.text.toString().toDouble()//editor.putString("inches", decimalFormat.format(inchesEditText.text.toString().toDouble()).toString())
-                cm = cmCalced//editor.putString("cm", decimalFormat.format(cm).toString())
-            }
-
-            "metric"-> {
-
-                val feetConversion = (cmEditText.text.toString().toFloat()) / 30.48
-                val feetRemainder = feetConversion % 1
-                val feetCalced = feetConversion - feetRemainder
-                val inchesCalced = ((cmEditText.text.toString().toFloat()) / 2.54) - (feetCalced * 12) + feetRemainder
-
-                cm = cmEditText.text.toString().toDouble()
-                feet = feetCalced.toInt()//editor.putString("feet", decimalFormat.format(feet).toString())
-                inches = inchesCalced
-            }
-        }
-
-        var bmr = 0.0
-        val tdee: Double
-        val calories: Double
-        val protein: Double
-        val proteinCalories: Double
-        val fat: Double
-        val fatCalories: Double
-        val carbs: Double
-        val carbsCalories: Double
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy")//SimpleDateFormat()
-        val age = if (Date().month >= birthDate.month) {
-            Date().year - birthDate.year
-        } else {
-            Date().year - birthDate.year - 1//(java.util.concurrent.TimeUnit.DAYS.convert(dateFormat.parse(DateTime.now().toString()).time -
-        }
-                //dateFormat.format(birthDate), java.util.concurrent.TimeUnit.MILLISECONDS) / 365)
-
-        Log.d("Current Date", Date().toString())
-        Log.d("Birth Date", birthDate.toString())
-        Log.d("Current Year", Date().year.toString())
-        Log.d("Birth Year", birthDate.year.toString())
-        Log.d("Caled_Age", age.toString())
-        when (gender) {
-
-            "male" -> {
-
-                bmr = (10 * kg) + (6.25 * cm) - ((5 * age) + 5)
-            }
-
-            "female" -> {
-
-                bmr = (10 * kg) + (6.25 * cm) - ((5 * age) - 161)
-            }
-        }
-
-        when (dailyActivity) {
-
-            "very light" -> {
-
-                tdee = bmr * 1.20
-            }
-
-            "light" -> {
-
-                tdee = bmr * 1.45
-            }
-
-            "moderate" -> {
-
-                tdee = bmr * 1.55
-            }
-
-            "heavy" -> {
-
-                tdee = bmr * 1.75
-            }
-
-            "very heavy" -> {
-
-                tdee = 2.00
-            }
-
-            else -> {
-
-                tdee = bmr
-            }
-        }
-
-        when (goal) {
-
-            "weightLossSuggested" -> {
-
-                calories = tdee - (tdee * 0.15)
-            }
-
-            "weightLossAggressive" -> {
-
-                calories = tdee - (tdee * 0.20)
-            }
-
-            "weightLossReckless" -> {
-
-                calories = tdee - (tdee * 0.25)
-            }
-
-            "maintain" -> {
-
-                calories = tdee
-            }
-
-            "bulkingSuggested" -> {
-
-                calories = tdee + (tdee * 0.05)
-            }
-
-            "bulkingAggressive" -> {
-
-                calories = tdee + (tdee * 0.10)
-            }
-
-            "bulkingReckless" -> {
-
-                calories = tdee + (tdee * 0.15)
-            }
-
-            else -> {
-
-                calories = tdee
-            }
-        }
-
-        when (physicalActivityLifestyle) {
-
-            "sedentaryAdult" -> {
-
-                protein = pounds * 0.4
-            }
-
-            "recreationalExerciserAdult" -> {
-
-                protein = pounds * 0.75
-            }
-
-            "competitiveAthleteAdult" -> {
-
-                protein = pounds * 0.90
-            }
-
-            "buildingMuscleAdult" -> {
-
-                protein = pounds * 0.90
-            }
-
-            "dietingAthlete" -> {
-
-                protein = pounds * 0.90
-            }
-
-            "growingAthleteTeenager" -> {
-
-                protein = pounds * 1.0
-            }
-
-            else -> {
-
-                protein = pounds * 0.4
-            }
-        }
-
-        proteinCalories = protein * 4
-
-        fatCalories = calories * (fatPercentageEditText.text.toString().toDouble() / 100)
-        fat = fatCalories / 9
-
-        Log.d("tdee", tdee.toString())
-        Log.d("proteinCal", proteinCalories.toString())
-        Log.d("fatCal", fatCalories.toString())
-
-        carbsCalories = calories - (proteinCalories + fatCalories)
-        carbs = carbsCalories / 4
-
-        val currentUser = auth.currentUser
-
-        if (currentUser != null) {
-
-            val userId = currentUser.uid
-            val db = fireStore.collection("users").document(userId)
-            val updateData = hashMapOf("pounds" to pounds, "kg" to kg, "stone" to stone, "calories" to calories.toInt(), "carbs" to carbs.toInt(), "fat" to fat.toInt(),
-                    "protein" to protein.toInt(), "dietFatPercent" to dietFatPercent, "dailyActivity" to dailyActivity, "physicalActivityLifestyle" to physicalActivityLifestyle,
-                    "goal" to goal)
-            db.update(updateData).addOnSuccessListener {
-                Toast.makeText(requireContext(), "Your data has been successfully updated.", Toast.LENGTH_SHORT).show()
-            }.addOnFailureListener {
-                Toast.makeText(requireContext(), "There was an issue updating the data. Please try again later.", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-
-            val createUserDialog = AlertDialog.Builder(requireContext())
-
-            createUserDialog.setTitle("Create Account").setMessage("Would you like to create an account to " +
-                    "store your settings and macros?").setPositiveButton("OK") { dialog, which ->
-
-            }
-                .setNegativeButton("No Thanks", { dialog, which ->
-
-            })
-
-            createUserDialog.show()
         }
     }
 }

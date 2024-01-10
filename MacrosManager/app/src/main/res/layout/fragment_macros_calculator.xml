@@ -5,11 +5,21 @@
     tools:context="com.cuinsolutions.macrosmanager.MacrosCalculatorFragment">
 
     <data>
+        <import type="android.view.View" />
         <import type="android.view.View.OnClickListener" />
-
+        <import type="com.cuinsolutions.macrosmanager.WeightMeasurement" />
+        <import type="com.cuinsolutions.macrosmanager.HeightMeasurement" />
         <variable
             name="listener"
             type="OnClickListener" />
+        
+        <variable
+            name="heightMeasurement"
+            type="String" />
+
+        <variable
+            name="weightMeasurement"
+            type="String" />
     </data>
 
     <ScrollView
@@ -41,7 +51,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_margin="@dimen/margin_standard"
-                android:hint="@string/centimeters">
+                android:hint="@string/centimeters"
+                android:visibility="@{weightMeasurement == HeightMeasurement.METRIC ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_centimeters_edit"
@@ -59,7 +70,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/calculator_height_inches_layout"
                 android:layout_margin="@dimen/margin_standard"
-                android:hint="@string/feet">
+                android:hint="@string/feet"
+                android:visibility="@{heightMeasurement == HeightMeasurement.IMPERIAL ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_feet_edit"
@@ -76,7 +88,8 @@
                 app:layout_constraintStart_toEndOf="@id/calculator_height_feet_layout"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_margin="@dimen/margin_standard"
-                android:hint="@string/inches">
+                android:hint="@string/inches"
+                android:visibility="@{heightMeasurement == HeightMeasurement.IMPERIAL ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_inches_edit"
@@ -104,7 +117,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_margin="@dimen/margin_standard"
-                android:hint="@string/kilograms">
+                android:hint="@string/kilograms"
+                android:visibility="@{weightMeasurement == WeightMeasurement.METRIC ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_kilograms_edit"
@@ -115,13 +129,14 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/calculator_weight_stone_layout"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/calculator_weight_label"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/calculator_weight_pounds_layout"
                 android:layout_margin="@dimen/margin_standard"
-                android:hint="@string/stone">
+                android:hint="@string/stone"
+                android:visibility="@{weightMeasurement == WeightMeasurement.STONE ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_stone_edit"
@@ -132,13 +147,15 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/calculator_weight_pounds_layout"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/calculator_weight_label"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@id/calculator_weight_stone_layout"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_margin="@dimen/margin_standard"
-                android:hint="@string/pounds">
+                app:layout_goneMarginStart="@dimen/margin_standard"
+                android:hint="@string/pounds"
+                android:visibility="@{weightMeasurement == WeightMeasurement.STONE || weightMeasurement == WeightMeasurement.IMPERIAL ? View.VISIBLE: View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_pounds_edit"

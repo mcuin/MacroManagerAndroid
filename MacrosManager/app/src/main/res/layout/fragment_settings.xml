@@ -184,7 +184,8 @@
                 android:layout_marginTop="@dimen/margin_standard"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/settings_birthday_header" />
+                app:layout_constraintTop_toBottomOf="@+id/settings_birthday_header"
+                android:onClick="@{listener}" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
