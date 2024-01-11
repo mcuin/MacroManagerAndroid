@@ -2,16 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/macros"
-        android:title="Macros"
-        />
-    <!--<item
-        android:id="@+id/search"
-        android:title="Search"
-        />-->
+        android:id="@+id/daily_info_fragment"
+        android:title="Macros" />
     <item
-        android:id="@+id/calculator"
-        android:title="Calculator"
-        />
-
+        android:id="@+id/macros_calculator_fragment"
+        android:title="Calculator" />
 </menu>

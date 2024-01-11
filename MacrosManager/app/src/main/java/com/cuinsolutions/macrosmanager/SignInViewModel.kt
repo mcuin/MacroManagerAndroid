@@ -11,12 +11,12 @@ class SignInViewModel(val auth: FirebaseAuth): ViewModel() {
 
         }.addOnFailureListener {
 
-            val loginFailAlert = android.app.AlertDialog.Builder(requireContext())
+            /*val loginFailAlert = android.app.AlertDialog.Builder(requireContext())
             loginFailAlert.setTitle("Login Failed").setMessage("Your login failed. Please try again later.").setNeutralButton("Ok") {
                     dialog, which ->  dialog.dismiss()
             }
 
-            loginFailAlert.show()
+            loginFailAlert.show()*/
         }
     }
 

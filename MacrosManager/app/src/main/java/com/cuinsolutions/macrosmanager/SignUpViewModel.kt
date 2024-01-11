@@ -30,7 +30,7 @@ class SignUpViewModel(application: Application, private val auth: FirebaseAuth, 
                 val currentUser = auth.currentUser!!.uid
                 val users = fireStore.collection("users").document(currentUser)
                 val userData = hashMapOf("userInfo" to UserInfo(firstName, lastName, email, true, sharedPreferences.gender,
-                    sharedPreferences.birthDate, sharedPreferences.heightMeasurement, sharedPreferences.weightMeasurement,
+                    sharedPreferences.birthYear, sharedPreferences.birthMonth, sharedPreferences.heightMeasurement, sharedPreferences.weightMeasurement,
                     sharedPreferences.heightCm, sharedPreferences.weightKg), "macros" to Macros(sharedPreferences.dailyCalories,
                     sharedPreferences.dailyCarbs, sharedPreferences.dailyFats, sharedPreferences.dailyProtein, sharedPreferences.currentCalories,
                     sharedPreferences.currentCarbs, sharedPreferences.currentFats, sharedPreferences.currentProtein),

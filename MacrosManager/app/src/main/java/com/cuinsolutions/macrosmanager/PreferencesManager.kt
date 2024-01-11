@@ -15,9 +15,12 @@ class PreferencesManager(context: Context) {
     var gender: String
         get() = preferences.getString("gender", "").toString()
         set(value) = preferences.edit { putString("gender", value) }
-    var birthDate: Long
-        get() = preferences.getLong("birthDate", -1)
-        set(value) = preferences.edit{ putLong("birthdate", value)}
+    var birthMonth: Int
+        get() = preferences.getInt("birthMonth", -1)
+        set(value) = preferences.edit{ putInt("birthMonth", value)}
+    var birthYear: Int
+        get() = preferences.getInt("birthYear", -1)
+        set(value) = preferences.edit{ putInt("birthYear", value)}
     var heightMeasurement: String
         get() = preferences.getString("heightMeasurement", "").toString()
         set(value) = preferences.edit { putString("heightMeasurement", value) }

@@ -9,6 +9,10 @@
         <import type="android.view.View.OnClickListener" />
         <import type="com.cuinsolutions.macrosmanager.WeightMeasurement" />
         <import type="com.cuinsolutions.macrosmanager.HeightMeasurement" />
+        <import type="com.cuinsolutions.macrosmanager.DailyActivityLevel" />
+        <import type="com.cuinsolutions.macrosmanager.PhysicalActivityLifestyle" />
+        <import type="com.cuinsolutions.macrosmanager.Goal" />
+
         <variable
             name="listener"
             type="OnClickListener" />
@@ -19,6 +23,26 @@
 
         <variable
             name="weightMeasurement"
+            type="String" />
+
+        <variable
+            name="dailyActivityLevel"
+            type="String" />
+
+        <variable
+            name="physicalActivityLifestyle"
+            type="String" />
+
+        <variable
+            name="dietFatPercent"
+            type="double" />
+
+        <variable
+            name="customFat"
+            type="boolean" />
+
+        <variable
+            name="goal"
             type="String" />
     </data>
 
@@ -52,7 +76,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_margin="@dimen/margin_standard"
                 android:hint="@string/centimeters"
-                android:visibility="@{weightMeasurement == HeightMeasurement.METRIC ? View.VISIBLE : View.GONE}">
+                android:visibility="@{weightMeasurement == HeightMeasurement.METRIC.measurement ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_centimeters_edit"
@@ -71,7 +95,7 @@
                 app:layout_constraintEnd_toStartOf="@id/calculator_height_inches_layout"
                 android:layout_margin="@dimen/margin_standard"
                 android:hint="@string/feet"
-                android:visibility="@{heightMeasurement == HeightMeasurement.IMPERIAL ? View.VISIBLE : View.GONE}">
+                android:visibility="@{heightMeasurement == HeightMeasurement.IMPERIAL.measurement ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_feet_edit"
@@ -89,7 +113,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_margin="@dimen/margin_standard"
                 android:hint="@string/inches"
-                android:visibility="@{heightMeasurement == HeightMeasurement.IMPERIAL ? View.VISIBLE : View.GONE}">
+                android:visibility="@{heightMeasurement == HeightMeasurement.IMPERIAL.measurement ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_inches_edit"
@@ -118,7 +142,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_margin="@dimen/margin_standard"
                 android:hint="@string/kilograms"
-                android:visibility="@{weightMeasurement == WeightMeasurement.METRIC ? View.VISIBLE : View.GONE}">
+                android:visibility="@{weightMeasurement == WeightMeasurement.METRIC.measurement ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_kilograms_edit"
@@ -136,7 +160,7 @@
                 app:layout_constraintEnd_toStartOf="@id/calculator_weight_pounds_layout"
                 android:layout_margin="@dimen/margin_standard"
                 android:hint="@string/stone"
-                android:visibility="@{weightMeasurement == WeightMeasurement.STONE ? View.VISIBLE : View.GONE}">
+                android:visibility="@{weightMeasurement == WeightMeasurement.STONE.measurement ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_stone_edit"
@@ -155,7 +179,7 @@
                 android:layout_margin="@dimen/margin_standard"
                 app:layout_goneMarginStart="@dimen/margin_standard"
                 android:hint="@string/pounds"
-                android:visibility="@{weightMeasurement == WeightMeasurement.STONE || weightMeasurement == WeightMeasurement.IMPERIAL ? View.VISIBLE: View.GONE}">
+                android:visibility="@{weightMeasurement == WeightMeasurement.STONE.measurement || weightMeasurement == WeightMeasurement.IMPERIAL.measurement ? View.VISIBLE: View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_pounds_edit"
@@ -201,31 +225,36 @@
                     android:id="@+id/calculator_daily_activity_level_very_light"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/very_light" />
+                    android:text="@string/very_light"
+                    android:checked="@{dailyActivityLevel == DailyActivityLevel.VERYLIGHT.level}" />
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_light"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/light" />
+                    android:text="@string/light"
+                    android:checked="@{dailyActivityLevel == DailyActivityLevel.LIGHT.level}" />
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_moderate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/moderate" />
+                    android:text="@string/moderate"
+                    android:checked="@{dailyActivityLevel == DailyActivityLevel.MODERATE.level}" />
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_heavy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/heavy" />
+                    android:text="@string/heavy"
+                    android:checked="@{dailyActivityLevel == DailyActivityLevel.HEAVY.level}" />
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_very_heavy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/very_heavy" />
+                    android:text="@string/very_heavy"
+                    android:checked="@{dailyActivityLevel == DailyActivityLevel.VERYHEAVY.level}" />
             </RadioGroup>
 
             <TextView
@@ -251,37 +280,43 @@
                     android:id="@+id/calculator_physical_activity_lifestyle_sedentary_adult"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/sedentary_adult" />
+                    android:text="@string/sedentary_adult"
+                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle}" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_adult_recreational_exerciser"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/adult_recreational_exerciser" />
+                    android:text="@string/adult_recreational_exerciser"
+                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.RECREATIONADULT.lifeStyle}" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_adult_competitive_athlete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/adult_competitive_athlete" />
+                    android:text="@string/adult_competitive_athlete"
+                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.COMPETITIVEADULT.lifeStyle}" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_adult_building_muscle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/adult_building_muscle" />
+                    android:text="@string/adult_building_muscle"
+                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.BUILDINGADULT.lifeStyle}" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_dieting_athlete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/dieting_athlete" />
+                    android:text="@string/dieting_athlete"
+                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.DIETINGATHLETE.lifeStyle}" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_teen_growing_athlete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/teen_growing_athlete" />
+                    android:text="@string/teen_growing_athlete"
+                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle}" />
 
             </RadioGroup>
 
@@ -321,25 +356,29 @@
                     android:id="@+id/calculator_fat_percent_twenty_five"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/twenty_five_percent" />
+                    android:text="@string/twenty_five_percent"
+                    android:checked="@{dietFatPercent == 25.0}" />
 
                 <RadioButton
                     android:id="@+id/calculator_fat_percent_thirty"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/thirty_percent" />
+                    android:text="@string/thirty_percent"
+                    android:checked="@{dietFatPercent == 30.0}" />
 
                 <RadioButton
                     android:id="@+id/calculator_fat_percent_thirty_five"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/thirty_five_percent" />
+                    android:text="@string/thirty_five_percent"
+                    android:checked="@{dietFatPercent == 35.0}" />
 
                 <RadioButton
                     android:id="@+id/calculator_fat_percent_custom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/custom" />
+                    android:text="@string/custom"
+                    android:checked="@{customFat}" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/calculator_fat_percent_custom_layout"
@@ -347,13 +386,12 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/diet_fat_percent"
                     android:layout_marginTop="@dimen/zero"
-                    android:enabled="false">
+                    android:visibility="@{customFat ? View.VISIBLE : View.GONE}">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/calculator_fat_percent_custom_edit"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:enabled="false" />
+                        android:layout_height="wrap_content" />
                 </com.google.android.material.textfield.TextInputLayout>
             </RadioGroup>
 
@@ -384,43 +422,50 @@
                     android:id="@+id/calculator_goal_build_reckless"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/build_reckless" />
+                    android:text="@string/build_reckless"
+                    android:checked="@{goal == Goal.BUILDRECKLESS.goal}" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_build_aggressive"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/build_aggressive" />
+                    android:text="@string/build_aggressive"
+                    android:checked="@{goal == Goal.BUILDAGGRESSIVE.goal}" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_build_suggested"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/build_suggested" />
+                    android:text="@string/build_suggested"
+                    android:checked="@{goal == Goal.BUILDSUGGESTED.goal}" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_maintain"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/maintain" />
+                    android:text="@string/maintain"
+                    android:checked="@{goal == Goal.MAINTAIN.goal}" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_burn_suggested"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/burn_suggested" />
+                    android:text="@string/burn_suggested"
+                    android:checked="@{goal == Goal.BURNSUGGESTED.goal}" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_burn_aggressive"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/burn_aggressive" />
+                    android:text="@string/burn_aggressive"
+                    android:checked="@{goal == Goal.BURNAGGRESSIVE.goal}" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_burn_reckless"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/burn_reckless" />
+                    android:text="@string/burn_reckless"
+                    android:checked="@{goal == Goal.BURNRECKLESS.goal}" />
             </RadioGroup>
 
             <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton

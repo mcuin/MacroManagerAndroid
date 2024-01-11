@@ -212,15 +212,11 @@ class DailyInfoFragment : Fragment() {
                 when (menuItem.itemId) {
 
                     R.id.action_sign_up -> {
-                        findNavController().navigate(R.id.navigate_to_sign_up)
+                        findNavController().navigate(DailyInfoFragmentDirections.navigateToSignUp())
                     }
 
                     R.id.action_settings -> {
-                        /*val settingsIntent = Intent(this, SettingsActivity::class.java)
-
-                        startActivity(settingsIntent)
-
-                        return true*/
+                        findNavController().navigate(DailyInfoFragmentDirections.navigateToSettings())
                     }
 
                     R.id.action_sign_in -> {

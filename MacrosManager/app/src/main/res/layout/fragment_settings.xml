@@ -6,10 +6,25 @@
 
     <data>
         <import type="android.view.View.OnClickListener" />
+        <import type="com.cuinsolutions.macrosmanager.Gender" />
+        <import type="com.cuinsolutions.macrosmanager.WeightMeasurement" />
+        <import type="com.cuinsolutions.macrosmanager.HeightMeasurement" />
 
         <variable
             name="listener"
             type="OnClickListener" />
+
+        <variable
+            name="gender"
+            type="String" />
+
+        <variable
+            name="weightMeasurement"
+            type="String" />
+
+        <variable
+            name="heightMeasurement"
+            type="String" />
     </data>
 
     <ScrollView
@@ -39,14 +54,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/female"
-                    style="@style/SettingsRadioButton" />
+                    style="@style/SettingsRadioButton"
+                    android:checked="@{gender == Gender.FEMALE.gender}" />
 
                 <RadioButton
                     android:id="@+id/settings_radio_male"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/male"
-                    style="@style/SettingsRadioButton" />
+                    style="@style/SettingsRadioButton"
+                    android:checked="@{gender == Gender.MALE.gender}" />
             </RadioGroup>
 
             <TextView
@@ -106,14 +123,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/imperial"
-                    style="@style/SettingsRadioButton" />
+                    style="@style/SettingsRadioButton"
+                    android:checked="@{heightMeasurement == HeightMeasurement.IMPERIAL.measurement}" />
 
                 <RadioButton
                     android:id="@+id/settings_height_metric"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/metric"
-                    style="@style/SettingsRadioButton" />
+                    style="@style/SettingsRadioButton"
+                    android:checked="@{heightMeasurement == HeightMeasurement.METRIC.measurement}" />
 
             </RadioGroup>
 
@@ -145,21 +164,24 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/imperial"
-                    style="@style/SettingsRadioButton" />
+                    style="@style/SettingsRadioButton"
+                    android:checked="@{weightMeasurement == WeightMeasurement.IMPERIAL.measurement}" />
 
                 <RadioButton
                     android:id="@+id/settings_weight_metric"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/metric"
-                    style="@style/SettingsRadioButton" />
+                    style="@style/SettingsRadioButton"
+                    android:checked="@{weightMeasurement == WeightMeasurement.METRIC.measurement}" />
 
                 <RadioButton
                     android:id="@+id/settings_weight_stone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/stone"
-                    style="@style/SettingsRadioButton" />
+                    style="@style/SettingsRadioButton"
+                    android:checked="@{weightMeasurement == WeightMeasurement.STONE.measurement}" />
             </RadioGroup>
 
             <TextView

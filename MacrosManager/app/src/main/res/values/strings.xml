@@ -32,7 +32,7 @@
     <string name="protein">Protein</string>
     <string name="empty_macros">0g</string>
     <string name="save">Save</string>
-    <string name="set_birth_date">Tap to set your birthday.</string>
+    <string name="set_birth_date">Tap to set your birthday month and year.</string>
     <string name="grams">g</string>
     <string name="sign_up_description">Sign up to get access to your data across devices, and receive other features.</string>
     <string name="first_name">First Name</string>
@@ -80,6 +80,15 @@
     <string name="weight_entry_errors">Please enter a valid number for both weight entries.</string>
     <string name="custom_fat_error">Custom Fat Percent Error</string>
     <string name="custom_fat_entry_error">Please enter a valid fat perfect for your diet, or select one of the other options.</string>
+    <string name="birth_month_year">$1%d/$2%d</string>
+    <string name="settings_error">Settings Error</string>
+    <string name="settings_error_description">Please visit the settings page first to fill out some information about yourself for use in calculations.</string>
+    <string name="go_to_settings">Go to Settings</string>
+    <string name="create_account">Create Account</string>
+    <string name="create_account_description">Would you like to create an account to store your settings and macros across devices?</string>
+    <string name="no_thanks">No Thanks</string>
+    <string name="birth_info_error">Birth Info Error</string>
+    <string name="birth_info_error_description">Please choose a birth month and year.</string>
 
     <string name="admob_id">ca-app-pub-6601965971959563~1619744217</string>
 </resources>

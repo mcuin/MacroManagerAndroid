@@ -3,14 +3,17 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
     id("kotlin-kapt")
+    id("androidx.navigation.safeargs")
 }
 
 android {
     compileSdk = 34
 
     signingConfigs {
-        create("release") {
-
+        create("release") {keyAlias = "key0"
+            keyPassword = "MacrosManagerKey"
+            storeFile = file("/Users/mykalcuin/Documents/MacrosManagerAndroid/MacrosManager/macrosManagerKeyStore")
+            storePassword = "MacrosManagerKey"
         }
     }
 

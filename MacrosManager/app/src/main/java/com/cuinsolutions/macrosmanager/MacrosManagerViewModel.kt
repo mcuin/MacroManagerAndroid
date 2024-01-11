@@ -8,7 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 
-class MacrosManagerViewModel(val application: Application): AndroidViewModel(application) {
+class MacrosManagerViewModel(private val application: Application): AndroidViewModel(application) {
 
     val auth by lazy { FirebaseAuth.getInstance() }
     val fireStore by lazy { FirebaseFirestore.getInstance() }
@@ -65,6 +65,15 @@ class MacrosManagerViewModel(val application: Application): AndroidViewModel(app
         }
     }
 
+    fun saveUserSettings() {
+        if (auth.currentUser != null) {
+            val reference = fireStore.collection(auth.currentUser!!.uid).document("userInfo")
+            reference.set(currentUserInfo).addOnSuccessListener { snapshot ->
+                pr
+            }
+        }
+    }
+
     class MacrosManagerFactory(val application: Application): ViewModelProvider.NewInstanceFactory() {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return MacrosManagerViewModel(application) as T
@@ -72,18 +81,18 @@ class MacrosManagerViewModel(val application: Application): AndroidViewModel(app
     }
 }
 
-data class UserInfo(val firstName: String = "", val lastName: String = "", val email: String = "", val showAds: Boolean = true,
-                    val gender: String = Gender.MALE.gender, val birthDate: Long = -1,
-                    val heightMeasurement: String = HeightMeasurement.METRIC.measurement,
-                    val weightMeasurement: String = WeightMeasurement.METRIC.measurement,
-                    val heightCm: Float = -1f, val weightKg: Float = -1f)
+data class UserInfo(var firstName: String = "", var lastName: String = "", var email: String = "", var showAds: Boolean = true,
+                    var gender: String = Gender.MALE.gender, var birthYear: Int = -1, var birthMonth: Int = -1,
+                    var heightMeasurement: String = HeightMeasurement.METRIC.measurement,
+                    var weightMeasurement: String = WeightMeasurement.METRIC.measurement,
+                    var heightCm: Float = -1f, var weightKg: Float = -1f)
 
-data class Macros(val dailyCalories: Int = -1, val dailyCarbs: Int = -1, val dailyFats: Int = -1, val dailyProtein: Int = -1,
-                  val currentCalories: Float = -1f, val currentCarbs: Float = -1f, val currentFats: Float = -1f,
-                  val currentProtein: Float = -1f)
+data class Macros(var dailyCalories: Int = -1, var dailyCarbs: Int = -1, var dailyFats: Int = -1, var dailyProtein: Int = -1,
+                  var currentCalories: Float = -1f, var currentCarbs: Float = -1f, var currentFats: Float = -1f,
+                  var currentProtein: Float = -1f)
 
-data class CalculatorOptions(val dailyActivity: String = DailyActivityLevel.VERYLIGHT.level, val goal: String = Goal.MAINTAIN.goal,
-                             val physicalActivityLifestyle: String = PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle)
+data class CalculatorOptions(var dailyActivity: String = DailyActivityLevel.VERYLIGHT.level, var goal: String = Goal.MAINTAIN.goal,
+                             var physicalActivityLifestyle: String = PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle, var dietFatPercent: Double = 25.0)
 
 enum class DailyActivityLevel(val level: String) {
     VERYLIGHT("veryLight"),
