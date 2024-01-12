@@ -25,7 +25,7 @@ class MacrosManagerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_macros_manager)
 
-        binding.showAds = PreferencesManager(this).showAds
+        binding.showAds = PreferencesManager(this).userInfo.showAds
 
         setSupportActionBar(binding.macrosManagerToolbar)
         macrosManagerNavController = (supportFragmentManager.findFragmentById(R.id.macros_manager_nav_container) as NavHostFragment).navController

@@ -4,16 +4,22 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.gson.Gson
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 
 class MacrosManagerViewModel(private val application: Application): AndroidViewModel(application) {
 
     val auth by lazy { FirebaseAuth.getInstance() }
     val fireStore by lazy { FirebaseFirestore.getInstance() }
-    val preferences by lazy { PreferencesManager(application.applicationContext).preferences }
-    val currentUserInfo: UserInfo = when {
+    val preferencesManager by lazy { PreferencesManager(application.applicationContext) }
+    val preferences by lazy { preferencesManager.preferences }
+    val fireBaseSaveSuccess: MutableSharedFlow<Boolean> = MutableSharedFlow()
+    var currentUserInfo: UserInfo = when {
         auth.currentUser != null -> {
             var info = UserInfo()
             val reference = fireStore.collection(auth.currentUser!!.uid).document("userInfo")
@@ -23,14 +29,14 @@ class MacrosManagerViewModel(private val application: Application): AndroidViewM
             info
         }
         preferences.contains("userInfo") -> {
-            Gson().fromJson(preferences.getString("userInfo", UserInfo().toString()), UserInfo::class.java)
+            preferencesManager.userInfo
         }
         else -> {
             UserInfo()
         }
     }
 
-    val currentUserMacros: Macros = when {
+    var currentUserMacros: Macros = when {
         auth.currentUser != null -> {
             var macros = Macros()
             val reference = fireStore.collection(auth.currentUser!!.uid).document("macros")
@@ -40,14 +46,14 @@ class MacrosManagerViewModel(private val application: Application): AndroidViewM
             macros
         }
         preferences.contains("macros") -> {
-            Gson().fromJson(preferences.getString("macros", Macros().toString()), Macros::class.java)
+            preferencesManager.macros
         }
         else -> {
             Macros()
         }
     }
 
-    val currentUserCalculatorOptions: CalculatorOptions = when {
+    var currentUserCalculatorOptions: CalculatorOptions = when {
         auth.currentUser != null -> {
             var options = CalculatorOptions()
             val reference = fireStore.collection(auth.currentUser!!.uid).document("calculatorOptions")
@@ -57,20 +63,74 @@ class MacrosManagerViewModel(private val application: Application): AndroidViewM
             options
         }
         preferences.contains("calculatorOptions") -> {
-            Gson().fromJson(preferences.getString("calculatorOptions", CalculatorOptions().toString()),
-                CalculatorOptions::class.java)
+            preferencesManager.calculatorOptions
         }
         else -> {
             CalculatorOptions()
         }
     }
 
-    fun saveUserSettings() {
+    fun saveUserSettings(updatedUserInfo: UserInfo) {
         if (auth.currentUser != null) {
             val reference = fireStore.collection(auth.currentUser!!.uid).document("userInfo")
-            reference.set(currentUserInfo).addOnSuccessListener { snapshot ->
-                pr
+            reference.set(updatedUserInfo).addOnSuccessListener {
+                viewModelScope.launch {
+                    fireBaseSaveSuccess.emit(true)
+                }
+            }.addOnFailureListener {
+                viewModelScope.launch {
+                    fireBaseSaveSuccess.emit(false)
+                }
             }
+        }
+
+        currentUserInfo = updatedUserInfo
+        preferencesManager.userInfo = updatedUserInfo
+    }
+
+    fun saveCalculatorOptions(tempCalculatorOptions: CalculatorOptions, tempMacros: Macros) {
+        if (auth.currentUser != null) {
+            val reference = fireStore.collection(auth.currentUser!!.uid).document("calculatorOptions")
+            reference.set(tempCalculatorOptions).addOnSuccessListener {
+                val macrosReference = fireStore.collection(auth.currentUser!!.uid).document("macros")
+                reference.set(tempMacros).addOnSuccessListener {
+                    viewModelScope.launch {
+                        fireBaseSaveSuccess.emit(true)
+                    }
+                }.addOnFailureListener {
+                    viewModelScope.launch {
+                        fireBaseSaveSuccess.emit(false)
+                    }
+                }
+            }.addOnFailureListener {
+                viewModelScope.launch {
+                    fireBaseSaveSuccess.emit(false)
+                }
+            }
+        }
+
+        preferencesManager.calculatorOptions = tempCalculatorOptions
+        preferencesManager.macros = tempMacros
+        currentUserCalculatorOptions = tempCalculatorOptions
+        currentUserMacros = tempMacros
+    }
+
+    fun saveMacros() {
+        if (auth.currentUser != null) {
+            val reference = fireStore.collection(auth.currentUser!!.uid).document("macros")
+            reference.set(currentUserMacros).addOnSuccessListener {
+                viewModelScope.launch {
+                    fireBaseSaveSuccess.emit(true)
+                }
+            }.addOnFailureListener {
+                viewModelScope.launch {
+                    fireBaseSaveSuccess.emit(false)
+                }
+            }
+
+            preferencesManager.macros = currentUserMacros
+        } else {
+            preferencesManager.macros = currentUserMacros
         }
     }
 
@@ -81,58 +141,3 @@ class MacrosManagerViewModel(private val application: Application): AndroidViewM
     }
 }
 
-data class UserInfo(var firstName: String = "", var lastName: String = "", var email: String = "", var showAds: Boolean = true,
-                    var gender: String = Gender.MALE.gender, var birthYear: Int = -1, var birthMonth: Int = -1,
-                    var heightMeasurement: String = HeightMeasurement.METRIC.measurement,
-                    var weightMeasurement: String = WeightMeasurement.METRIC.measurement,
-                    var heightCm: Float = -1f, var weightKg: Float = -1f)
-
-data class Macros(var dailyCalories: Int = -1, var dailyCarbs: Int = -1, var dailyFats: Int = -1, var dailyProtein: Int = -1,
-                  var currentCalories: Float = -1f, var currentCarbs: Float = -1f, var currentFats: Float = -1f,
-                  var currentProtein: Float = -1f)
-
-data class CalculatorOptions(var dailyActivity: String = DailyActivityLevel.VERYLIGHT.level, var goal: String = Goal.MAINTAIN.goal,
-                             var physicalActivityLifestyle: String = PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle, var dietFatPercent: Double = 25.0)
-
-enum class DailyActivityLevel(val level: String) {
-    VERYLIGHT("veryLight"),
-    LIGHT("light"),
-    MODERATE("moderate"),
-    HEAVY("heavy"),
-    VERYHEAVY("veryHeavy")
-}
-
-enum class Goal(val goal: String) {
-    BURNRECKLESS("burnReckless"),
-    BURNAGGRESSIVE("burnAggressive"),
-    BURNSUGGESTED("burnSuggested"),
-    MAINTAIN("maintain"),
-    BUILDSUGGESTED("buildSuggested"),
-    BUILDAGGRESSIVE("buildAggressive"),
-    BUILDRECKLESS("buildReckless")
-}
-
-enum class PhysicalActivityLifestyle(val lifeStyle: String) {
-    SEDENTARYADULT("sedentaryAdult"),
-    RECREATIONADULT("recreationExerciserAdult"),
-    COMPETITIVEADULT("competitiveAdult"),
-    BUILDINGADULT("buildingAdult"),
-    DIETINGATHLETE("dietingAthlete"),
-    GROWINGTEENAGER("growingTeenager")
-}
-
-enum class Gender(val gender: String) {
-    FEMALE("female"),
-    MALE("male")
-}
-
-enum class HeightMeasurement(val measurement: String) {
-    IMPERIAL("imperial"),
-    METRIC("metric")
-}
-
-enum class WeightMeasurement(val measurement: String) {
-    IMPERIAL("imperial"),
-    METRIC("metric"),
-    STONE("stone")
-}

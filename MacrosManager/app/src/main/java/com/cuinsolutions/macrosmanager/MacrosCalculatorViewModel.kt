@@ -42,12 +42,9 @@ class MacrosCalculatorViewModel: ViewModel() {
 
         var bmr = 0.0
         val pounds = weightMetricToImperial(kg)
-        val tdee: Double
         val calories: Double
-        val protein: Double
         val proteinCalories: Double
         val fat: Double
-        val fatCalories: Double
         val carbs: Double
         val carbsCalories: Double
         var age = Calendar.YEAR - settingsInfo.birthYear
@@ -61,7 +58,7 @@ class MacrosCalculatorViewModel: ViewModel() {
             "female" -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) - 161)
         }
 
-        tdee = when (calculatorInfo.dailyActivity) {
+        val tdee: Double = when (calculatorInfo.dailyActivity) {
             "very light" -> bmr * 1.20
             "light" -> bmr * 1.45
             "moderate" -> bmr * 1.55
@@ -81,7 +78,7 @@ class MacrosCalculatorViewModel: ViewModel() {
             else -> tdee
         }
 
-        protein = when (calculatorInfo.physicalActivityLifestyle) {
+        val protein: Double = when (calculatorInfo.physicalActivityLifestyle) {
             "sedentaryAdult" -> pounds * 0.4
             "recreationalExerciserAdult" -> pounds * 0.75
             "competitiveAthleteAdult" -> pounds * 0.90
@@ -93,7 +90,7 @@ class MacrosCalculatorViewModel: ViewModel() {
 
         proteinCalories = protein * 4
 
-        fatCalories = calories * (calculatorInfo.dietFatPercent / 100)
+        val fatCalories: Double = calories * (calculatorInfo.dietFatPercent / 100)
         fat = fatCalories / 9
 
         carbsCalories = calories - (proteinCalories + fatCalories)

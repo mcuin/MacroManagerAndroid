@@ -14,6 +14,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.GridView
@@ -41,7 +42,7 @@ import java.util.Calendar
 import java.util.HashMap
 import java.util.Locale
 
-class DailyInfoFragment : Fragment() {
+class DailyInfoFragment : Fragment(), OnClickListener {
 
     private lateinit var binding: FragmentDailyInfoBinding
     private val macrosManagerViewModel: MacrosManagerViewModel by activityViewModels()
@@ -65,8 +66,7 @@ class DailyInfoFragment : Fragment() {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_info, container, false)
 
-
-        /*val settings = FirebaseFirestoreSettings.Builder().setTimestampsInSnapshotsEnabled(true).build()
+        val settings = FirebaseFirestoreSettings.Builder().setTimestampsInSnapshotsEnabled(true).build()
         fireStore.firestoreSettings = settings
 
         val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
@@ -77,121 +77,6 @@ class DailyInfoFragment : Fragment() {
         } else {
             setResetAlarm()
         }
-
-        val currentUser = auth.currentUser
-
-        if (currentUser != null) {
-
-            val userId = currentUser.uid
-            val db = fireStore.collection("users").document(userId)
-
-            db.get().addOnSuccessListener {
-
-                Log.d("Firestore", "Success")
-                dailyCaloriesTotal = it.getDouble("calories")!!.toInt()
-                dailyCarbsTotal = it.getDouble("carbs")!!.toInt()
-                dailyFatTotal = it.getDouble("fat")!!.toInt()
-                dailyProteinTotal = it.getDouble("protein")!!.toInt()
-                currentCaloriesTotal = it.getDouble("currentCalories")!!
-                currentCarbsTotal = it.getDouble("currentCarbs")!!
-                currentFatTotal = it.getDouble("currentFat")!!
-                currentProteinTotal = it.getDouble("currentProtein")!!
-                showAds = it.getBoolean("showAds")!!
-                dailyMeals = gson.fromJson(it.get("dailyMeals").toString(), object : TypeToken<List<HashMap<String, Any>>>() {}.type)
-
-                Log.d("Firestore", dailyCaloriesTotal.toString())
-                Log.d("Firestore", dailyCarbsTotal.toString())
-                Log.d("Firestore", dailyFatTotal.toString())
-                Log.d("Firestore", dailyProteinTotal.toString())
-                Log.d("Firestore", currentCaloriesTotal.toString())
-                Log.d("Firestore", currentCarbsTotal.toString())
-                Log.d("Firestore", currentFatTotal.toString())
-                Log.d("Firestore", currentProteinTotal.toString())
-                Log.d("Firestore", showAds.toString())
-                Log.d("Firestore", dailyMeals.toString())
-
-                createUI()
-            }.addOnFailureListener {
-
-                Toast.makeText(this,"There was an issue getting your info. Please try again later.", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-
-            Log.d("No", "firestore")
-            val userPreferences = this.getSharedPreferences("userPreferences", 0)
-
-            if (userPreferences.contains("calories")) {
-                dailyCaloriesTotal = userPreferences.getInt("calories", 0)
-            }
-
-            if (userPreferences.contains("carbs")) {
-                dailyCarbsTotal = userPreferences.getInt("carbs", 0)
-            }
-
-            if (userPreferences.contains("fat")) {
-                dailyFatTotal = userPreferences.getInt("fat", 0)
-            }
-
-            if (userPreferences.contains("protein")) {
-                dailyProteinTotal = userPreferences.getInt("protein", 0)
-            }
-
-            if (userPreferences.contains("currentCaloriesTotal")) {
-                currentCaloriesTotal = userPreferences.getString("currentCaloriesTotal", "").toDouble()
-            }
-
-            if (userPreferences.contains("currentCarbsTotal")) {
-                currentCarbsTotal = userPreferences.getString("currentCarbsTotal", "").toDouble()
-            }
-
-            if (userPreferences.contains("currentFatTotal")) {
-                currentFatTotal = userPreferences.getString("currentFatTotal", "").toDouble()
-            }
-
-            if (userPreferences.contains("currentProteinTotal")) {
-                currentProteinTotal = userPreferences.getString("currentProteinTotal", "").toDouble()
-            }
-
-            if (userPreferences.contains("dailyMeals")) {
-
-                val type = object : TypeToken<Pair<String, Any>>() {}.type
-                Log.d("Gson Json", userPreferences.getString("dailyMeals", ""))
-                dailyMeals = gson.fromJson(userPreferences.getString("dailyMeals", ""), object : TypeToken<List<HashMap<String, Any>>>() {}.type)
-
-                Log.d("Meals", dailyMeals.toString())
-            } else {
-
-                dailyMeals = listOf<HashMap<String, Any>>()
-
-                //editor.putString(gson.toJson(dailyMeals.toString()), "dailyMeals")
-
-            }
-
-            createUI()
-        }
-
-
-
-        //dailyBottomNav.selectedItemId = R.id.home
-
-        //val mealsJSONArray = dailyMeals
-
-        addMealFAB.setOnClickListener {
-
-            val userPreferences = this.getSharedPreferences("userPreferences", 0)
-
-            val addMealIntent = Intent(this, AddMealActivity::class.java)
-
-            /*if (userPreferences.contains("dailyMeals")) {
-                addMealIntent.putExtra("dailyMeals", gson.toJson(dailyMeals.toString()))
-            } else {*/
-            addMealIntent.putExtra("dailyMeals", gson.toJson(dailyMeals))
-            //}
-
-            startActivity(addMealIntent)
-        }
-
-        //Log.d("Daily Meals", dailyMeals.toString())*/
 
         return binding.root
     }
@@ -210,57 +95,20 @@ class DailyInfoFragment : Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when (menuItem.itemId) {
-
-                    R.id.action_sign_up -> {
-                        findNavController().navigate(DailyInfoFragmentDirections.navigateToSignUp())
-                    }
-
-                    R.id.action_settings -> {
-                        findNavController().navigate(DailyInfoFragmentDirections.navigateToSettings())
-                    }
-
-                    R.id.action_sign_in -> {
-
-                        /*val signInAlert = AlertDialog.Builder(this)
-                        val emailEditText = EditText(this)
-                        val passwordEditText = EditText(this)
-                        emailEditText.hint = "Email"
-                        passwordEditText.hint = "Password"
-                        emailEditText.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-                        passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
-                        val signInLayout = LinearLayout(this)
-                        signInLayout.orientation = LinearLayout.VERTICAL
-                        signInLayout.addView(emailEditText)
-                        signInLayout.addView(passwordEditText)
-                        signInAlert.setView(signInLayout)
-
-                        signInAlert.setTitle("Sign In").setMessage("Please enter your email and password to sign in.").setPositiveButton("Sign In") {
-                                dialog, which ->  macrosManagerViewModel.auth.signInWithEmailAndPassword(emailEditText.text.toString(), passwordEditText.text.toString()).addOnSuccessListener {
-                            //recreate()
-                        }.addOnFailureListener {
-
-                            val loginFailAlert = AlertDialog.Builder(this)
-                            loginFailAlert.setTitle("Login Failed").setMessage("Your login failed. Please try again later.").setNeutralButton("Ok") {
-                                    dialog, which ->  dialog.dismiss()
-                            }
-
-                            loginFailAlert.show()
-                        }
-                        }.setNegativeButton("Cancel") {
-                                dialog, which ->  dialog.dismiss()
-                        }
-
-                        signInAlert.show()*/
-                    }
+                    R.id.action_sign_up -> findNavController().navigate(DailyInfoFragmentDirections.navigateToSignUp())
+                    R.id.action_settings -> findNavController().navigate(DailyInfoFragmentDirections.navigateToSettings())
+                    R.id.action_sign_in ->  findNavController().navigate(DailyInfoFragmentDirections.navigateToSignIn())
                 }
 
                 return true
             }
 
         }, viewLifecycleOwner, Lifecycle.State.STARTED)
+
+
     }
 
-    /*fun setResetAlarm() {
+    fun setResetAlarm() {
         val resetTime = Calendar.getInstance(Locale.getDefault())
         resetTime.timeInMillis = System.currentTimeMillis()
         resetTime.set(Calendar.HOUR_OF_DAY, 2)
@@ -275,37 +123,6 @@ class DailyInfoFragment : Fragment() {
         resetAlarm.setInexactRepeating(AlarmManager.RTC, resetTime.timeInMillis, AlarmManager.INTERVAL_DAY, resetPendingIntent)
     }
 
-    fun macrosArrayList(): ArrayList<JSONObject> {
-
-        val macrosArrayList = ArrayList<JSONObject>()
-
-        val caloriesJSONObject = JSONObject()
-        caloriesJSONObject.put("title", "Calories")
-        caloriesJSONObject.put("currentTotal", currentCaloriesTotal)
-        caloriesJSONObject.put("dailyTotal", dailyCaloriesTotal)
-        macrosArrayList.add(caloriesJSONObject)
-
-        val carbsJSONObject = JSONObject()
-        carbsJSONObject.put("title", "Carbs")
-        carbsJSONObject.put("currentTotal", currentCarbsTotal)
-        carbsJSONObject.put("dailyTotal", dailyCarbsTotal)
-        macrosArrayList.add(carbsJSONObject)
-
-        val fatJSONObject = JSONObject()
-        fatJSONObject.put("title", "Fat")
-        fatJSONObject.put("currentTotal", currentFatTotal)
-        fatJSONObject.put("dailyTotal", dailyFatTotal)
-        macrosArrayList.add(fatJSONObject)
-
-        val proteinJSONObject = JSONObject()
-        proteinJSONObject.put("title", "Protein")
-        proteinJSONObject.put("currentTotal", currentProteinTotal)
-        proteinJSONObject.put("dailyTotal", dailyProteinTotal)
-        macrosArrayList.add(proteinJSONObject)
-
-        return macrosArrayList
-    }
-
     fun createUI() {
 
         if (dailyMeals.size != 0) {
@@ -315,8 +132,14 @@ class DailyInfoFragment : Fragment() {
             userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, dailyMeals, DailyMacrosGridViewAdapter(this, macrosArrayList()))
         } else {
 
-            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
+
             userFoodRecyclerView.adapter = null
         }
-    }*/
+    }
+
+    override fun onClick(view: View) {
+        when (view.id) {
+            R.id.daily_add_meal_fab -> findNavController().navigate(DailyInfoFragmentDirections.navigateToAddMeal())
+        }
+    }
 }

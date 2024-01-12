@@ -46,52 +46,10 @@
                 android:text="@string/sign_up_description" />
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/sign_up_first_name_layout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/sign_up_description"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/sign_up_last_name_layout"
-                android:layout_marginTop="@dimen/margin_standard"
-                android:layout_marginEnd="@dimen/margin_small_minus"
-                android:layout_marginStart="@dimen/margin_standard">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/sign_up_first_name_edit"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/first_name"
-                    android:inputType="textPersonName"
-                    android:fontFamily="@font/notosansui_regular" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/sign_up_last_name_layout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/sign_up_description"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/sign_up_first_name_layout"
-                android:layout_marginTop="@dimen/margin_standard"
-                android:layout_marginEnd="@dimen/margin_standard"
-                android:layout_marginStart="@dimen/margin_small_minus">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/sign_up_last_name_edit"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/last_name"
-                    android:inputType="textPersonName"
-                    android:fontFamily="@font/notosansui_regular" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/sign_up_email_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/sign_up_first_name_layout"
+                app:layout_constraintTop_toBottomOf="@id/sign_up_description"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginEnd="@dimen/margin_standard"
@@ -140,7 +98,8 @@
                 app:layout_constraintTop_toBottomOf="@+id/sign_up_password_layout"
                 android:layout_marginEnd="@dimen/margin_standard"
                 android:layout_marginStart="@dimen/margin_standard"
-                android:layout_marginTop="@dimen/margin_standard">
+                android:layout_marginTop="@dimen/margin_standard"
+                app:passwordToggleEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/sign_up_confirm_password_edit"
@@ -157,11 +116,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_standard"
+                android:layout_marginEnd="@dimen/margin_standard"
                 android:text="@string/sign_up"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/sign_up_confirm_password_layout"
                 android:fontFamily="@font/notosansui_regular"
+                android:onClick="@{listener}" />
+
+            <Button
+                android:id="@+id/sign_up_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/sign_up_confirm_password_layout"
+                app:layout_constraintEnd_toStartOf="@id/sign_up_sign_up"
+                android:layout_margin="@dimen/margin_standard"
+                android:text="@string/cancel"
                 android:onClick="@{listener}" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

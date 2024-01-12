@@ -25,7 +25,8 @@
         android:layout_marginEnd="@dimen/margin_small_minus"
         android:src="@drawable/ic_add"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:onClick="@{listener}" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/daily_macros_grid_recycler"

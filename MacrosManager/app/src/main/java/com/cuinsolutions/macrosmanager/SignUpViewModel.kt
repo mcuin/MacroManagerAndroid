@@ -23,18 +23,13 @@ class SignUpViewModel(application: Application, private val auth: FirebaseAuth, 
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    fun signUp(email: String, password: String, firstName: String, lastName: String) {
+    fun signUp(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task: Task<AuthResult> ->
-
             if (task.isSuccessful) {
                 val currentUser = auth.currentUser!!.uid
                 val users = fireStore.collection("users").document(currentUser)
-                val userData = hashMapOf("userInfo" to UserInfo(firstName, lastName, email, true, sharedPreferences.gender,
-                    sharedPreferences.birthYear, sharedPreferences.birthMonth, sharedPreferences.heightMeasurement, sharedPreferences.weightMeasurement,
-                    sharedPreferences.heightCm, sharedPreferences.weightKg), "macros" to Macros(sharedPreferences.dailyCalories,
-                    sharedPreferences.dailyCarbs, sharedPreferences.dailyFats, sharedPreferences.dailyProtein, sharedPreferences.currentCalories,
-                    sharedPreferences.currentCarbs, sharedPreferences.currentFats, sharedPreferences.currentProtein),
-                    "calculatorOptions" to CalculatorOptions(sharedPreferences.dailyActivity, sharedPreferences.goal, sharedPreferences.physicalActivityLifestyle))
+                val userData = hashMapOf("userInfo" to sharedPreferences.userInfo, "macros" to sharedPreferences.macros,
+                    "calculatorOptions" to sharedPreferences.calculatorOptions)
                 users.set(userData).addOnSuccessListener {
                     viewModelScope.launch {
                         signUpResult.emit(null)

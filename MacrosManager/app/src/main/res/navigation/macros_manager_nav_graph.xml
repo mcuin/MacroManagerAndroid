@@ -26,6 +26,10 @@
             android:id="@+id/navigate_to_macros_calculator"
             app:destination="@id/macros_calculator_fragment" />
 
+        <action
+            android:id="@+id/navigate_to_add_meal"
+            app:destination="@id/add_meal_fragment" />
+
     </fragment>
 
     <fragment

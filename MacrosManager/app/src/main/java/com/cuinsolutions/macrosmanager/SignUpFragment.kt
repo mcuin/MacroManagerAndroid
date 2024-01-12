@@ -35,9 +35,8 @@ class SignUpFragment : Fragment(), OnClickListener {
     ): View {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_sign_up, container, false)
-        binding.listener = this
 
-        //val dailyMeals: Array<HashMap<String, Any>> = gson.fromJson(intent.getStringExtra("dailyMeals"), object : TypeToken<Array<HashMap<String, Any>>>() {}.type)
+        binding.listener = this
 
         return binding.root
     }
@@ -50,9 +49,9 @@ class SignUpFragment : Fragment(), OnClickListener {
                 launch {
                     signUpViewModel.signUpResult.collect {
                         if (it != null) {
-                            Toast.makeText(requireContext(), it.toString(), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), R.string.account_creation_failed, Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(requireContext(), "Account created successfully.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), R.string.account_created, Toast.LENGTH_SHORT).show()
                             findNavController().popBackStack()
                         }
                     }
@@ -65,17 +64,17 @@ class SignUpFragment : Fragment(), OnClickListener {
         when (v.id) {
             R.id.sign_up_sign_up -> {
                 when {
-                    binding.signUpFirstNameEdit.text.toString().isBlank() -> Toast.makeText(requireContext(), "Please enter a valid first name.", Toast.LENGTH_SHORT).show()
-                    binding.signUpLastNameEdit.text.toString().isBlank() -> Toast.makeText(requireContext(), "Please enter a valid last name.", Toast.LENGTH_SHORT).show()
-                    binding.signUpEmailEdit.text.toString().isBlank() && !signUpViewModel.validEmail(binding.signUpEmailEdit.text.toString()) -> Toast.makeText(requireContext(), "Please enter a valid email.", Toast.LENGTH_SHORT).show()
-                    binding.signUpPasswordEdit.text.toString().isBlank() -> Toast.makeText(requireContext(), "Please enter a password.", Toast.LENGTH_SHORT).show()
-                    binding.signUpConfirmPasswordEdit.text.toString().isBlank() -> Toast.makeText(requireContext(), "Please enter confirm your password.", Toast.LENGTH_SHORT).show()
-                    binding.signUpPasswordEdit.text.toString() != binding.signUpConfirmPasswordEdit.text.toString() -> Toast.makeText(requireContext(), "Passwords do not match. Please try again.", Toast.LENGTH_SHORT).show()
+                    binding.signUpEmailEdit.text.toString().isBlank() && !signUpViewModel.validEmail(binding.signUpEmailEdit.text.toString()) -> Toast.makeText(requireContext(), R.string.valid_email_error, Toast.LENGTH_SHORT).show()
+                    binding.signUpPasswordEdit.text.toString().isBlank() -> Toast.makeText(requireContext(), R.string.password_error, Toast.LENGTH_SHORT).show()
+                    binding.signUpConfirmPasswordEdit.text.toString().isBlank() -> Toast.makeText(requireContext(), R.string.password_confirm_error, Toast.LENGTH_SHORT).show()
+                    binding.signUpPasswordEdit.text.toString() != binding.signUpConfirmPasswordEdit.text.toString() -> Toast.makeText(requireContext(), R.string.password_match_error, Toast.LENGTH_SHORT).show()
                     else -> {
-                        signUpViewModel.signUp(binding.signUpEmailEdit.text.toString(), binding.signUpConfirmPasswordEdit.text.toString(), binding.signUpFirstNameEdit.text.toString(),
-                            binding.signUpLastNameEdit.text.toString())
+                        signUpViewModel.signUp(binding.signUpEmailEdit.text.toString(), binding.signUpConfirmPasswordEdit.text.toString())
                     }
                 }
+            }
+            R.id.sign_up_cancel -> {
+                findNavController().popBackStack()
             }
         }
     }

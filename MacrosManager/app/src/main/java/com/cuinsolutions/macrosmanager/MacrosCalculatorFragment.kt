@@ -14,18 +14,21 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cuinsolutions.macrosmanager.databinding.FragmentMacrosCalculatorBinding
 import kotlinx.coroutines.launch
 
 class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
-    lateinit var binding: FragmentMacrosCalculatorBinding
+    private lateinit var binding: FragmentMacrosCalculatorBinding
     private val macrosManagerViewModel: MacrosManagerViewModel by activityViewModels {
         MacrosManagerViewModel.MacrosManagerFactory(requireActivity().application)
     }
     private val macrosCalculatorViewModel: MacrosCalculatorViewModel by viewModels()
+    private val tempCalculatorOptions by lazy { macrosManagerViewModel.currentUserCalculatorOptions.copy() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,9 +70,38 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
             }
         })
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    macrosCalculatorViewModel.calcedMacros.collect {
+                        macrosManagerViewModel.saveCalculatorOptions(tempCalculatorOptions, it)
+                    }
+                }
+                launch {
+                    macrosManagerViewModel.fireBaseSaveSuccess.collect {
+                        if (it) {
+                            findNavController().popBackStack()
+                        } else {
+                            AlertDialog.Builder(requireContext())
+                                .setTitle(R.string.firestore_save_data_error)
+                                .setMessage(R.string.firestore_save_data_error_description)
+                                .setPositiveButton(R.string.retry) { dialog, _ ->
+                                    macrosManagerViewModel.saveCalculatorOptions(macrosManagerViewModel.currentUserCalculatorOptions,
+                                        macrosManagerViewModel.currentUserMacros)
+                                }
+                                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                                    dialog.dismiss()
+                                    findNavController().popBackStack()
+                                }
+                        }
+                    }
+                }
+            }
+        }
+
         binding.calculatorPhysicalActivityLifestyleGroup.setOnCheckedChangeListener { _, checkedId ->
 
-            macrosManagerViewModel.currentUserCalculatorOptions.physicalActivityLifestyle = when (checkedId) {
+            tempCalculatorOptions.physicalActivityLifestyle = when (checkedId) {
                 R.id.calculator_physical_activity_lifestyle_sedentary_adult -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
                 R.id.calculator_physical_activity_lifestyle_adult_recreational_exerciser -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
                 R.id.calculator_physical_activity_lifestyle_adult_competitive_athlete -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
@@ -82,7 +114,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
         binding.calculatorDailyActivityLevelGroup.setOnCheckedChangeListener { _, checkedId ->
 
-            macrosManagerViewModel.currentUserCalculatorOptions.dailyActivity = when (checkedId) {
+            tempCalculatorOptions.dailyActivity = when (checkedId) {
                 R.id.calculator_daily_activity_level_very_light -> DailyActivityLevel.VERYLIGHT.level
                 R.id.calculator_daily_activity_level_light -> DailyActivityLevel.LIGHT.level
                 R.id.calculator_daily_activity_level_moderate -> DailyActivityLevel.MODERATE.level
@@ -95,9 +127,9 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
         binding.calculatorFatPercentGroup.setOnCheckedChangeListener { _, checkedId ->
             binding.customFat = false
             when (checkedId) {
-                R.id.calculator_fat_percent_twenty_five -> macrosManagerViewModel.currentUserCalculatorOptions.dietFatPercent = 25.0
-                R.id.calculator_fat_percent_thirty -> macrosManagerViewModel.currentUserCalculatorOptions.dietFatPercent = 30.0
-                R.id.calculator_fat_percent_thirty_five -> macrosManagerViewModel.currentUserCalculatorOptions.dietFatPercent = 35.0
+                R.id.calculator_fat_percent_twenty_five -> tempCalculatorOptions.dietFatPercent = 25.0
+                R.id.calculator_fat_percent_thirty -> tempCalculatorOptions.dietFatPercent = 30.0
+                R.id.calculator_fat_percent_thirty_five -> tempCalculatorOptions.dietFatPercent = 35.0
                 R.id.calculator_fat_percent_custom -> {
                     binding.customFat = true
                 }
@@ -105,7 +137,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
         }
 
         binding.calculatorGoalGroup.setOnCheckedChangeListener { _, checkedId ->
-            macrosManagerViewModel.currentUserCalculatorOptions.goal = when (checkedId) {
+            tempCalculatorOptions.goal = when (checkedId) {
                 R.id.calculator_goal_burn_suggested -> Goal.BURNSUGGESTED.goal
                 R.id.calculator_goal_burn_aggressive -> Goal.BURNAGGRESSIVE.goal
                 R.id.calculator_goal_burn_reckless -> Goal.BURNRECKLESS.goal

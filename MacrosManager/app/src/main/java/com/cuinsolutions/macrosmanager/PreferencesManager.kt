@@ -3,13 +3,24 @@ package com.cuinsolutions.macrosmanager
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.google.gson.Gson
 import java.sql.Timestamp
 import kotlin.math.absoluteValue
 
 class PreferencesManager(context: Context) {
 
     val preferences: SharedPreferences = context.getSharedPreferences("userPreferences", Context.MODE_PRIVATE)
-    var showAds: Boolean
+    var userInfo: UserInfo
+        get() = Gson().fromJson(preferences.getString("userInfo", UserInfo().toString()), UserInfo::class.java)
+        set(value) = preferences.edit{ Gson().toJson(value) }
+    var macros: Macros
+        get() = Gson().fromJson(preferences.getString("macros", Macros().toString()), Macros::class.java)
+        set(value) = preferences.edit { Gson().toJson(value) }
+    var calculatorOptions: CalculatorOptions
+        get() = Gson().fromJson(preferences.getString("calculatorOptions", CalculatorOptions().toString()),
+            CalculatorOptions::class.java)
+        set(value) = preferences.edit { Gson().toJson(value) }
+    /*var showAds: Boolean
         get() = preferences.getBoolean("showAds", true)
         set(value) = preferences.edit{ putBoolean("showAds", value) }
     var gender: String
@@ -65,5 +76,5 @@ class PreferencesManager(context: Context) {
         set(value) = preferences.edit { putString("goal", "") }
     var physicalActivityLifestyle: String
         get() = preferences.getString("physicalActivityLifestyle", "").toString()
-        set(value) = preferences.edit { putString("physicalActivityLifestyle", "") }
+        set(value) = preferences.edit { putString("physicalActivityLifestyle", "") }*/
 }
