@@ -6,38 +6,57 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.util.Date
+import kotlin.math.floor
 
 class MacrosCalculatorViewModel: ViewModel() {
 
-    private val centimeterFactor = 30.48
-    private val kilogramsFactor = 0.455
+    private val centimeterFactor = 2.54
+    private val kilogramsFactor = 2.205
     val calcedMacros: MutableSharedFlow<Macros> = MutableSharedFlow()
 
-    fun heightImperialToMetric(foot: Int, inches: Double) : Double {
+    fun heightImperialToMetric(foot: Int, inches: Double) : Float {
 
         val totalInches = (foot * 12) + inches
 
-        return totalInches * centimeterFactor
+        return (totalInches * centimeterFactor).toFloat()
     }
 
-    fun weightStoneToMetric(stone: Int, pounds: Double): Double {
+    fun heightMetricToImperial(cm: Float): ImperialHeight {
+
+        val totalInches = cm / centimeterFactor
+        val feet = totalInches / 12
+        val inches = totalInches % 12
+
+        return ImperialHeight(floor(feet).toInt(), inches)
+    }
+
+    fun weightStoneToMetric(stone: Int, pounds: Double): Float {
 
         val totalPounds = (stone * 14) + pounds
 
-        return totalPounds * kilogramsFactor
+        return (totalPounds * kilogramsFactor).toFloat()
     }
 
-    fun weightImperialToMetric(pounds: Double): Double {
+    fun weightImperialToMetric(pounds: Double): Float {
 
-        return pounds * kilogramsFactor
+        return (pounds / kilogramsFactor).toFloat()
     }
 
-    fun weightMetricToImperial(kg: Double): Double {
+    fun weightMetricToImperial(kg: Float): Float {
 
-        return kg * 2.205
+        return (kg * kilogramsFactor).toFloat()
     }
 
-    suspend fun calculate(cm: Double, kg: Double, settingsInfo: UserInfo, calculatorInfo: CalculatorOptions,
+    fun weightMetricToStone(kg: Float): StoneWeight {
+
+        val totalPounds = kg * kilogramsFactor
+        val stone = totalPounds / 14
+        val pounds = totalPounds % 14
+
+        return StoneWeight(floor(stone).toInt(), pounds)
+    }
+
+    suspend fun calculate(cm: Float, kg: Float, settingsInfo: UserInfo, calculatorInfo: CalculatorOptions,
                   previousMacros: Macros) {
 
         var bmr = 0.0
@@ -47,44 +66,45 @@ class MacrosCalculatorViewModel: ViewModel() {
         val fat: Double
         val carbs: Double
         val carbsCalories: Double
-        var age = Calendar.YEAR - settingsInfo.birthYear
-        if (settingsInfo.birthMonth < Calendar.MONTH) {
+        val calendar = Calendar.getInstance()
+        var age = calendar.get(Calendar.YEAR) - settingsInfo.birthYear
+        if (settingsInfo.birthMonth < calendar.get(Calendar.MONTH)) {
             age -= 1
         }
         //dateFormat.format(birthDate), java.util.concurrent.TimeUnit.MILLISECONDS) / 365)
 
         when (settingsInfo.gender) {
-            "male" -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) + 5)
-            "female" -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) - 161)
+            Gender.MALE.gender -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) + 5)
+            Gender.FEMALE.gender -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) - 161)
         }
 
         val tdee: Double = when (calculatorInfo.dailyActivity) {
-            "very light" -> bmr * 1.20
-            "light" -> bmr * 1.45
-            "moderate" -> bmr * 1.55
-            "heavy" -> bmr * 1.75
-            "very heavy" -> 2.00
+            DailyActivityLevel.VERYLIGHT.level -> bmr * 1.20
+            DailyActivityLevel.LIGHT.level -> bmr * 1.45
+            DailyActivityLevel.MODERATE.level -> bmr * 1.55
+            DailyActivityLevel.HEAVY.level -> bmr * 1.75
+            DailyActivityLevel.VERYHEAVY.level -> 2.00
             else -> bmr
         }
 
         calories = when (calculatorInfo.goal) {
-            "weightLossSuggested" -> tdee - (tdee * 0.15)
-            "weightLossAggressive" -> tdee - (tdee * 0.20)
-            "weightLossReckless" -> tdee - (tdee * 0.25)
-            "maintain" -> tdee
-            "bulkingSuggested" -> tdee + (tdee * 0.05)
-            "bulkingAggressive" -> tdee + (tdee * 0.10)
-            "bulkingReckless" -> tdee + (tdee * 0.15)
+            Goal.BURNSUGGESTED.goal -> tdee - (tdee * 0.15)
+            Goal.BURNAGGRESSIVE.goal-> tdee - (tdee * 0.20)
+            Goal.BURNRECKLESS.goal -> tdee - (tdee * 0.25)
+            Goal.MAINTAIN.goal -> tdee
+            Goal.BUILDSUGGESTED.goal -> tdee + (tdee * 0.05)
+            Goal.BUILDAGGRESSIVE.goal -> tdee + (tdee * 0.10)
+            Goal.BUILDRECKLESS.goal -> tdee + (tdee * 0.15)
             else -> tdee
         }
 
         val protein: Double = when (calculatorInfo.physicalActivityLifestyle) {
-            "sedentaryAdult" -> pounds * 0.4
-            "recreationalExerciserAdult" -> pounds * 0.75
-            "competitiveAthleteAdult" -> pounds * 0.90
-            "buildingMuscleAdult" -> pounds * 0.90
-            "dietingAthlete" -> pounds * 0.90
-            "growingAthleteTeenager" -> pounds * 1.0
+            PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle -> pounds * 0.4
+            PhysicalActivityLifestyle.RECREATIONADULT.lifeStyle -> pounds * 0.75
+            PhysicalActivityLifestyle.COMPETITIVEADULT.lifeStyle -> pounds * 0.90
+            PhysicalActivityLifestyle.BUILDINGADULT.lifeStyle -> pounds * 0.90
+            PhysicalActivityLifestyle.DIETINGATHLETE.lifeStyle -> pounds * 0.90
+            PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle -> pounds * 1.0
             else -> pounds * 0.4
         }
 
@@ -105,3 +125,6 @@ class MacrosCalculatorViewModel: ViewModel() {
         calcedMacros.emit(macrosCopy)
     }
 }
+
+data class ImperialHeight(var feet: Int, var inches: Double)
+data class StoneWeight(var stone: Int, val pounds: Double)

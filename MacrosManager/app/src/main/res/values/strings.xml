@@ -32,7 +32,7 @@
     <string name="protein">Protein</string>
     <string name="empty_macros">0g</string>
     <string name="save">Save</string>
-    <string name="set_birth_date">Tap to set your birthday month and year.</string>
+    <string name="set_birth_date">Tap to set your birth month and year.</string>
     <string name="grams">g</string>
     <string name="sign_up_description">Sign up to get access to your data across devices, and receive other features.</string>
     <string name="first_name">First Name</string>
@@ -80,7 +80,7 @@
     <string name="weight_entry_errors">Please enter a valid number for both weight entries.</string>
     <string name="custom_fat_error">Custom Fat Percent Error</string>
     <string name="custom_fat_entry_error">Please enter a valid fat perfect for your diet, or select one of the other options.</string>
-    <string name="birth_month_year">$1%d/$2%d</string>
+    <string name="birth_month_year">%1$02d/%2$d</string>
     <string name="settings_error">Settings Error</string>
     <string name="settings_error_description">Please visit the settings page first to fill out some information about yourself for use in calculations.</string>
     <string name="go_to_settings">Go to Settings</string>
@@ -98,8 +98,20 @@
     <string name="firestore_save_data_error">Save Data Issue</string>
     <string name="firestore_save_data_error_description">Some data was saved to your device, but not to your account. Please try to save again or try again later.</string>
     <string name="retry">Retry</string>
-    <string name="macros_daily">$1%1/$1%2</string>
+    <string name="macros_daily">%1$s/%2$d</string>
     <string name="macros_daily_empty">-/-</string>
+    <string name="servings">Servings</string>
+    <string name="delete_meal">Remove Meal</string>
+    <string name="macros">Macros</string>
+    <string name="calculator">Calculator</string>
+    <string name="set">Set</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="delete_account_description">Deleting your account will not delete your data stored on the device, but data will no longer be updated across devices.</string>
+    <string name="delete">Delete</string>
+    <string name="user_account_deleted">User account was successfully deleted.</string>
+    <string name="user_account_delete_error">There was an issue deleting your account. Please try again later.</string>
+    <string name="login_failed">Login Failed</string>
+    <string name="login_failed_description">Your login failed. Please try again later.</string>
 
     <string name="admob_id">ca-app-pub-6601965971959563~1619744217</string>
 </resources>

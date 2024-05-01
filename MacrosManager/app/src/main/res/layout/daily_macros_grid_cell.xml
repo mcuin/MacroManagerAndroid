@@ -34,7 +34,8 @@
             app:layout_constraintStart_toStartOf="parent"
             android:fontFamily="@font/notosansui_regular"
             android:textSize="@dimen/numbers"
-            android:textColor="#FFFFFF"/>
+            android:textColor="#FFFFFF"
+            android:text="@{macroDaily}" />
 
         <TextView
             android:id="@+id/macro_title_text"
@@ -52,6 +53,7 @@
             app:layout_constraintTop_toTopOf="parent"
             android:fontFamily="@font/notosansui_bold"
             android:textSize="@dimen/macro_title"
-            android:textColor="#FFFFFF"/>
+            android:textColor="#FFFFFF"
+            android:text="@{macroTitle}" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

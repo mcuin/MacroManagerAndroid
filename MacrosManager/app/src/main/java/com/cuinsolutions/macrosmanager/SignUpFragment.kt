@@ -25,9 +25,7 @@ class SignUpFragment : Fragment(), OnClickListener {
 
     private lateinit var binding: FragmentSignUpBinding
     private val macrosManagerViewModel by activityViewModels<MacrosManagerViewModel>()
-    private val signUpViewModel: SignUpViewModel by viewModels {
-        SignUpViewModel.SignUpFactory(requireActivity().application, macrosManagerViewModel.auth, macrosManagerViewModel.fireStore)
-    }
+    private val signUpViewModel: SignUpViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,7 +45,7 @@ class SignUpFragment : Fragment(), OnClickListener {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    signUpViewModel.signUpResult.collect {
+                    macrosManagerViewModel.signUpResult.collect {
                         if (it != null) {
                             Toast.makeText(requireContext(), R.string.account_creation_failed, Toast.LENGTH_SHORT).show()
                         } else {
@@ -69,7 +67,7 @@ class SignUpFragment : Fragment(), OnClickListener {
                     binding.signUpConfirmPasswordEdit.text.toString().isBlank() -> Toast.makeText(requireContext(), R.string.password_confirm_error, Toast.LENGTH_SHORT).show()
                     binding.signUpPasswordEdit.text.toString() != binding.signUpConfirmPasswordEdit.text.toString() -> Toast.makeText(requireContext(), R.string.password_match_error, Toast.LENGTH_SHORT).show()
                     else -> {
-                        signUpViewModel.signUp(binding.signUpEmailEdit.text.toString(), binding.signUpConfirmPasswordEdit.text.toString())
+                        macrosManagerViewModel.signUp(binding.signUpEmailEdit.text.toString(), binding.signUpConfirmPasswordEdit.text.toString())
                     }
                 }
             }

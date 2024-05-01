@@ -17,7 +17,7 @@ import java.text.DecimalFormat
 
 class DailyMacrosGridViewAdapter : RecyclerView.Adapter<DailyMacrosGridViewAdapter.MacrosViewHolder>() {
 
-    val macrosList: MutableList<MacroCell> = mutableListOf()
+    private val macrosList: MutableList<MacroCell> = mutableListOf()
 
     fun setMacroItems(macros: List<MacroCell>) {
         macrosList.clear()
@@ -30,6 +30,8 @@ class DailyMacrosGridViewAdapter : RecyclerView.Adapter<DailyMacrosGridViewAdapt
         fun bind(cell: MacroCell) {
             binding.macroTitle = cell.macroName
             binding.macroDaily = cell.macrosDescription
+
+            binding.executePendingBindings()
         }
     }
 

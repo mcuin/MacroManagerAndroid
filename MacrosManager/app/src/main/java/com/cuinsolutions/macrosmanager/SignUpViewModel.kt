@@ -1,6 +1,8 @@
 package com.cuinsolutions.macrosmanager
 
 import android.app.Application
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.Patterns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -13,43 +15,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
-class SignUpViewModel(application: Application, private val auth: FirebaseAuth, private val fireStore: FirebaseFirestore)
-    : AndroidViewModel(application) {
-
-    private val sharedPreferences = PreferencesManager(getApplication())
-    val signUpResult = MutableSharedFlow<Exception?>()
+class SignUpViewModel() : ViewModel() {
 
     fun validEmail(email: String): Boolean {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    fun signUp(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task: Task<AuthResult> ->
-            if (task.isSuccessful) {
-                val currentUser = auth.currentUser!!.uid
-                val users = fireStore.collection("users").document(currentUser)
-                val userData = hashMapOf("userInfo" to sharedPreferences.userInfo, "macros" to sharedPreferences.macros,
-                    "calculatorOptions" to sharedPreferences.calculatorOptions)
-                users.set(userData).addOnSuccessListener {
-                    viewModelScope.launch {
-                        signUpResult.emit(null)
-                    }
-                }.addOnFailureListener {
-                    viewModelScope.launch {
-                        signUpResult.emit(it)
-                    }
-                }
-            } else {
-                viewModelScope.launch {
-                    signUpResult.emit(task.exception)
-                }
-            }
-        }
-    }
-
-    class SignUpFactory(val application: Application, val auth: FirebaseAuth, val fireStore: FirebaseFirestore): ViewModelProvider.NewInstanceFactory() {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SignUpViewModel(application, auth, fireStore) as T
-        }
     }
 }

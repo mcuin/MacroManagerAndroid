@@ -22,7 +22,8 @@ class DeviceRebootDailyResetAlarmReceiver : BroadcastReceiver() {
             resetTime.set(Calendar.HOUR_OF_DAY, 2)
 
             val resetIntent = Intent(p0, DailyResetAlarmReciever::class.java)
-            val resetPendingIntent = PendingIntent.getBroadcast(p0, 0, resetIntent, 0)
+            val resetPendingIntent = PendingIntent.getBroadcast(p0, 0, resetIntent,
+                PendingIntent.FLAG_IMMUTABLE)
             val resetAlarm = p0!!.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
             resetAlarm.setInexactRepeating(AlarmManager.RTC, resetTime.timeInMillis, AlarmManager.INTERVAL_DAY, resetPendingIntent)

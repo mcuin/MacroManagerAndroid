@@ -27,6 +27,7 @@
     <style name="SettingsRadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
         <item name="android:textSize">@dimen/body</item>
         <item name="fontFamily">@font/notosansui_regular</item>
+        <item name="buttonTint">@color/colorPrimaryDark</item>
     </style>
 
     <style name="ExtendedFab" parent="Widget.MaterialComponents.ExtendedFloatingActionButton">
@@ -35,17 +36,23 @@
         <item name="android:textSize">@dimen/body</item>
     </style>
 
+    <style name="MealText">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:fontFamily">@font/notosansui_regular</item>
+        <item name="android:textSize">@dimen/numbers</item>
+    </style>
+
     <style name="MonthYearPickerStyle" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
-        <item name="android:backgroundTint">@android:color/white</item>
-        <item name="buttonBarNegativeButtonStyle">@android:color/black</item>
+        <item name="android:backgroundTint">@color/colorPrimary</item>
+        <item name="buttonBarNegativeButtonStyle">@android:color/holo_red_light</item>
         <item name="buttonBarPositiveButtonStyle">@color/colorAccent</item>
         <item name="headerBackgroundColor">@color/colorPrimary</item>
-        <item name="headerTextColor">#66000000</item>
-        <item name="headerTextColorSelected">@android:color/black</item>
-        <item name="monthBackgroundColorSelected">@color/colorPrimaryDark</item>
+        <item name="headerTextColor">@android:color/white</item>
+        <item name="headerTextColorSelected">@color/colorPrimaryDark</item>
+        <item name="monthBackgroundColorSelected">@color/colorAccent</item>
         <item name="monthTextColor">@android:color/black</item>
-        <item name="monthTextColorDisabled">#4F000000</item>
-        <item name="monthTextColorSelected">@android:color/black</item>
+        <item name="monthTextColorDisabled">@android:color/darker_gray</item>
+        <item name="monthTextColorSelected">@color/colorPrimaryDark</item>
         <item name="yearTextColor">@android:color/black</item>
         <item name="yearTextColorSelected">@color/colorPrimaryDark</item>
     </style>

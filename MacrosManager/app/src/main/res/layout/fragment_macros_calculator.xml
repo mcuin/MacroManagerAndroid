@@ -7,31 +7,30 @@
     <data>
         <import type="android.view.View" />
         <import type="android.view.View.OnClickListener" />
-        <import type="com.cuinsolutions.macrosmanager.WeightMeasurement" />
-        <import type="com.cuinsolutions.macrosmanager.HeightMeasurement" />
-        <import type="com.cuinsolutions.macrosmanager.DailyActivityLevel" />
-        <import type="com.cuinsolutions.macrosmanager.PhysicalActivityLifestyle" />
-        <import type="com.cuinsolutions.macrosmanager.Goal" />
 
         <variable
             name="listener"
             type="OnClickListener" />
         
         <variable
-            name="heightMeasurement"
-            type="String" />
+            name="showHeightCm"
+            type="boolean" />
 
         <variable
-            name="weightMeasurement"
-            type="String" />
+            name="showWeightKg"
+            type="boolean" />
+
+        <variable
+            name="showWeightStone"
+            type="boolean" />
 
         <variable
             name="dailyActivityLevel"
-            type="String" />
+            type="Integer" />
 
         <variable
             name="physicalActivityLifestyle"
-            type="String" />
+            type="Integer" />
 
         <variable
             name="dietFatPercent"
@@ -43,10 +42,10 @@
 
         <variable
             name="goal"
-            type="String" />
+            type="Integer" />
     </data>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/calculator_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -64,7 +63,9 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="@dimen/margin_standard"
+                android:layout_marginTop="@dimen/margin_standard"
+                android:layout_marginEnd="@dimen/margin_standard"
+                android:layout_marginStart="@dimen/margin_standard"
                 android:text="@string/height" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -74,13 +75,14 @@
                 app:layout_constraintTop_toBottomOf="@id/calculator_height_label"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="@dimen/margin_standard"
+                android:layout_marginStart="@dimen/margin_standard"
+                android:layout_marginEnd="@dimen/margin_standard"
                 android:hint="@string/centimeters"
-                android:visibility="@{weightMeasurement == HeightMeasurement.METRIC.measurement ? View.VISIBLE : View.GONE}">
+                android:visibility="@{showHeightCm ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_centimeters_edit"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="numberDecimal" />
 
@@ -93,9 +95,10 @@
                 app:layout_constraintTop_toBottomOf="@id/calculator_height_label"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/calculator_height_inches_layout"
-                android:layout_margin="@dimen/margin_standard"
+                android:layout_marginStart="@dimen/margin_standard"
+                android:layout_marginEnd="@dimen/margin_small_minus"
                 android:hint="@string/feet"
-                android:visibility="@{heightMeasurement == HeightMeasurement.IMPERIAL.measurement ? View.VISIBLE : View.GONE}">
+                android:visibility="@{!showHeightCm ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_feet_edit"
@@ -111,9 +114,10 @@
                 app:layout_constraintTop_toBottomOf="@id/calculator_height_label"
                 app:layout_constraintStart_toEndOf="@id/calculator_height_feet_layout"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="@dimen/margin_standard"
+                android:layout_marginStart="@dimen/margin_small_minus"
+                android:layout_marginEnd="@dimen/margin_standard"
                 android:hint="@string/inches"
-                android:visibility="@{heightMeasurement == HeightMeasurement.IMPERIAL.measurement ? View.VISIBLE : View.GONE}">
+                android:visibility="@{!showHeightCm ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_height_inches_edit"
@@ -122,14 +126,23 @@
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/calculator_height_barrier"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="calculator_height_centimeters_layout,calculator_height_feet_layout" />
+
             <TextView
                 android:id="@+id/calculator_weight_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/calculator_height_centimeters_layout"
+                app:layout_constraintTop_toBottomOf="@id/calculator_height_barrier"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="@dimen/margin_standard"
+                android:layout_marginTop="@dimen/margin_standard"
+                android:layout_marginEnd="@dimen/margin_standard"
+                android:layout_marginStart="@dimen/margin_standard"
                 app:layout_goneMarginTop="@dimen/margin_standard"
                 android:text="@string/weight" />
 
@@ -140,14 +153,15 @@
                 app:layout_constraintTop_toBottomOf="@id/calculator_weight_label"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="@dimen/margin_standard"
+                android:layout_marginStart="@dimen/margin_standard"
+                android:layout_marginEnd="@dimen/margin_standard"
                 android:hint="@string/kilograms"
-                android:visibility="@{weightMeasurement == WeightMeasurement.METRIC.measurement ? View.VISIBLE : View.GONE}">
+                android:visibility="@{showWeightKg ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_kilograms_edit"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -158,14 +172,15 @@
                 app:layout_constraintTop_toBottomOf="@id/calculator_weight_label"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/calculator_weight_pounds_layout"
-                android:layout_margin="@dimen/margin_standard"
+                android:layout_marginStart="@dimen/margin_standard"
+                android:layout_marginEnd="@dimen/margin_standard"
                 android:hint="@string/stone"
-                android:visibility="@{weightMeasurement == WeightMeasurement.STONE.measurement ? View.VISIBLE : View.GONE}">
+                android:visibility="@{showWeightStone ? View.VISIBLE : View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_stone_edit"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -176,10 +191,11 @@
                 app:layout_constraintTop_toBottomOf="@id/calculator_weight_label"
                 app:layout_constraintStart_toEndOf="@id/calculator_weight_stone_layout"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="@dimen/margin_standard"
+                android:layout_marginStart="@dimen/margin_standard"
+                android:layout_marginEnd="@dimen/margin_standard"
                 app:layout_goneMarginStart="@dimen/margin_standard"
                 android:hint="@string/pounds"
-                android:visibility="@{weightMeasurement == WeightMeasurement.STONE.measurement || weightMeasurement == WeightMeasurement.IMPERIAL.measurement ? View.VISIBLE: View.GONE}">
+                android:visibility="@{showWeightStone || !showWeightKg ? View.VISIBLE: View.GONE}">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/calculator_weight_pounds_edit"
@@ -188,11 +204,18 @@
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/calculator_weight_barrier"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="calculator_weight_kilograms_layout,calculator_weight_pounds_layout" />
+
             <TextView
                 android:id="@+id/calculator_daily_activity_level_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/calculator_weight_kilograms_layout"
+                app:layout_constraintTop_toBottomOf="@id/calculator_weight_barrier"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginStart="@dimen/margin_standard"
                 android:layout_marginTop="@dimen/margin_standard"
@@ -219,42 +242,43 @@
                 app:layout_constraintTop_toBottomOf="@id/calculator_daily_activity_level_label"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="@dimen/margin_standard">
+                android:layout_margin="@dimen/margin_standard"
+                android:checkedButton="@{dailyActivityLevel}">
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_very_light"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/very_light"
-                    android:checked="@{dailyActivityLevel == DailyActivityLevel.VERYLIGHT.level}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_light"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/light"
-                    android:checked="@{dailyActivityLevel == DailyActivityLevel.LIGHT.level}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_moderate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/moderate"
-                    android:checked="@{dailyActivityLevel == DailyActivityLevel.MODERATE.level}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_heavy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/heavy"
-                    android:checked="@{dailyActivityLevel == DailyActivityLevel.HEAVY.level}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_daily_activity_level_very_heavy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/very_heavy"
-                    android:checked="@{dailyActivityLevel == DailyActivityLevel.VERYHEAVY.level}" />
+                    style="@style/SettingsRadioButton" />
             </RadioGroup>
 
             <TextView
@@ -274,49 +298,50 @@
                 app:layout_constraintTop_toBottomOf="@id/calculator_physical_activity_lifestyle_label"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="@dimen/margin_standard">
+                android:layout_margin="@dimen/margin_standard"
+                android:checkedButton="@{physicalActivityLifestyle}">
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_sedentary_adult"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/sedentary_adult"
-                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_adult_recreational_exerciser"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/adult_recreational_exerciser"
-                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.RECREATIONADULT.lifeStyle}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_adult_competitive_athlete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/adult_competitive_athlete"
-                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.COMPETITIVEADULT.lifeStyle}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_adult_building_muscle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/adult_building_muscle"
-                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.BUILDINGADULT.lifeStyle}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_dieting_athlete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/dieting_athlete"
-                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.DIETINGATHLETE.lifeStyle}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_physical_activity_lifestyle_teen_growing_athlete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/teen_growing_athlete"
-                    android:checked="@{physicalActivityLifestyle == PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle}" />
+                    style="@style/SettingsRadioButton" />
 
             </RadioGroup>
 
@@ -357,28 +382,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/twenty_five_percent"
-                    android:checked="@{dietFatPercent == 25.0}" />
+                    android:checked="@{dietFatPercent == 25.0}"
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_fat_percent_thirty"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/thirty_percent"
-                    android:checked="@{dietFatPercent == 30.0}" />
+                    android:checked="@{dietFatPercent == 30.0}"
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_fat_percent_thirty_five"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/thirty_five_percent"
-                    android:checked="@{dietFatPercent == 35.0}" />
+                    android:checked="@{dietFatPercent == 35.0}"
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_fat_percent_custom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/custom"
-                    android:checked="@{customFat}" />
+                    android:checked="@{customFat}"
+                    style="@style/SettingsRadioButton" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/calculator_fat_percent_custom_layout"
@@ -416,56 +445,57 @@
                 android:layout_marginTop="@dimen/margin_standard"
                 android:layout_marginStart="@dimen/margin_standard"
                 android:layout_marginEnd="@dimen/margin_standard"
-                android:layout_marginBottom="64dp">
+                android:layout_marginBottom="64dp"
+                android:checkedButton="@{goal}">
 
                 <RadioButton
                     android:id="@+id/calculator_goal_build_reckless"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/build_reckless"
-                    android:checked="@{goal == Goal.BUILDRECKLESS.goal}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_build_aggressive"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/build_aggressive"
-                    android:checked="@{goal == Goal.BUILDAGGRESSIVE.goal}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_build_suggested"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/build_suggested"
-                    android:checked="@{goal == Goal.BUILDSUGGESTED.goal}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_maintain"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/maintain"
-                    android:checked="@{goal == Goal.MAINTAIN.goal}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_burn_suggested"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/burn_suggested"
-                    android:checked="@{goal == Goal.BURNSUGGESTED.goal}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_burn_aggressive"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/burn_aggressive"
-                    android:checked="@{goal == Goal.BURNAGGRESSIVE.goal}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/calculator_goal_burn_reckless"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/burn_reckless"
-                    android:checked="@{goal == Goal.BURNRECKLESS.goal}" />
+                    style="@style/SettingsRadioButton" />
             </RadioGroup>
 
             <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -475,7 +505,8 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_margin="@dimen/margin_standard"
-                android:text="@string/calc" />
+                android:text="@string/calc"
+                android:onClick="@{listener}" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 </layout>

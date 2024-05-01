@@ -23,6 +23,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import by.dzmitry_lakisau.month_year_picker_dialog.MonthYearPickerDialog
 import com.cuinsolutions.macrosmanager.databinding.FragmentSettingsBinding
@@ -33,6 +34,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.launch
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -43,10 +45,8 @@ import java.util.Locale
 class SettingsFragment : Fragment(), OnClickListener {
 
     private lateinit var binding: FragmentSettingsBinding
-    private var birthDate = Date()
     private val macrosManagerViewModel: MacrosManagerViewModel by activityViewModels()
-    private val viewModel: SettingsViewModel by viewModels()
-    private val tempUserSettings by lazy { macrosManagerViewModel.currentUserInfo.copy() }
+    private val tempUserSettings by lazy { macrosManagerViewModel.currentUserInfo.value.copy() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,12 +55,25 @@ class SettingsFragment : Fragment(), OnClickListener {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_settings, container, false)
 
-        binding.weightMeasurement = macrosManagerViewModel.currentUserInfo.weightMeasurement
-        binding.heightMeasurement = macrosManagerViewModel.currentUserInfo.heightMeasurement
-        binding.gender = macrosManagerViewModel.currentUserInfo.gender
-        binding.settingsBirthDate.text = if (macrosManagerViewModel.currentUserInfo.birthYear != -1) {
-             getString(R.string.birth_month_year, macrosManagerViewModel.currentUserInfo.birthMonth,
-                macrosManagerViewModel.currentUserInfo.birthYear)
+        binding.genderId = when (macrosManagerViewModel.currentUserInfo.value.gender) {
+            Gender.MALE.gender -> R.id.settings_radio_male
+            Gender.FEMALE.gender -> R.id.settings_radio_female
+            else -> R.id.settings_radio_male
+        }
+        binding.weightId = when (macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
+            WeightMeasurement.IMPERIAL.measurement -> R.id.settings_weight_imperial
+            WeightMeasurement.METRIC.measurement -> R.id.settings_weight_metric
+            WeightMeasurement.STONE.measurement -> R.id.settings_weight_stone
+            else -> R.id.settings_weight_metric
+        }
+        binding.heightId = when (macrosManagerViewModel.currentUserInfo.value.heightMeasurement) {
+            HeightMeasurement.IMPERIAL.measurement -> R.id.settings_height_imperial
+            HeightMeasurement.METRIC.measurement -> R.id.settings_height_metric
+            else -> R.id.settings_height_metric
+        }
+        binding.settingsBirthDate.text = if (macrosManagerViewModel.currentUserInfo.value.birthYear != -1) {
+             getString(R.string.birth_month_year, macrosManagerViewModel.currentUserInfo.value.birthMonth + 1,
+                macrosManagerViewModel.currentUserInfo.value.birthYear)
         } else {
             getString(R.string.set_birth_date)
         }
@@ -111,15 +124,17 @@ class SettingsFragment : Fragment(), OnClickListener {
                         tempUserSettings.birthMonth = month
                         tempUserSettings.birthYear = year
 
-                        binding.settingsBirthDate.text = getString(R.string.birth_month_year, month, year)
+                        binding.settingsBirthDate.text = getString(R.string.birth_month_year, month + 1, year)
                     }, selectedYear = maxYear, selectedMonth = maxMonth)
                     .setMaxMonth(maxMonth)
                     .setMaxYear(maxYear)
+                    .setPositiveButton(R.string.set)
+                    .setNegativeButton(R.string.cancel)
                     .build().show()
             }
 
             R.id.settings_save -> {
-                if (macrosManagerViewModel.currentUserInfo.birthMonth == -1 || macrosManagerViewModel.currentUserInfo.birthYear == -1
+                if (tempUserSettings.birthMonth == -1 || tempUserSettings.birthYear == -1
                     || tempUserSettings.birthYear == Calendar.getInstance().get(Calendar.YEAR)) {
                     AlertDialog.Builder(requireContext())
                         .setTitle(R.string.birth_info_error)
@@ -128,15 +143,17 @@ class SettingsFragment : Fragment(), OnClickListener {
                         .show()
 
                 } else {
-                    macrosManagerViewModel.saveUserSettings(tempUserSettings)
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        macrosManagerViewModel.saveUserSettings(tempUserSettings)
+                    }
 
                     if (macrosManagerViewModel.auth.currentUser == null) {
                         AlertDialog.Builder(requireContext())
                             .setTitle(R.string.create_account)
                             .setMessage(R.string.create_account_description)
-                            .setPositiveButton(R.string.ok) { dialog, _ ->
+                            .setPositiveButton(R.string.ok) { _, _ ->
                                 findNavController().navigate(SettingsFragmentDirections.navigateToSignUp())
-                            }.setNegativeButton(R.string.no_thanks) { dialog, _ ->
+                            }.setNegativeButton(R.string.no_thanks) { _, _ ->
                                 findNavController().popBackStack()
                             }.show()
                     } else {

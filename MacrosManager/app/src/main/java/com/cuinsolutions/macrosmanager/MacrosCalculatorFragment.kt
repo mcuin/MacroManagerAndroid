@@ -1,5 +1,6 @@
 package com.cuinsolutions.macrosmanager
 
+import android.icu.text.DecimalFormat
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -19,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cuinsolutions.macrosmanager.databinding.FragmentMacrosCalculatorBinding
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MacrosCalculatorFragment : Fragment(), OnClickListener {
@@ -28,7 +30,8 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
         MacrosManagerViewModel.MacrosManagerFactory(requireActivity().application)
     }
     private val macrosCalculatorViewModel: MacrosCalculatorViewModel by viewModels()
-    private val tempCalculatorOptions by lazy { macrosManagerViewModel.currentUserCalculatorOptions.copy() }
+    private val tempCalculatorOptions by lazy { macrosManagerViewModel.currentUserCalculatorOptions.value.copy() }
+    private val decimalFormat = DecimalFormat("#.##")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,6 +41,105 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_macros_calculator, container, false)
 
         binding.listener = this
+
+        if (macrosManagerViewModel.currentUserInfo.value.birthMonth != -1) {
+            binding.showHeightCm = when (macrosManagerViewModel.currentUserInfo.value.heightMeasurement) {
+                HeightMeasurement.METRIC.measurement -> true
+                else -> false
+            }
+            binding.showWeightKg = when(macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
+                WeightMeasurement.METRIC.measurement -> true
+                else -> false
+            }
+            binding.showWeightStone = when (macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
+                WeightMeasurement.STONE.measurement -> true
+                else -> false
+            }
+            when (macrosManagerViewModel.currentUserInfo.value.heightMeasurement) {
+                HeightMeasurement.METRIC.measurement -> {
+                    binding.calculatorHeightCentimetersEdit.setText(decimalFormat.format(macrosManagerViewModel.currentUserInfo.value.heightCm))
+                }
+                HeightMeasurement.IMPERIAL.measurement -> {
+                    val imperialHeight = macrosCalculatorViewModel.heightMetricToImperial(macrosManagerViewModel.currentUserInfo.value.heightCm)
+
+                    binding.calculatorHeightFeetEdit.setText(imperialHeight.feet.toString())
+                    binding.calculatorHeightInchesEdit.setText(decimalFormat.format(imperialHeight.inches))
+                }
+            }
+            when (macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
+                WeightMeasurement.METRIC.measurement -> {
+                    binding.calculatorWeightKilogramsEdit.setText(decimalFormat.format(macrosManagerViewModel.currentUserInfo.value.weightKg))
+                }
+                WeightMeasurement.IMPERIAL.measurement -> {
+                    val pounds = macrosCalculatorViewModel.weightMetricToImperial(macrosManagerViewModel.currentUserInfo.value.weightKg)
+
+                    binding.calculatorWeightPoundsEdit.setText(decimalFormat.format(pounds))
+                }
+                WeightMeasurement.STONE.measurement -> {
+                    val stone = macrosCalculatorViewModel.weightMetricToStone(macrosManagerViewModel.currentUserInfo.value.weightKg)
+
+                    binding.calculatorWeightStoneEdit.setText(stone.stone)
+                    binding.calculatorWeightPoundsEdit.setText(decimalFormat.format(stone.pounds))
+                }
+            }
+
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    launch {
+                        macrosManagerViewModel.currentUserCalculatorOptions.collect {
+                            binding.dailyActivityLevel = when (macrosManagerViewModel.currentUserCalculatorOptions.value.dailyActivity) {
+                                DailyActivityLevel.VERYLIGHT.level -> R.id.calculator_daily_activity_level_very_light
+                                DailyActivityLevel.LIGHT.level -> R.id.calculator_daily_activity_level_light
+                                DailyActivityLevel.MODERATE.level -> R.id.calculator_daily_activity_level_moderate
+                                DailyActivityLevel.HEAVY.level -> R.id.calculator_daily_activity_level_heavy
+                                DailyActivityLevel.VERYHEAVY.level -> R.id.calculator_daily_activity_level_very_heavy
+                                else -> R.id.calculator_daily_activity_level_very_light
+                            }
+                            binding.physicalActivityLifestyle = when (macrosManagerViewModel.currentUserCalculatorOptions.value.physicalActivityLifestyle) {
+                                PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_sedentary_adult
+                                PhysicalActivityLifestyle.RECREATIONADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_adult_recreational_exerciser
+                                PhysicalActivityLifestyle.COMPETITIVEADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_adult_competitive_athlete
+                                PhysicalActivityLifestyle.BUILDINGADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_adult_building_muscle
+                                PhysicalActivityLifestyle.DIETINGATHLETE.lifeStyle -> R.id.calculator_physical_activity_lifestyle_dieting_athlete
+                                PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle -> R.id.calculator_physical_activity_lifestyle_teen_growing_athlete
+                                else -> R.id.calculator_physical_activity_lifestyle_sedentary_adult
+                            }
+                            binding.dietFatPercent = macrosManagerViewModel.currentUserCalculatorOptions.value.dietFatPercent
+                            binding.customFat = when {
+                                macrosManagerViewModel.currentUserCalculatorOptions.value.dietFatPercent == 25.0 ||
+                                        macrosManagerViewModel.currentUserCalculatorOptions.value.dietFatPercent == 30.0 ||
+                                        macrosManagerViewModel.currentUserCalculatorOptions.value.dietFatPercent == 35.0 -> false
+                                else -> true
+                            }
+                            binding.goal = when (it.goal) {
+                                Goal.BUILDRECKLESS.goal -> R.id.calculator_goal_build_reckless
+                                Goal.BUILDAGGRESSIVE.goal -> R.id.calculator_goal_build_aggressive
+                                Goal.BUILDSUGGESTED.goal -> R.id.calculator_goal_build_suggested
+                                Goal.MAINTAIN.goal -> R.id.calculator_goal_maintain
+                                Goal.BURNSUGGESTED.goal -> R.id.calculator_goal_burn_suggested
+                                Goal.BURNAGGRESSIVE.goal -> R.id.calculator_goal_burn_aggressive
+                                Goal.BURNRECKLESS.goal -> R.id.calculator_goal_burn_reckless
+                                else -> R.id.calculator_goal_maintain
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.settings_error)
+                .setMessage(R.string.settings_error_description)
+                .setPositiveButton(R.string.go_to_settings) { dialogInterface, _ ->
+                    dialogInterface.dismiss()
+                    findNavController().navigate(MacrosCalculatorFragmentDirections.navigateToSettings())
+                }
+                .setNegativeButton(R.string.cancel) { dialogInterface, _ ->
+                    dialogInterface.dismiss()
+                    findNavController().popBackStack()
+                }
+                .show()
+        }
 
         return binding.root
     }
@@ -68,7 +170,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
                 return true
             }
-        })
+        }, viewLifecycleOwner, Lifecycle.State.STARTED)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -86,8 +188,10 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                                 .setTitle(R.string.firestore_save_data_error)
                                 .setMessage(R.string.firestore_save_data_error_description)
                                 .setPositiveButton(R.string.retry) { dialog, _ ->
-                                    macrosManagerViewModel.saveCalculatorOptions(macrosManagerViewModel.currentUserCalculatorOptions,
-                                        macrosManagerViewModel.currentUserMacros)
+                                    viewLifecycleOwner.lifecycleScope.launch {
+                                        macrosManagerViewModel.saveCalculatorOptions(macrosManagerViewModel.currentUserCalculatorOptions.value,
+                                            macrosManagerViewModel.currentUserMacros.value)
+                                    }
                                 }
                                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                                     dialog.dismiss()
@@ -103,11 +207,11 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
             tempCalculatorOptions.physicalActivityLifestyle = when (checkedId) {
                 R.id.calculator_physical_activity_lifestyle_sedentary_adult -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
-                R.id.calculator_physical_activity_lifestyle_adult_recreational_exerciser -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
-                R.id.calculator_physical_activity_lifestyle_adult_competitive_athlete -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
-                R.id.calculator_physical_activity_lifestyle_adult_building_muscle -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
-                R.id.calculator_physical_activity_lifestyle_dieting_athlete -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
-                R.id.calculator_physical_activity_lifestyle_teen_growing_athlete -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
+                R.id.calculator_physical_activity_lifestyle_adult_recreational_exerciser -> PhysicalActivityLifestyle.RECREATIONADULT.lifeStyle
+                R.id.calculator_physical_activity_lifestyle_adult_competitive_athlete -> PhysicalActivityLifestyle.COMPETITIVEADULT.lifeStyle
+                R.id.calculator_physical_activity_lifestyle_adult_building_muscle -> PhysicalActivityLifestyle.BUILDINGADULT.lifeStyle
+                R.id.calculator_physical_activity_lifestyle_dieting_athlete -> PhysicalActivityLifestyle.DIETINGATHLETE.lifeStyle
+                R.id.calculator_physical_activity_lifestyle_teen_growing_athlete -> PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle
                 else -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
             }
         }
@@ -148,26 +252,6 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 else -> Goal.MAINTAIN.goal
             }
         }
-
-        if (macrosManagerViewModel.currentUserInfo.birthMonth != -1) {
-            binding.heightMeasurement = macrosManagerViewModel.currentUserInfo.heightMeasurement
-            binding.weightMeasurement = macrosManagerViewModel.currentUserInfo.weightMeasurement
-
-        } else {
-            AlertDialog.Builder(requireContext())
-                .setTitle(R.string.settings_error)
-                .setMessage(R.string.settings_error_description)
-                .setPositiveButton(R.string.go_to_settings) { dialogInterface, _ ->
-                    dialogInterface.dismiss()
-                    findNavController().navigate(MacrosCalculatorFragmentDirections.navigateToSettings())
-                }
-                .setNegativeButton(R.string.cancel) { dialogInterface, _ ->
-                    dialogInterface.dismiss()
-                    findNavController().popBackStack()
-                }
-                .show()
-        }
-
     }
 
     override fun onClick(view: View) {
@@ -185,10 +269,10 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 fatPercentDialog.show()
             }
             binding.calculatorCalculate -> {
-                var centimeters = -1.0
-                var kilograms = -1.0
-                when (macrosManagerViewModel.currentUserInfo.heightMeasurement) {
-                    "imperial" -> {
+                var centimeters = -1.0f
+                var kilograms = -1.0f
+                when (macrosManagerViewModel.currentUserInfo.value.heightMeasurement) {
+                    HeightMeasurement.IMPERIAL.measurement -> {
                         if (binding.calculatorHeightFeetEdit.text.toString().isBlank() ||
                             binding.calculatorHeightInchesEdit.text.toString().isBlank() ||
                             !(0.0..12.0).contains(binding.calculatorHeightInchesEdit.text.toString().toDouble())
@@ -209,7 +293,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                             binding.calculatorHeightInchesEdit.text.toString().toDouble())
                     }
 
-                    "metric" -> {
+                    HeightMeasurement.METRIC.measurement -> {
                         if (binding.calculatorHeightCentimetersEdit.text.toString().isBlank() ||
                             !Regexs().validNumber(binding.calculatorHeightCentimetersEdit.text.toString())) {
 
@@ -223,12 +307,12 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                             return
                         }
 
-                        centimeters = binding.calculatorHeightCentimetersEdit.text.toString().toDouble()
+                        centimeters = binding.calculatorHeightCentimetersEdit.text.toString().toFloat()
                     }
                 }
 
-                when(macrosManagerViewModel.currentUserInfo.weightMeasurement) {
-                    "imperial" -> {
+                when(macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
+                    WeightMeasurement.IMPERIAL.measurement -> {
                         if (binding.calculatorWeightPoundsEdit.text.toString().isBlank() ||
                              !Regexs().validNumber(binding.calculatorWeightPoundsEdit.text.toString())) {
 
@@ -244,7 +328,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
                         kilograms = macrosCalculatorViewModel.weightImperialToMetric(binding.calculatorWeightPoundsEdit.text.toString().toDouble())
                     }
-                    "metric" -> {
+                    WeightMeasurement.METRIC.measurement -> {
                         if (binding.calculatorWeightKilogramsEdit.text.toString().isBlank() ||
                             !Regexs().validNumber(binding.calculatorWeightKilogramsEdit.text.toString())) {
 
@@ -258,9 +342,9 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                             return
                         }
 
-                        kilograms = binding.calculatorWeightKilogramsEdit.text.toString().toDouble()
+                        kilograms = binding.calculatorWeightKilogramsEdit.text.toString().toFloat()
                     }
-                    "stone" -> {
+                    WeightMeasurement.STONE.measurement -> {
                         if (binding.calculatorWeightStoneEdit.text.toString().isBlank() ||
                             !Regexs().validNumber(binding.calculatorWeightStoneEdit.text.toString())) {
 
@@ -294,8 +378,12 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 }
 
                 lifecycleScope.launch {
-                    macrosCalculatorViewModel.calculate(centimeters, kilograms, macrosManagerViewModel.currentUserInfo,
-                        macrosManagerViewModel.currentUserCalculatorOptions, macrosManagerViewModel.currentUserMacros)
+                    val tempUserInfo = macrosManagerViewModel.currentUserInfo.value.copy()
+                    tempUserInfo.weightKg = kilograms
+                    tempUserInfo.heightCm = centimeters
+                    macrosManagerViewModel.saveUserSettings(tempUserInfo)
+                    macrosCalculatorViewModel.calculate(centimeters, kilograms, macrosManagerViewModel.currentUserInfo.value,
+                        macrosManagerViewModel.currentUserCalculatorOptions.value, macrosManagerViewModel.currentUserMacros.value)
                 }
             }
         }

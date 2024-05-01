@@ -50,7 +50,13 @@
     <fragment
         android:id="@+id/add_meal_fragment"
         android:name="com.cuinsolutions.macrosmanager.AddMealFragment"
-        tools:layout="@layout/fragment_add_meal" />
+        tools:layout="@layout/fragment_add_meal">
+
+        <argument
+            android:name="mealId"
+            app:argType="integer" />
+
+    </fragment>
 
     <dialog
         android:id="@+id/sign_in_dialog"

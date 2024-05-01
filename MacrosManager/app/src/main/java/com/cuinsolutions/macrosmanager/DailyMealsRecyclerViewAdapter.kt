@@ -1,114 +1,60 @@
 package com.cuinsolutions.macrosmanager
 
-import android.content.Context
-import android.content.Intent
+import android.app.AlertDialog
+import android.icu.text.DecimalFormat
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.cuinsolutions.macrosmanager.databinding.MealRecyclerCellBinding
 import com.google.gson.Gson
 
 /**
  * Created by mykalcuin on 9/13/17.
  */
+class DailyMealsRecyclerViewAdapter(val onClick: (id: Int) -> Unit): RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
 
-class DailyMealsRecyclerViewAdapter(val context: Context, val dailyMeals: List<HashMap<String, Any>>, dailyIntakeGridViewAdapter: DailyMacrosGridViewAdapter): androidx.recyclerview.widget.RecyclerView.Adapter<DailyMealsRecyclerViewAdapter.ViewHolder>() {
+    private var currentMeals = emptyList<Meal>()
 
+    fun setMeals(meals: List<Meal>) {
 
-    /*val context = context
-    //val userPreferences = context.applicationContext.getSharedPreferences("userPreferences", 0)
-    val mealsJSONArray = dailyMeals//JSONArray(userPreferences.getString("mealsJSONArray", ""))
-    val dailyIntakeGridViewAdapter = dailyIntakeGridViewAdapter
-    val dailyActivity = DailyActivity()*/
+        currentMeals = meals
+
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
-        val mealsRecyclerCell = LayoutInflater.from(context).inflate(R.layout.meal_recycler_cell, parent, false)
-
-        return  ViewHolder(mealsRecyclerCell)
+        return ViewHolder(DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.meal_recycler_cell, parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-
-        Log.d("mealsJSONArray Adapter", dailyMeals[position].toString())
-
-        val mealJSONObject = dailyMeals[position]
-        val gson = Gson()
-        holder.mealNameTextView.text = mealJSONObject["title"].toString().replace("_", " ")
-        if (mealJSONObject["serving"]!!.equals("1")) {
-            holder.mealServingTextView.text = mealJSONObject["serving"].toString() + " serving"
-        } else {
-            holder.mealServingTextView.text = mealJSONObject["serving"].toString() + " servings"
+        holder.bind(currentMeals[position])
+        holder.itemView.setOnClickListener {
+            onClick(currentMeals[position].id)
         }
-        holder.mealCaloriesTextVeiw.text = mealJSONObject["calories"].toString() + " calories"
-
-        /*holder.mealButton.setOnClickListener {
-
-            val mealIntent = Intent(context, AddMealActivity::class.java)
-            mealIntent.putExtra("meal", position)
-            mealIntent.putExtra("dailyMeals", gson.toJson(dailyMeals))
-            context.startActivity(mealIntent)
-        }*/
-
-        /*holder.mealButton.setOnLongClickListener {
-
-            val deleteDialog = AlertDialog.Builder(context)
-            deleteDialog.setTitle("Confirm Delete").setMessage("Are you sure you want to delete this item?").setPositiveButton("Yes") {
-
-                dialogInterface, i ->
-
-                val userPreferences = context.applicationContext.getSharedPreferences("userPreferences", 0)
-                val editor = userPreferences.edit()
-                val mealJSONObject = JSONObject(mealsJSONArray[position].toString())
-
-                val mealServing = mealJSONObject.getString("serving").toDouble()
-                val mealCalories = mealJSONObject.getString("calories").toDouble() * mealServing
-                val mealCarbs = mealJSONObject.getString("carbs").toDouble() * mealServing
-                val mealFat = mealJSONObject.getString("fat").toDouble() * mealServing
-                val mealProtein = mealJSONObject.getString("protein").toDouble() * mealServing
-
-                val currentTotalCalories = userPreferences.getString("dailyCaloriesTotal", "").toDouble() - mealCalories
-                val currentTotalCarbs = userPreferences.getString("dailyCarbsTotal", "").toDouble() - mealCarbs
-                val currentTotalFat = userPreferences.getString("dailyFatTotal", "").toDouble() - mealFat
-                val currentTotalProtein = userPreferences.getString("dailyProteinTotal", "").toDouble() - mealProtein
-
-                editor.putString("dailyCaloriesTotal", currentTotalCalories.toString())
-                editor.putString("dailyCarbsTotal", currentTotalCarbs.toString())
-                editor.putString("dailyFatTotal", currentTotalFat.toString())
-                editor.putString("dailyProteinTotal", currentTotalProtein.toString())
-
-                mealsJSONArray.remove(position)
-
-                editor.putString("mealsJSONArray", mealsJSONArray.toString())
-                editor.commit()
-
-                notifyDataSetChanged()
-
-                dailyActivity.macrosArrayList(userPreferences)
-                dailyIntakeGridViewAdapter
-            }.setNegativeButton("Cancel") {
-                dialogInterface, i ->  dialogInterface.cancel()
-            }
-
-            deleteDialog.show()
-
-            true
-        }*/
     }
 
     override fun getItemCount(): Int {
 
-        return dailyMeals.size
+        return currentMeals.count()
     }
 
-    class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(val binding: MealRecyclerCellBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        val mealNameTextView = itemView.findViewById<TextView>(R.id.mealTitleTextView)
-        val mealServingTextView = itemView.findViewById<TextView>(R.id.mealServingTextView)
-        val mealCaloriesTextVeiw = itemView.findViewById<TextView>(R.id.mealCaloriesTextView)
-        val mealButton = itemView.findViewById<Button>(R.id.mealButton)
+        private val decimalFormat = DecimalFormat("#.##")
+
+        fun bind(meal: Meal) {
+            binding.mealName = meal.mealName
+            binding.servingSize = decimalFormat.format(meal.servingSize.toString())
+            binding.setMealCalories(decimalFormat.format(meal.mealCalories * meal.servingSize))
+            binding.setMealCarbs(decimalFormat.format(meal.mealCarbs * meal.servingSize))
+            binding.setMealFats(decimalFormat.format(meal.mealFats * meal.servingSize))
+            binding.setMealProtein(decimalFormat.format(meal.mealProtein * meal.servingSize))
+        }
     }
 }

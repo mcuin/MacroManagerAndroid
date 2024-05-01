@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.icu.text.DecimalFormat
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -27,6 +28,8 @@ import androidx.fragment.app.ListFragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.cuinsolutions.macrosmanager.databinding.FragmentDailyInfoBinding
@@ -36,6 +39,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.ArrayList
 import java.util.Calendar
@@ -46,18 +51,12 @@ class DailyInfoFragment : Fragment(), OnClickListener {
 
     private lateinit var binding: FragmentDailyInfoBinding
     private val macrosManagerViewModel: MacrosManagerViewModel by activityViewModels()
-    private val viewModel: DailyInfoViewModel by viewModels()
-
-    private var dailyCaloriesTotal = 0
-    private var currentCaloriesTotal = 0.0
-    private var dailyCarbsTotal = 0
-    private var currentCarbsTotal = 0.0
-    private var dailyFatTotal = 0
-    private var currentFatTotal = 0.0
-    private var dailyProteinTotal = 0
-    private var currentProteinTotal = 0.0
-    private var dailyMeals = listOf<HashMap<String, Any>>()
-    private val gson = Gson()
+    private val macrosAdapter by lazy { DailyMacrosGridViewAdapter() }
+    private val decimalFormat = DecimalFormat("#.##")
+    private val macrosCells by lazy { createMacrosCells(macrosManagerViewModel.currentUserMacros.value) }
+    private val mealsAdapter by lazy { DailyMealsRecyclerViewAdapter() { id ->
+        findNavController().navigate(DailyInfoFragmentDirections.navigateToAddMeal(id))
+    }}
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,16 +65,16 @@ class DailyInfoFragment : Fragment(), OnClickListener {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_info, container, false)
 
-        val settings = FirebaseFirestoreSettings.Builder().setTimestampsInSnapshotsEnabled(true).build()
-        fireStore.firestoreSettings = settings
+        binding.listener = this
 
-        val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
-        val alarmSet = (PendingIntent.getBroadcast(this, 243, resetIntent, PendingIntent.FLAG_UPDATE_CURRENT) != null)
-
-        if (alarmSet == false) {
-            setResetAlarm()
-        } else {
-            setResetAlarm()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    macrosManagerViewModel.currentUserMacros.collect {
+                        macrosAdapter.setMacroItems(createMacrosCells(it))
+                    }
+                }
+            }
         }
 
         return binding.root
@@ -83,6 +82,26 @@ class DailyInfoFragment : Fragment(), OnClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    macrosManagerViewModel.userDeleted.collect {
+                        val message = if (it) {
+                            R.string.user_account_deleted
+                        } else {
+                            R.string.user_account_delete_error
+                        }
+
+                        AlertDialog.Builder(requireContext())
+                            .setTitle(R.string.delete_account)
+                            .setMessage(message)
+                            .setPositiveButton(R.string.ok, null)
+                            .show()
+                    }
+                }
+            }
+        }
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -97,7 +116,18 @@ class DailyInfoFragment : Fragment(), OnClickListener {
                 when (menuItem.itemId) {
                     R.id.action_sign_up -> findNavController().navigate(DailyInfoFragmentDirections.navigateToSignUp())
                     R.id.action_settings -> findNavController().navigate(DailyInfoFragmentDirections.navigateToSettings())
-                    R.id.action_sign_in ->  findNavController().navigate(DailyInfoFragmentDirections.navigateToSignIn())
+                    R.id.action_sign_in -> findNavController().navigate(DailyInfoFragmentDirections.navigateToSignIn())
+                    R.id.action_delete_account -> {
+                        AlertDialog.Builder(requireContext())
+                            .setTitle(R.string.delete_account)
+                            .setMessage(R.string.delete_account_description)
+                            .setPositiveButton(R.string.delete) { dialog, _ ->
+                                dialog.dismiss()
+                                macrosManagerViewModel.deleteUser()
+                            }
+                            .setNegativeButton(R.string.cancel, null)
+                            .show()
+                    }
                 }
 
                 return true
@@ -105,41 +135,23 @@ class DailyInfoFragment : Fragment(), OnClickListener {
 
         }, viewLifecycleOwner, Lifecycle.State.STARTED)
 
-
-    }
-
-    fun setResetAlarm() {
-        val resetTime = Calendar.getInstance(Locale.getDefault())
-        resetTime.timeInMillis = System.currentTimeMillis()
-        resetTime.set(Calendar.HOUR_OF_DAY, 2)
-        resetTime.set(Calendar.MINUTE, 0)
-        resetTime.set(Calendar.SECOND, 0)
-
-        val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
-        val resetPendingIntent = PendingIntent.getBroadcast(this, 243, resetIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val resetAlarm = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        Log.d("Reset", "set")
-
-        resetAlarm.setInexactRepeating(AlarmManager.RTC, resetTime.timeInMillis, AlarmManager.INTERVAL_DAY, resetPendingIntent)
-    }
-
-    fun createUI() {
-
-        if (dailyMeals.size != 0) {
-
-            dailyMacrosGridView.adapter = DailyMacrosGridViewAdapter(this, macrosArrayList())
-            userFoodRecyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
-            userFoodRecyclerView.adapter = DailyMealsRecyclerViewAdapter(this, dailyMeals, DailyMacrosGridViewAdapter(this, macrosArrayList()))
-        } else {
-
-
-            userFoodRecyclerView.adapter = null
-        }
+        binding.dailyMacrosGridRecycler.adapter = macrosAdapter
+        macrosAdapter.setMacroItems(macrosCells)
+        binding.dailyFoodRecycler.adapter = mealsAdapter
+        mealsAdapter.setMeals(macrosManagerViewModel.currentMeals)
     }
 
     override fun onClick(view: View) {
         when (view.id) {
-            R.id.daily_add_meal_fab -> findNavController().navigate(DailyInfoFragmentDirections.navigateToAddMeal())
+            R.id.daily_add_meal_fab -> findNavController().navigate(DailyInfoFragmentDirections.navigateToAddMeal(-1))
         }
+    }
+
+    private fun createMacrosCells(macros: Macros): List<MacroCell> {
+        return listOf(MacroCell(getString(R.string.calories),
+            getString(R.string.macros_daily, decimalFormat.format(macros.currentCalories), macros.dailyCalories)),
+            MacroCell(getString(R.string.carbs), getString(R.string.macros_daily, decimalFormat.format(macros.currentCarbs), macros.dailyCarbs)),
+            MacroCell(getString(R.string.fat), getString(R.string.macros_daily, decimalFormat.format(macros.currentFats), macros.dailyFats)),
+            MacroCell(getString(R.string.protein), getString(R.string.macros_daily, decimalFormat.format(macros.currentProtein), macros.dailyProtein)))
     }
 }

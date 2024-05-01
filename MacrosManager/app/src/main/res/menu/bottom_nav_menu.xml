@@ -3,8 +3,10 @@
 
     <item
         android:id="@+id/daily_info_fragment"
-        android:title="Macros" />
+        android:title="@string/macros"
+        android:icon="@drawable/ic_macros" />
     <item
         android:id="@+id/macros_calculator_fragment"
-        android:title="Calculator" />
+        android:title="@string/calculator"
+        android:icon="@drawable/ic_calculator" />
 </menu>

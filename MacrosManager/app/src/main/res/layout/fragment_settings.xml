@@ -6,25 +6,22 @@
 
     <data>
         <import type="android.view.View.OnClickListener" />
-        <import type="com.cuinsolutions.macrosmanager.Gender" />
-        <import type="com.cuinsolutions.macrosmanager.WeightMeasurement" />
-        <import type="com.cuinsolutions.macrosmanager.HeightMeasurement" />
 
         <variable
             name="listener"
             type="OnClickListener" />
 
         <variable
-            name="gender"
-            type="String" />
+            name="genderId"
+            type="Integer" />
 
         <variable
-            name="weightMeasurement"
-            type="String" />
+            name="weightId"
+            type="Integer" />
 
         <variable
-            name="heightMeasurement"
-            type="String" />
+            name="heightId"
+            type="Integer" />
     </data>
 
     <ScrollView
@@ -47,23 +44,22 @@
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/settings_gender_header">
+                app:layout_constraintTop_toBottomOf="@+id/settings_gender_header"
+                android:checkedButton="@{genderId}">
 
                 <RadioButton
                     android:id="@+id/settings_radio_female"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/female"
-                    style="@style/SettingsRadioButton"
-                    android:checked="@{gender == Gender.FEMALE.gender}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/settings_radio_male"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/male"
-                    style="@style/SettingsRadioButton"
-                    android:checked="@{gender == Gender.MALE.gender}" />
+                    style="@style/SettingsRadioButton" />
             </RadioGroup>
 
             <TextView
@@ -116,23 +112,22 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/settings_height_header">
+                app:layout_constraintTop_toBottomOf="@+id/settings_height_header"
+                android:checkedButton="@{heightId}">
 
                 <RadioButton
                     android:id="@+id/settings_height_imperial"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/imperial"
-                    style="@style/SettingsRadioButton"
-                    android:checked="@{heightMeasurement == HeightMeasurement.IMPERIAL.measurement}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/settings_height_metric"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/metric"
-                    style="@style/SettingsRadioButton"
-                    android:checked="@{heightMeasurement == HeightMeasurement.METRIC.measurement}" />
+                    style="@style/SettingsRadioButton" />
 
             </RadioGroup>
 
@@ -145,7 +140,8 @@
                 android:layout_marginBottom="@dimen/margin_standard"
                 android:layout_marginEnd="@dimen/margin_standard"
                 android:text="@string/save"
-                style="@style/ExtendedFab" />
+                style="@style/ExtendedFab"
+                android:onClick="@{listener}" />
 
             <RadioGroup
                 android:id="@+id/settings_weight_radio_group"
@@ -157,31 +153,29 @@
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/settings_weight_header">
+                app:layout_constraintTop_toBottomOf="@+id/settings_weight_header"
+                android:checkedButton="@{weightId}">
 
                 <RadioButton
                     android:id="@+id/settings_weight_imperial"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/imperial"
-                    style="@style/SettingsRadioButton"
-                    android:checked="@{weightMeasurement == WeightMeasurement.IMPERIAL.measurement}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/settings_weight_metric"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/metric"
-                    style="@style/SettingsRadioButton"
-                    android:checked="@{weightMeasurement == WeightMeasurement.METRIC.measurement}" />
+                    style="@style/SettingsRadioButton" />
 
                 <RadioButton
                     android:id="@+id/settings_weight_stone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/stone"
-                    style="@style/SettingsRadioButton"
-                    android:checked="@{weightMeasurement == WeightMeasurement.STONE.measurement}" />
+                    style="@style/SettingsRadioButton" />
             </RadioGroup>
 
             <TextView
