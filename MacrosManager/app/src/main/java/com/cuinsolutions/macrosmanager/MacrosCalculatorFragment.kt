@@ -20,8 +20,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cuinsolutions.macrosmanager.databinding.FragmentMacrosCalculatorBinding
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
@@ -262,12 +262,14 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 dailyActivityInfoDialog.setPositiveButton(R.string.ok, null)
                 dailyActivityInfoDialog.show()
             }
+
             binding.calculatorDietFatPercentInfo -> {
                 val fatPercentDialog = AlertDialog.Builder(requireContext())
                 fatPercentDialog.setMessage(R.string.fat_percent_explanation)
                 fatPercentDialog.setPositiveButton(R.string.ok, null)
                 fatPercentDialog.show()
             }
+
             binding.calculatorCalculate -> {
                 var centimeters = -1.0f
                 var kilograms = -1.0f
@@ -275,27 +277,33 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                     HeightMeasurement.IMPERIAL.measurement -> {
                         if (binding.calculatorHeightFeetEdit.text.toString().isBlank() ||
                             binding.calculatorHeightInchesEdit.text.toString().isBlank() ||
-                            !(0.0..12.0).contains(binding.calculatorHeightInchesEdit.text.toString().toDouble())
+                            !(0.0..12.0).contains(
+                                binding.calculatorHeightInchesEdit.text.toString().toDouble()
+                            )
                             || !Regexs().validNumber(binding.calculatorHeightFeetEdit.text.toString()) ||
-                            !Regexs().validNumber(binding.calculatorHeightInchesEdit.text.toString())) {
+                            !Regexs().validNumber(binding.calculatorHeightInchesEdit.text.toString())
+                        ) {
 
                             AlertDialog.Builder(requireContext())
-                            .setTitle(R.string.height_error)
-                            .setMessage(R.string.height_entry_errors)
-                            .setPositiveButton(R.string.ok) { dialog, _ ->
-                                dialog.cancel()
-                            }.show()
+                                .setTitle(R.string.height_error)
+                                .setMessage(R.string.height_entry_errors)
+                                .setPositiveButton(R.string.ok) { dialog, _ ->
+                                    dialog.cancel()
+                                }.show()
 
                             return
                         }
 
-                        centimeters = macrosCalculatorViewModel.heightImperialToMetric(binding.calculatorHeightFeetEdit.text.toString().toInt(),
-                            binding.calculatorHeightInchesEdit.text.toString().toDouble())
+                        centimeters = macrosCalculatorViewModel.heightImperialToMetric(
+                            binding.calculatorHeightFeetEdit.text.toString().toInt(),
+                            binding.calculatorHeightInchesEdit.text.toString().toDouble()
+                        )
                     }
 
                     HeightMeasurement.METRIC.measurement -> {
                         if (binding.calculatorHeightCentimetersEdit.text.toString().isBlank() ||
-                            !Regexs().validNumber(binding.calculatorHeightCentimetersEdit.text.toString())) {
+                            !Regexs().validNumber(binding.calculatorHeightCentimetersEdit.text.toString())
+                        ) {
 
                             AlertDialog.Builder(requireContext())
                                 .setTitle(R.string.height_error)
@@ -307,14 +315,16 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                             return
                         }
 
-                        centimeters = binding.calculatorHeightCentimetersEdit.text.toString().toFloat()
+                        centimeters =
+                            binding.calculatorHeightCentimetersEdit.text.toString().toFloat()
                     }
                 }
 
-                when(macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
+                when (macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
                     WeightMeasurement.IMPERIAL.measurement -> {
                         if (binding.calculatorWeightPoundsEdit.text.toString().isBlank() ||
-                             !Regexs().validNumber(binding.calculatorWeightPoundsEdit.text.toString())) {
+                            !Regexs().validNumber(binding.calculatorWeightPoundsEdit.text.toString())
+                        ) {
 
                             AlertDialog.Builder(requireContext())
                                 .setTitle(R.string.weight_error)
@@ -326,11 +336,15 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                             return
                         }
 
-                        kilograms = macrosCalculatorViewModel.weightImperialToMetric(binding.calculatorWeightPoundsEdit.text.toString().toDouble())
+                        kilograms = macrosCalculatorViewModel.weightImperialToMetric(
+                            binding.calculatorWeightPoundsEdit.text.toString().toDouble()
+                        )
                     }
+
                     WeightMeasurement.METRIC.measurement -> {
                         if (binding.calculatorWeightKilogramsEdit.text.toString().isBlank() ||
-                            !Regexs().validNumber(binding.calculatorWeightKilogramsEdit.text.toString())) {
+                            !Regexs().validNumber(binding.calculatorWeightKilogramsEdit.text.toString())
+                        ) {
 
                             AlertDialog.Builder(requireContext())
                                 .setTitle(R.string.weight_error)
@@ -344,9 +358,11 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
                         kilograms = binding.calculatorWeightKilogramsEdit.text.toString().toFloat()
                     }
+
                     WeightMeasurement.STONE.measurement -> {
                         if (binding.calculatorWeightStoneEdit.text.toString().isBlank() ||
-                            !Regexs().validNumber(binding.calculatorWeightStoneEdit.text.toString())) {
+                            !Regexs().validNumber(binding.calculatorWeightStoneEdit.text.toString())
+                        ) {
 
                             AlertDialog.Builder(requireContext())
                                 .setTitle(R.string.weight_error)
@@ -358,14 +374,17 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                             return
                         }
 
-                        kilograms = macrosCalculatorViewModel.weightStoneToMetric(binding.calculatorWeightStoneEdit.text.toString().toInt(),
-                            binding.calculatorWeightPoundsEdit.text.toString().toDouble())
+                        kilograms = macrosCalculatorViewModel.weightStoneToMetric(
+                            binding.calculatorWeightStoneEdit.text.toString().toInt(),
+                            binding.calculatorWeightPoundsEdit.text.toString().toDouble()
+                        )
                     }
                 }
 
                 if (binding.calculatorFatPercentCustom.isChecked &&
                     (binding.calculatorFatPercentCustomEdit.text.toString().isBlank() || !
-                    Regexs().validNumber(binding.calculatorFatPercentCustomEdit.text.toString()))) {
+                    Regexs().validNumber(binding.calculatorFatPercentCustomEdit.text.toString()))
+                ) {
 
                     AlertDialog.Builder(requireContext())
                         .setTitle(R.string.custom_fat_error)
@@ -382,8 +401,13 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                     tempUserInfo.weightKg = kilograms
                     tempUserInfo.heightCm = centimeters
                     macrosManagerViewModel.saveUserSettings(tempUserInfo)
-                    macrosCalculatorViewModel.calculate(centimeters, kilograms, macrosManagerViewModel.currentUserInfo.value,
-                        macrosManagerViewModel.currentUserCalculatorOptions.value, macrosManagerViewModel.currentUserMacros.value)
+                    macrosCalculatorViewModel.calculate(
+                        centimeters,
+                        kilograms,
+                        macrosManagerViewModel.currentUserInfo.value,
+                        macrosManagerViewModel.currentUserCalculatorOptions.value,
+                        macrosManagerViewModel.currentUserMacros.value
+                    )
                 }
             }
         }
