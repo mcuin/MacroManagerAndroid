@@ -1,14 +1,10 @@
 package com.cuinsolutions.macrosmanager
 
-import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.cuinsolutions.macrosmanager.databinding.DailyMacrosGridCellBinding
-import org.json.JSONObject
-import java.text.DecimalFormat
+import com.cuinsolutions.macrosmanager.utils.MacroCell
 
 /**
  * Created by mykalcuin on 8/23/17.

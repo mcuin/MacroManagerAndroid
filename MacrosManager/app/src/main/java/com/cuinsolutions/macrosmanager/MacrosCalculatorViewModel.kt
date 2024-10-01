@@ -1,18 +1,65 @@
 package com.cuinsolutions.macrosmanager
 
 import android.icu.util.Calendar
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.cuinsolutions.macrosmanager.utils.CalculatorOptions
+import com.cuinsolutions.macrosmanager.utils.CalculatorOptionsState
+import com.cuinsolutions.macrosmanager.utils.DailyActivityLevel
+import com.cuinsolutions.macrosmanager.utils.Gender
+import com.cuinsolutions.macrosmanager.utils.Goal
+import com.cuinsolutions.macrosmanager.utils.Macros
+import com.cuinsolutions.macrosmanager.utils.PhysicalActivityLifestyle
+import com.cuinsolutions.macrosmanager.utils.UserInfo
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
-import java.util.Date
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
 import kotlin.math.floor
 
-class MacrosCalculatorViewModel: ViewModel() {
+@HiltViewModel
+class MacrosCalculatorViewModel @Inject constructor() : ViewModel() {
 
     private val centimeterFactor = 2.54
     private val kilogramsFactor = 2.205
     val calcedMacros: MutableSharedFlow<Macros> = MutableSharedFlow()
+    /*private val _currentUserInfo = MutableStateFlow(UserInfo())
+    val currentUserInfo = _currentUserInfo.asStateFlow()*/
+    var currentUserInfo by mutableStateOf(UserInfo())
+    var currentCalculatorOptions by mutableStateOf(CalculatorOptionsState())
+    var userCm by mutableStateOf("")
+    var userPounds by mutableStateOf("")
+    var userFeet by mutableStateOf("")
+    var userInches by mutableStateOf("")
+    var userStone by mutableStateOf("")
+    var userKg by mutableStateOf("")
+
+    fun updateUserKg(updatedKg: String) {
+        currentUserInfo.weightKg = updatedKg.toFloat()
+    }
+
+    fun updateUserCm(updatedCm: String) {
+        userCm = updatedCm
+    }
+
+    fun updateUserPounds(updatedPounds: String) {
+        userPounds = updatedPounds
+    }
+
+    fun updateUserFeet(updatedFeet: String) {
+        userFeet = updatedFeet
+    }
+
+    fun updateUserInches(updatedInches: String) {
+        userInches = updatedInches
+    }
+
+    fun updateUserStone(updatedStone: String) {
+        userStone = updatedStone
+    }
 
     fun heightImperialToMetric(foot: Int, inches: Double) : Float {
 
@@ -57,7 +104,8 @@ class MacrosCalculatorViewModel: ViewModel() {
     }
 
     suspend fun calculate(cm: Float, kg: Float, settingsInfo: UserInfo, calculatorInfo: CalculatorOptions,
-                  previousMacros: Macros) {
+                          previousMacros: Macros
+    ) {
 
         var bmr = 0.0
         val pounds = weightMetricToImperial(kg)
@@ -74,37 +122,36 @@ class MacrosCalculatorViewModel: ViewModel() {
         //dateFormat.format(birthDate), java.util.concurrent.TimeUnit.MILLISECONDS) / 365)
 
         when (settingsInfo.gender) {
-            Gender.MALE.gender -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) + 5)
-            Gender.FEMALE.gender -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) - 161)
+            Gender.MALE.id -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) + 5)
+            Gender.FEMALE.id -> bmr = (10 * kg) + (6.25 * cm) - ((5 * age) - 161)
         }
 
         val tdee: Double = when (calculatorInfo.dailyActivity) {
-            DailyActivityLevel.VERYLIGHT.level -> bmr * 1.20
-            DailyActivityLevel.LIGHT.level -> bmr * 1.45
-            DailyActivityLevel.MODERATE.level -> bmr * 1.55
-            DailyActivityLevel.HEAVY.level -> bmr * 1.75
-            DailyActivityLevel.VERYHEAVY.level -> 2.00
+            DailyActivityLevel.VERYLIGHT.id -> bmr * 1.20
+            DailyActivityLevel.LIGHT.id -> bmr * 1.45
+            DailyActivityLevel.MODERATE.id -> bmr * 1.55
+            DailyActivityLevel.HEAVY.id -> bmr * 1.75
+            DailyActivityLevel.VERYHEAVY.id -> 2.00
             else -> bmr
         }
 
         calories = when (calculatorInfo.goal) {
-            Goal.BURNSUGGESTED.goal -> tdee - (tdee * 0.15)
-            Goal.BURNAGGRESSIVE.goal-> tdee - (tdee * 0.20)
-            Goal.BURNRECKLESS.goal -> tdee - (tdee * 0.25)
-            Goal.MAINTAIN.goal -> tdee
-            Goal.BUILDSUGGESTED.goal -> tdee + (tdee * 0.05)
-            Goal.BUILDAGGRESSIVE.goal -> tdee + (tdee * 0.10)
-            Goal.BUILDRECKLESS.goal -> tdee + (tdee * 0.15)
+            Goal.BURNSUGGESTED.id -> tdee - (tdee * 0.15)
+            Goal.BURNAGGRESSIVE.id-> tdee - (tdee * 0.20)
+            Goal.BURNRECKLESS.id -> tdee - (tdee * 0.25)
+            Goal.MAINTAIN.id -> tdee
+            Goal.BUILDSUGGESTED.id -> tdee + (tdee * 0.05)
+            Goal.BUILDAGGRESSIVE.id -> tdee + (tdee * 0.10)
+            Goal.BUILDRECKLESS.id -> tdee + (tdee * 0.15)
             else -> tdee
         }
 
         val protein: Double = when (calculatorInfo.physicalActivityLifestyle) {
-            PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle -> pounds * 0.4
-            PhysicalActivityLifestyle.RECREATIONADULT.lifeStyle -> pounds * 0.75
-            PhysicalActivityLifestyle.COMPETITIVEADULT.lifeStyle -> pounds * 0.90
-            PhysicalActivityLifestyle.BUILDINGADULT.lifeStyle -> pounds * 0.90
-            PhysicalActivityLifestyle.DIETINGATHLETE.lifeStyle -> pounds * 0.90
-            PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle -> pounds * 1.0
+            PhysicalActivityLifestyle.SEDENTARYADULT.id -> pounds * 0.4
+            PhysicalActivityLifestyle.RECREATIONADULT.id -> pounds * 0.75
+            PhysicalActivityLifestyle.COMPETITIVEADULT.id -> pounds * 0.90
+            PhysicalActivityLifestyle.BUILDINGADULT.id -> pounds * 0.90
+            PhysicalActivityLifestyle.DIETINGATHLETE.id -> pounds * 0.90
             else -> pounds * 0.4
         }
 
@@ -117,10 +164,6 @@ class MacrosCalculatorViewModel: ViewModel() {
         carbs = carbsCalories / 4
 
         val macrosCopy = previousMacros.copy()
-        macrosCopy.dailyCalories = calories.toInt()
-        macrosCopy.dailyCarbs = carbs.toInt()
-        macrosCopy.dailyFats = fat.toInt()
-        macrosCopy.dailyProtein = protein.toInt()
 
         calcedMacros.emit(macrosCopy)
     }

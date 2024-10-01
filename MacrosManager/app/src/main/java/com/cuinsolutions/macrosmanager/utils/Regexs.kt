@@ -1,4 +1,4 @@
-package com.cuinsolutions.macrosmanager
+package com.cuinsolutions.macrosmanager.utils
 
 import java.util.regex.Pattern
 

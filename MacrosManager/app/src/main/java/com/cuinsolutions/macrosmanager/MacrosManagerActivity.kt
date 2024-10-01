@@ -8,6 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.databinding.DataBindingUtil
@@ -16,22 +19,38 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.cuinsolutions.macrosmanager.databinding.ActivityMacrosManagerBinding
+import com.cuinsolutions.macrosmanager.ui.theme.MacrosManagerAndroidTheme
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
 import java.util.Locale
 
-class MacrosManagerActivity : AppCompatActivity() {
+@AndroidEntryPoint
+class MacrosManagerActivity : ComponentActivity() {
 
     private lateinit var binding: ActivityMacrosManagerBinding
     private lateinit var macrosManagerNavController: NavController
     private val macrosManagerViewModel: MacrosManagerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_macros_manager)
+        MobileAds.initialize(this) {}
+        MobileAds.setRequestConfiguration(
+            RequestConfiguration.Builder().setTestDeviceIds(listOf("ABCDEF012345")).build()
+        )
+        setContent {
+            MacrosManagerAndroidTheme {
+                MacrosManagerApp()
+            }
+        }
+    }
+
+        /*binding = DataBindingUtil.setContentView(this, R.layout.activity_macros_manager)
 
         binding.showAds = macrosManagerViewModel.currentUserInfo.value.showAds
 
@@ -83,5 +102,5 @@ class MacrosManagerActivity : AppCompatActivity() {
         Log.d("Reset", "set")
 
         resetAlarm.setInexactRepeating(AlarmManager.RTC, resetTime.timeInMillis, AlarmManager.INTERVAL_DAY, resetPendingIntent)
-    }
+    }*/
 }

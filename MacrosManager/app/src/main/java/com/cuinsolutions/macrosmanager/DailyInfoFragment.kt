@@ -1,14 +1,8 @@
 package com.cuinsolutions.macrosmanager
 
-import android.app.AlarmManager
 import android.app.AlertDialog
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import android.icu.text.DecimalFormat
 import android.os.Bundle
-import android.text.InputType
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
@@ -17,35 +11,17 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.GridView
-import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.ListFragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.cuinsolutions.macrosmanager.databinding.FragmentDailyInfoBinding
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.flow.collect
+import com.cuinsolutions.macrosmanager.utils.MacroCell
+import com.cuinsolutions.macrosmanager.utils.Macros
 import kotlinx.coroutines.launch
-import org.json.JSONObject
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.HashMap
-import java.util.Locale
 
 class DailyInfoFragment : Fragment(), OnClickListener {
 
@@ -148,10 +124,12 @@ class DailyInfoFragment : Fragment(), OnClickListener {
     }
 
     private fun createMacrosCells(macros: Macros): List<MacroCell> {
-        return listOf(MacroCell(getString(R.string.calories),
+        return listOf(
+            /*MacroCell(getString(R.string.calories),
             getString(R.string.macros_daily, decimalFormat.format(macros.currentCalories), macros.dailyCalories)),
             MacroCell(getString(R.string.carbs), getString(R.string.macros_daily, decimalFormat.format(macros.currentCarbs), macros.dailyCarbs)),
             MacroCell(getString(R.string.fat), getString(R.string.macros_daily, decimalFormat.format(macros.currentFats), macros.dailyFats)),
-            MacroCell(getString(R.string.protein), getString(R.string.macros_daily, decimalFormat.format(macros.currentProtein), macros.dailyProtein)))
+            MacroCell(getString(R.string.protein), getString(R.string.macros_daily, decimalFormat.format(macros.currentProtein), macros.dailyProtein))*/
+        )
     }
 }

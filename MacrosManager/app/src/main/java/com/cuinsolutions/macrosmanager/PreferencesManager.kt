@@ -3,6 +3,10 @@ package com.cuinsolutions.macrosmanager
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.cuinsolutions.macrosmanager.utils.CalculatorOptions
+import com.cuinsolutions.macrosmanager.utils.Macros
+import com.cuinsolutions.macrosmanager.utils.Meal
+import com.cuinsolutions.macrosmanager.utils.UserInfo
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -15,7 +19,7 @@ class PreferencesManager(context: Context) {
         set(value) = preferences.edit{ putString("userInfo", Gson().toJson(value)) }
 
     var macros: Macros
-        get() = Gson().fromJson(preferences.getString("macros", Macros().toString()), Macros::class.java)
+        get() = Gson().fromJson(preferences.getString("macros", Macros(listOf()).toString()), Macros::class.java)
         set(value) = preferences.edit { putString("macros", Gson().toJson(value)) }
 
     var calculatorOptions: CalculatorOptions

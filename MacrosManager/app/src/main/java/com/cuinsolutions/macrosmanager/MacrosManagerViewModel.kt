@@ -1,28 +1,33 @@
 package com.cuinsolutions.macrosmanager
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.cuinsolutions.macrosmanager.utils.CalculatorOptions
+import com.cuinsolutions.macrosmanager.utils.Macros
+import com.cuinsolutions.macrosmanager.utils.Meal
+import com.cuinsolutions.macrosmanager.utils.UserInfo
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.toObject
-import com.google.gson.Gson
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MacrosManagerViewModel(private val application: Application): AndroidViewModel(application) {
+@HiltViewModel
+class MacrosManagerViewModel @Inject constructor(@ApplicationContext private val application: Context): ViewModel() {
 
     val auth by lazy { FirebaseAuth.getInstance() }
     val fireStore by lazy { FirebaseFirestore.getInstance() }
-    val preferencesManager by lazy { PreferencesManager(application.applicationContext) }
+    val preferencesManager by lazy { PreferencesManager(application) }
     val preferences by lazy { preferencesManager.preferences }
     val signUpResult = MutableSharedFlow<Exception?>()
     val fireBaseSaveSuccess: MutableSharedFlow<Boolean> = MutableSharedFlow()
@@ -55,7 +60,7 @@ class MacrosManagerViewModel(private val application: Application): AndroidViewM
                         .addOnSuccessListener { snapshot ->
                            currentUserMacros.tryEmit(snapshot.toObject(Macros::class.java)!!)
                         }
-                MutableStateFlow(Macros())
+                MutableStateFlow(Macros(listOf()))
             }
 
             preferences.contains("macros") -> {
@@ -63,7 +68,7 @@ class MacrosManagerViewModel(private val application: Application): AndroidViewM
             }
 
             else -> {
-                MutableStateFlow(Macros())
+                MutableStateFlow(Macros(listOf()))
             }
         }
     }

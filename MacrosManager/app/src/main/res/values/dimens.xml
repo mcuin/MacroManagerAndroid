@@ -9,6 +9,9 @@
     <dimen name="margin_standard_minus">14dp</dimen>
     <dimen name="margin_small">10dp</dimen>
     <dimen name="margin_small_minus">8dp</dimen>
+    <dimen name="margin_xsmall">6dp</dimen>
+    <dimen name="margin_xsmall_minus">4dp</dimen>
+    <dimen name="margin_smallest">2dp</dimen>
     <dimen name="margin_large_plus">20dp</dimen>
     <dimen name="title">34sp</dimen>
     <dimen name="body">16sp</dimen>

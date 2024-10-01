@@ -1,17 +1,12 @@
 package com.cuinsolutions.macrosmanager
 
-import android.app.AlertDialog
 import android.icu.text.DecimalFormat
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.cuinsolutions.macrosmanager.databinding.MealRecyclerCellBinding
-import com.google.gson.Gson
+import com.cuinsolutions.macrosmanager.utils.Meal
 
 /**
  * Created by mykalcuin on 9/13/17.

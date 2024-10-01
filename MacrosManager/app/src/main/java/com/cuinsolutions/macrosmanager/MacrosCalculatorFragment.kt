@@ -20,8 +20,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cuinsolutions.macrosmanager.databinding.FragmentMacrosCalculatorBinding
+import com.cuinsolutions.macrosmanager.utils.DailyActivityLevel
+import com.cuinsolutions.macrosmanager.utils.Goal
+import com.cuinsolutions.macrosmanager.utils.HeightMeasurement
+import com.cuinsolutions.macrosmanager.utils.PhysicalActivityLifestyle
+import com.cuinsolutions.macrosmanager.utils.Regexs
+import com.cuinsolutions.macrosmanager.utils.WeightMeasurement
 import kotlinx.coroutines.launch
-import kotlin.math.max
 
 class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
@@ -44,22 +49,22 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
         if (macrosManagerViewModel.currentUserInfo.value.birthMonth != -1) {
             binding.showHeightCm = when (macrosManagerViewModel.currentUserInfo.value.heightMeasurement) {
-                HeightMeasurement.METRIC.measurement -> true
+                HeightMeasurement.METRIC.id -> true
                 else -> false
             }
             binding.showWeightKg = when(macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
-                WeightMeasurement.METRIC.measurement -> true
+                WeightMeasurement.METRIC.id -> true
                 else -> false
             }
             binding.showWeightStone = when (macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
-                WeightMeasurement.STONE.measurement -> true
+                WeightMeasurement.STONE.id -> true
                 else -> false
             }
             when (macrosManagerViewModel.currentUserInfo.value.heightMeasurement) {
-                HeightMeasurement.METRIC.measurement -> {
+                HeightMeasurement.METRIC.id -> {
                     binding.calculatorHeightCentimetersEdit.setText(decimalFormat.format(macrosManagerViewModel.currentUserInfo.value.heightCm))
                 }
-                HeightMeasurement.IMPERIAL.measurement -> {
+                HeightMeasurement.IMPERIAL.id -> {
                     val imperialHeight = macrosCalculatorViewModel.heightMetricToImperial(macrosManagerViewModel.currentUserInfo.value.heightCm)
 
                     binding.calculatorHeightFeetEdit.setText(imperialHeight.feet.toString())
@@ -67,15 +72,15 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 }
             }
             when (macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
-                WeightMeasurement.METRIC.measurement -> {
+                WeightMeasurement.METRIC.id -> {
                     binding.calculatorWeightKilogramsEdit.setText(decimalFormat.format(macrosManagerViewModel.currentUserInfo.value.weightKg))
                 }
-                WeightMeasurement.IMPERIAL.measurement -> {
+                WeightMeasurement.IMPERIAL.id -> {
                     val pounds = macrosCalculatorViewModel.weightMetricToImperial(macrosManagerViewModel.currentUserInfo.value.weightKg)
 
                     binding.calculatorWeightPoundsEdit.setText(decimalFormat.format(pounds))
                 }
-                WeightMeasurement.STONE.measurement -> {
+                WeightMeasurement.STONE.id -> {
                     val stone = macrosCalculatorViewModel.weightMetricToStone(macrosManagerViewModel.currentUserInfo.value.weightKg)
 
                     binding.calculatorWeightStoneEdit.setText(stone.stone)
@@ -89,20 +94,20 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                     launch {
                         macrosManagerViewModel.currentUserCalculatorOptions.collect {
                             binding.dailyActivityLevel = when (macrosManagerViewModel.currentUserCalculatorOptions.value.dailyActivity) {
-                                DailyActivityLevel.VERYLIGHT.level -> R.id.calculator_daily_activity_level_very_light
+                                /*DailyActivityLevel.VERYLIGHT.level -> R.id.calculator_daily_activity_level_very_light
                                 DailyActivityLevel.LIGHT.level -> R.id.calculator_daily_activity_level_light
                                 DailyActivityLevel.MODERATE.level -> R.id.calculator_daily_activity_level_moderate
                                 DailyActivityLevel.HEAVY.level -> R.id.calculator_daily_activity_level_heavy
-                                DailyActivityLevel.VERYHEAVY.level -> R.id.calculator_daily_activity_level_very_heavy
+                                DailyActivityLevel.VERYHEAVY.level -> R.id.calculator_daily_activity_level_very_heavy*/
                                 else -> R.id.calculator_daily_activity_level_very_light
                             }
                             binding.physicalActivityLifestyle = when (macrosManagerViewModel.currentUserCalculatorOptions.value.physicalActivityLifestyle) {
-                                PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_sedentary_adult
+                                /*PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_sedentary_adult
                                 PhysicalActivityLifestyle.RECREATIONADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_adult_recreational_exerciser
                                 PhysicalActivityLifestyle.COMPETITIVEADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_adult_competitive_athlete
                                 PhysicalActivityLifestyle.BUILDINGADULT.lifeStyle -> R.id.calculator_physical_activity_lifestyle_adult_building_muscle
                                 PhysicalActivityLifestyle.DIETINGATHLETE.lifeStyle -> R.id.calculator_physical_activity_lifestyle_dieting_athlete
-                                PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle -> R.id.calculator_physical_activity_lifestyle_teen_growing_athlete
+                                PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle -> R.id.calculator_physical_activity_lifestyle_teen_growing_athlete*/
                                 else -> R.id.calculator_physical_activity_lifestyle_sedentary_adult
                             }
                             binding.dietFatPercent = macrosManagerViewModel.currentUserCalculatorOptions.value.dietFatPercent
@@ -113,13 +118,13 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                                 else -> true
                             }
                             binding.goal = when (it.goal) {
-                                Goal.BUILDRECKLESS.goal -> R.id.calculator_goal_build_reckless
+                                /*Goal.BUILDRECKLESS.goal -> R.id.calculator_goal_build_reckless
                                 Goal.BUILDAGGRESSIVE.goal -> R.id.calculator_goal_build_aggressive
                                 Goal.BUILDSUGGESTED.goal -> R.id.calculator_goal_build_suggested
                                 Goal.MAINTAIN.goal -> R.id.calculator_goal_maintain
                                 Goal.BURNSUGGESTED.goal -> R.id.calculator_goal_burn_suggested
                                 Goal.BURNAGGRESSIVE.goal -> R.id.calculator_goal_burn_aggressive
-                                Goal.BURNRECKLESS.goal -> R.id.calculator_goal_burn_reckless
+                                Goal.BURNRECKLESS.goal -> R.id.calculator_goal_burn_reckless*/
                                 else -> R.id.calculator_goal_maintain
                             }
                         }
@@ -206,25 +211,25 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
         binding.calculatorPhysicalActivityLifestyleGroup.setOnCheckedChangeListener { _, checkedId ->
 
             tempCalculatorOptions.physicalActivityLifestyle = when (checkedId) {
-                R.id.calculator_physical_activity_lifestyle_sedentary_adult -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
+                /*R.id.calculator_physical_activity_lifestyle_sedentary_adult -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
                 R.id.calculator_physical_activity_lifestyle_adult_recreational_exerciser -> PhysicalActivityLifestyle.RECREATIONADULT.lifeStyle
                 R.id.calculator_physical_activity_lifestyle_adult_competitive_athlete -> PhysicalActivityLifestyle.COMPETITIVEADULT.lifeStyle
                 R.id.calculator_physical_activity_lifestyle_adult_building_muscle -> PhysicalActivityLifestyle.BUILDINGADULT.lifeStyle
                 R.id.calculator_physical_activity_lifestyle_dieting_athlete -> PhysicalActivityLifestyle.DIETINGATHLETE.lifeStyle
-                R.id.calculator_physical_activity_lifestyle_teen_growing_athlete -> PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle
-                else -> PhysicalActivityLifestyle.SEDENTARYADULT.lifeStyle
+                R.id.calculator_physical_activity_lifestyle_teen_growing_athlete -> PhysicalActivityLifestyle.GROWINGTEENAGER.lifeStyle*/
+                else -> PhysicalActivityLifestyle.SEDENTARYADULT.id
             }
         }
 
         binding.calculatorDailyActivityLevelGroup.setOnCheckedChangeListener { _, checkedId ->
 
             tempCalculatorOptions.dailyActivity = when (checkedId) {
-                R.id.calculator_daily_activity_level_very_light -> DailyActivityLevel.VERYLIGHT.level
+                /*R.id.calculator_daily_activity_level_very_light -> DailyActivityLevel.VERYLIGHT.level
                 R.id.calculator_daily_activity_level_light -> DailyActivityLevel.LIGHT.level
                 R.id.calculator_daily_activity_level_moderate -> DailyActivityLevel.MODERATE.level
                 R.id.calculator_daily_activity_level_heavy -> DailyActivityLevel.HEAVY.level
-                R.id.calculator_daily_activity_level_very_heavy -> DailyActivityLevel.VERYHEAVY.level
-                else -> DailyActivityLevel.VERYLIGHT.level
+                R.id.calculator_daily_activity_level_very_heavy -> DailyActivityLevel.VERYHEAVY.level*/
+                else -> DailyActivityLevel.VERYLIGHT.id
             }
         }
 
@@ -242,14 +247,14 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
 
         binding.calculatorGoalGroup.setOnCheckedChangeListener { _, checkedId ->
             tempCalculatorOptions.goal = when (checkedId) {
-                R.id.calculator_goal_burn_suggested -> Goal.BURNSUGGESTED.goal
+                /*R.id.calculator_goal_burn_suggested -> Goal.BURNSUGGESTED.goal
                 R.id.calculator_goal_burn_aggressive -> Goal.BURNAGGRESSIVE.goal
                 R.id.calculator_goal_burn_reckless -> Goal.BURNRECKLESS.goal
                 R.id.calculator_goal_maintain -> Goal.MAINTAIN.goal
                 R.id.calculator_goal_build_suggested -> Goal.BUILDSUGGESTED.goal
                 R.id.calculator_goal_build_aggressive-> Goal.BUILDAGGRESSIVE.goal
-                R.id.calculator_goal_build_reckless -> Goal.BUILDRECKLESS.goal
-                else -> Goal.MAINTAIN.goal
+                R.id.calculator_goal_build_reckless -> Goal.BUILDRECKLESS.goal*/
+                else -> Goal.MAINTAIN.id
             }
         }
     }
@@ -274,7 +279,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 var centimeters = -1.0f
                 var kilograms = -1.0f
                 when (macrosManagerViewModel.currentUserInfo.value.heightMeasurement) {
-                    HeightMeasurement.IMPERIAL.measurement -> {
+                    HeightMeasurement.IMPERIAL.id -> {
                         if (binding.calculatorHeightFeetEdit.text.toString().isBlank() ||
                             binding.calculatorHeightInchesEdit.text.toString().isBlank() ||
                             !(0.0..12.0).contains(
@@ -300,7 +305,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                         )
                     }
 
-                    HeightMeasurement.METRIC.measurement -> {
+                    HeightMeasurement.METRIC.id -> {
                         if (binding.calculatorHeightCentimetersEdit.text.toString().isBlank() ||
                             !Regexs().validNumber(binding.calculatorHeightCentimetersEdit.text.toString())
                         ) {
@@ -321,7 +326,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                 }
 
                 when (macrosManagerViewModel.currentUserInfo.value.weightMeasurement) {
-                    WeightMeasurement.IMPERIAL.measurement -> {
+                    WeightMeasurement.IMPERIAL.id -> {
                         if (binding.calculatorWeightPoundsEdit.text.toString().isBlank() ||
                             !Regexs().validNumber(binding.calculatorWeightPoundsEdit.text.toString())
                         ) {
@@ -341,7 +346,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                         )
                     }
 
-                    WeightMeasurement.METRIC.measurement -> {
+                    WeightMeasurement.METRIC.id -> {
                         if (binding.calculatorWeightKilogramsEdit.text.toString().isBlank() ||
                             !Regexs().validNumber(binding.calculatorWeightKilogramsEdit.text.toString())
                         ) {
@@ -359,7 +364,7 @@ class MacrosCalculatorFragment : Fragment(), OnClickListener {
                         kilograms = binding.calculatorWeightKilogramsEdit.text.toString().toFloat()
                     }
 
-                    WeightMeasurement.STONE.measurement -> {
+                    WeightMeasurement.STONE.id -> {
                         if (binding.calculatorWeightStoneEdit.text.toString().isBlank() ||
                             !Regexs().validNumber(binding.calculatorWeightStoneEdit.text.toString())
                         ) {

@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.play.services.ads)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -82,6 +83,7 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.gson)
+    implementation(libs.month.year.calendar)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -98,6 +100,5 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation("io.github.dzmitry-lakisau:month-year-picker-dialog:1.0.0")
     implementation ("joda-time:joda-time:2.9.9")
 }
