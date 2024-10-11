@@ -28,23 +28,41 @@ class AddMealViewModel @Inject constructor(val mealRepository: MealsRepository):
         private set
     var mealServings by mutableStateOf("")
         private set
+    var mealNameEmptyError by mutableStateOf(false)
+        private set
+    var mealCaloriesEmptyError by mutableStateOf(false)
+        private set
+    var mealCarbsEmptyError by mutableStateOf(false)
+        private set
+    var mealFatsEmptyError by mutableStateOf(false)
+        private set
+    var mealProteinEmptyError by mutableStateOf(false)
+        private set
+    var mealServingsEmptyError by mutableStateOf(false)
+        private set
 
     fun updateMealName(updatedMealName: String) {
+        mealNameEmptyError = updatedMealName.isEmpty()
         mealName = updatedMealName
     }
     fun updateMealCalories(updatedMealCalories: String) {
+        mealCaloriesEmptyError = updatedMealCalories.isEmpty()
         mealCalories = updatedMealCalories
     }
     fun updateMealCarbs(updatedMealCarbs: String) {
+        mealCarbsEmptyError = updatedMealCarbs.isEmpty()
         mealCarbs = updatedMealCarbs
     }
     fun updateMealFats(updatedMealFats: String) {
+        mealFatsEmptyError = updatedMealFats.isEmpty()
         mealFats = updatedMealFats
     }
     fun updateMealProtein(updatedMealProtein: String) {
+        mealProteinEmptyError = updatedMealProtein.isEmpty()
         mealProtein = updatedMealProtein
     }
     fun updateMealServings(updatedMealServings: String) {
+        mealServingsEmptyError = updatedMealServings.isEmpty()
         mealServings = updatedMealServings
     }
 
@@ -60,6 +78,31 @@ class AddMealViewModel @Inject constructor(val mealRepository: MealsRepository):
                 mealServings = meal.servingSize.toString()
             }
         }
+    }
+
+    fun validateMeal(): Boolean {
+        when {
+            mealName.isEmpty() -> {
+                mealNameEmptyError = true
+            }
+            mealCalories.isEmpty() -> {
+                mealCaloriesEmptyError = true
+            }
+            mealCarbs.isEmpty() -> {
+                mealCarbsEmptyError = true
+            }
+            mealFats.isEmpty() -> {
+                mealFatsEmptyError = true
+            }
+            mealProtein.isEmpty() -> {
+                mealProteinEmptyError = true
+            }
+            mealServings.isEmpty() -> {
+                mealServingsEmptyError = true
+            }
+        }
+
+        return !(mealNameEmptyError || mealCaloriesEmptyError || mealCarbsEmptyError || mealFatsEmptyError || mealProteinEmptyError || mealServingsEmptyError)
     }
 
     fun saveMeal() {

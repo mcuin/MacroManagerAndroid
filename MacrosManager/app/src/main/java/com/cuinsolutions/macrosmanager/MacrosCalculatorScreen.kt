@@ -579,9 +579,9 @@ fun SettingsErrorAlertDialog(modifier: Modifier, navController: NavHostControlle
         BasicAlertDialog(modifier = modifier, onDismissRequest = { navController.navigateUp() }) {
             Card {
                 Column(modifier = modifier.fillMaxWidth()) {
-                    Text(modifier = modifier.align(Alignment.CenterHorizontally), text = stringResource(id = R.string.settings_error))
-                    Text(modifier = modifier.align(Alignment.CenterHorizontally), text = stringResource(id = R.string.settings_error_description))
-                    Row(modifier = modifier.align(Alignment.End)) {
+                    Text(modifier = modifier.padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_standard), end = dimensionResource(R.dimen.margin_standard)).align(Alignment.CenterHorizontally), text = stringResource(id = R.string.settings_error))
+                    Text(modifier = modifier.padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_standard), end = dimensionResource(R.dimen.margin_standard)).align(Alignment.CenterHorizontally), text = stringResource(id = R.string.settings_error_description))
+                    Row(modifier = modifier.padding(top = dimensionResource(R.dimen.margin_small), end = dimensionResource(R.dimen.margin_xsmall)).align(Alignment.End)) {
                         TextButton(onClick = {
                             navController.navigate(Screens.Settings.route)
                         }) {
