@@ -14,26 +14,32 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import com.cuinsolutions.macrosmanager.databinding.ActivityMacrosManagerBinding
+import androidx.room.Insert
 import com.cuinsolutions.macrosmanager.ui.theme.MacrosManagerAndroidTheme
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
+import com.google.android.gms.common.util.Clock
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import org.joda.time.DateTimeField
+import org.joda.time.Instant
+import org.joda.time.LocalDateTime
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.Calendar
 import java.util.Locale
 
 @AndroidEntryPoint
 class MacrosManagerActivity : ComponentActivity() {
 
-    private lateinit var binding: ActivityMacrosManagerBinding
-    private lateinit var macrosManagerNavController: NavController
     private val macrosManagerViewModel: MacrosManagerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,57 +56,15 @@ class MacrosManagerActivity : ComponentActivity() {
         }
     }
 
-        /*binding = DataBindingUtil.setContentView(this, R.layout.activity_macros_manager)
+    override fun onResume() {
+        super.onResume()
 
-        binding.showAds = macrosManagerViewModel.currentUserInfo.value.showAds
-
-        setSupportActionBar(binding.macrosManagerToolbar)
-        macrosManagerNavController = (supportFragmentManager.findFragmentById(R.id.macros_manager_nav_container) as NavHostFragment).navController
-        binding.macrosManagerBottomNav.setupWithNavController(macrosManagerNavController)
-
-        macrosManagerNavController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.macros_calculator_fragment -> {
-                    binding.hideBottomNav = false
-                }
-                R.id.daily_info_fragment -> {
-                    binding.hideBottomNav = false
-                }
-                else -> {
-                    binding.hideBottomNav = true
+        lifecycleScope.launch {
+            macrosManagerViewModel.macrosManagerPreferences.collect { preferences ->
+                if (ChronoUnit.DAYS.between(preferences.currentDate, LocalDate.now()) >= 1) {
+                    macrosManagerViewModel.deleteMeals()
                 }
             }
-        }
-
-        if (binding.showAds) {
-            MobileAds.initialize(this) {
-                val adRequest = AdRequest.Builder().build()
-                binding.macrosManagerAdBanner.loadAd(adRequest)
-            }
-        }
-
-        val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
-        val alarmSet = (PendingIntent.getBroadcast(this, 243, resetIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT) != null)
-
-        if (alarmSet == false) {
-            setResetAlarm()
-        } else {
-            setResetAlarm()
         }
     }
-
-    fun setResetAlarm() {
-        val resetTime = Calendar.getInstance(Locale.getDefault())
-        resetTime.timeInMillis = System.currentTimeMillis()
-        resetTime.set(Calendar.HOUR_OF_DAY, 2)
-        resetTime.set(Calendar.MINUTE, 0)
-        resetTime.set(Calendar.SECOND, 0)
-
-        val resetIntent = Intent(this, DailyResetAlarmReciever::class.java)
-        val resetPendingIntent = PendingIntent.getBroadcast(this, 243, resetIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        val resetAlarm = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        Log.d("Reset", "set")
-
-        resetAlarm.setInexactRepeating(AlarmManager.RTC, resetTime.timeInMillis, AlarmManager.INTERVAL_DAY, resetPendingIntent)
-    }*/
 }

@@ -8,7 +8,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.cuinsolutions.macrosmanager.utils.CalculatorOptions
 import com.cuinsolutions.macrosmanager.utils.Macros
+import com.cuinsolutions.macrosmanager.utils.MacrosManagerPreferences
+import com.cuinsolutions.macrosmanager.utils.MacrosManagerPreferencesRepository
 import com.cuinsolutions.macrosmanager.utils.Meal
+import com.cuinsolutions.macrosmanager.utils.MealsRepository
 import com.cuinsolutions.macrosmanager.utils.UserInfo
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
@@ -19,13 +22,28 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
-class MacrosManagerViewModel @Inject constructor(@ApplicationContext private val application: Context): ViewModel() {
+class MacrosManagerViewModel @Inject constructor(val macrosManagerPreferencesRepository: MacrosManagerPreferencesRepository, val mealsRepository: MealsRepository): ViewModel() {
 
-    val auth by lazy { FirebaseAuth.getInstance() }
+    val macrosManagerPreferences = macrosManagerPreferencesRepository.macrosManagerPreferences
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), MacrosManagerPreferences(
+            LocalDate.now()))
+
+    fun deleteMeals() {
+        viewModelScope.launch {
+            mealsRepository.deleteAllMeals()
+            macrosManagerPreferencesRepository.updateCurrentDate()
+        }
+    }
+
+    /*val auth by lazy { FirebaseAuth.getInstance() }
     val fireStore by lazy { FirebaseFirestore.getInstance() }
     val preferencesManager by lazy { PreferencesManager(application) }
     val preferences by lazy { preferencesManager.preferences }
@@ -50,63 +68,6 @@ class MacrosManagerViewModel @Inject constructor(@ApplicationContext private val
             else -> {
                 MutableStateFlow(UserInfo())
             }
-        }
-    }
-
-    val currentUserMacros: MutableStateFlow<Macros> by lazy {
-        when {
-            auth.currentUser != null -> {
-                    fireStore.collection(auth.currentUser!!.uid).document("macros").get()
-                        .addOnSuccessListener { snapshot ->
-                           currentUserMacros.tryEmit(snapshot.toObject(Macros::class.java)!!)
-                        }
-                MutableStateFlow(Macros(listOf()))
-            }
-
-            preferences.contains("macros") -> {
-                MutableStateFlow(preferencesManager.macros)
-            }
-
-            else -> {
-                MutableStateFlow(Macros(listOf()))
-            }
-        }
-    }
-
-    val currentUserCalculatorOptions: MutableStateFlow<CalculatorOptions> by lazy {
-        when {
-            auth.currentUser != null -> {
-                    fireStore.collection(auth.currentUser!!.uid).document("calculatorOptions").get()
-                        .addOnSuccessListener { snapshot ->
-                            println(snapshot)
-                            currentUserCalculatorOptions.tryEmit(snapshot.toObject(CalculatorOptions::class.java)!!)
-                        }
-                MutableStateFlow(CalculatorOptions())
-            }
-
-            preferences.contains("calculatorOptions") -> {
-                MutableStateFlow(preferencesManager.calculatorOptions)
-            }
-
-            else -> {
-                MutableStateFlow(CalculatorOptions())
-            }
-        }
-    }
-
-    var currentMeals: MutableList<Meal> = when {
-        auth.currentUser != null -> {
-            val meals = mutableListOf<Meal>()
-            val reference = fireStore.collection(auth.currentUser!!.uid).document("meals").get().addOnSuccessListener { snapshot ->
-                snapshot.toObject<List<Meal>>()?.let { meals.addAll(it.toMutableList()) }
-            }
-            meals
-        }
-        preferences.contains("meals") -> {
-            preferencesManager.meals
-        }
-        else -> {
-            mutableListOf()
         }
     }
 
@@ -137,98 +98,6 @@ class MacrosManagerViewModel @Inject constructor(@ApplicationContext private val
             }
     }
 
-    suspend fun saveUserSettings(updatedUserInfo: UserInfo) {
-        if (auth.currentUser != null) {
-            val reference = fireStore.collection(auth.currentUser!!.uid).document("userInfo")
-            reference.set(updatedUserInfo).addOnSuccessListener {
-                viewModelScope.launch {
-                    fireBaseSaveSuccess.emit(true)
-                }
-            }.addOnFailureListener {
-                viewModelScope.launch {
-                    fireBaseSaveSuccess.emit(false)
-                }
-            }
-        }
-
-        currentUserInfo.emit(updatedUserInfo)
-        preferencesManager.userInfo = updatedUserInfo
-    }
-
-    suspend fun saveCalculatorOptions(tempCalculatorOptions: CalculatorOptions, tempMacros: Macros) {
-        if (auth.currentUser != null) {
-            fireStore.collection(auth.currentUser!!.uid).document(("calculatorOptions")).set(tempCalculatorOptions).addOnSuccessListener {
-                fireStore.collection(auth.currentUser!!.uid).document("macros").set(tempMacros).addOnSuccessListener {
-                    viewModelScope.launch {
-                        fireBaseSaveSuccess.emit(true)
-                    }
-                }.addOnFailureListener {
-                    viewModelScope.launch {
-                        fireBaseSaveSuccess.emit(false)
-                    }
-                }
-            }.addOnFailureListener {
-                viewModelScope.launch {
-                    fireBaseSaveSuccess.emit(false)
-                }
-            }
-        }
-
-        preferencesManager.calculatorOptions = tempCalculatorOptions
-        preferencesManager.macros = tempMacros
-        currentUserCalculatorOptions.emit(tempCalculatorOptions)
-        currentUserMacros.emit(tempMacros)
-    }
-
-    fun saveMacros() {
-        if (auth.currentUser != null) {
-            val reference = fireStore.collection(auth.currentUser!!.uid).document("macros")
-            reference.set(currentUserMacros).addOnSuccessListener {
-                viewModelScope.launch {
-                    fireBaseSaveSuccess.emit(true)
-                }
-            }.addOnFailureListener {
-                viewModelScope.launch {
-                    fireBaseSaveSuccess.emit(false)
-                }
-            }
-
-            preferencesManager.macros = currentUserMacros.value
-        } else {
-            preferencesManager.macros = currentUserMacros.value
-        }
-    }
-
-    fun saveMeals() {
-        if (auth.currentUser != null) {
-            val reference = fireStore.collection(auth.currentUser!!.uid).document("meals")
-            reference.set(currentMeals).addOnSuccessListener {
-                viewModelScope.launch {
-                    fireBaseSaveSuccess.emit(true)
-                }
-            }.addOnFailureListener {
-                viewModelScope.launch {
-                    fireBaseSaveSuccess.emit(false)
-                }
-            }
-
-            preferencesManager.meals = currentMeals
-        } else {
-            preferencesManager.meals = currentMeals
-        }
-    }
-
-    fun updateMeal(editedMeal: Meal) {
-        val index = currentMeals.indexOfFirst { meal -> meal.id == editedMeal.id }
-        currentMeals[index] = editedMeal
-        saveMeals()
-    }
-
-    fun removeMeal(deletedMealId: Int) {
-        currentMeals.remove(currentMeals.first { meal -> meal.id == deletedMealId })
-        saveMeals()
-    }
-
     fun deleteUser() {
         if (auth.currentUser != null) {
             val user = auth.currentUser!!
@@ -251,6 +120,6 @@ class MacrosManagerViewModel @Inject constructor(@ApplicationContext private val
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return MacrosManagerViewModel(application) as T
         }
-    }
+    }*/
 }
 

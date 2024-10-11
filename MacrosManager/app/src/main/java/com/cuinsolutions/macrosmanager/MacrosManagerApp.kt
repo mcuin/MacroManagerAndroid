@@ -11,7 +11,6 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,10 +29,12 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -51,8 +52,13 @@ fun MacrosManagerApp(navController: NavHostController = rememberNavController())
             composable(Screens.Settings.route) {
                 SettingsScreen(modifier = Modifier, navController = navController)
             }
-            composable(Screens.Meal.route) {
-                MealScreen(modifier = Modifier, navController = navController)
+            composable(route = Screens.Meal.route, arguments = listOf(
+                navArgument("mealId") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                }
+            )) {
+                MealScreen(modifier = Modifier, mealId = it.arguments?.getInt("mealId") ?: -1, navController = navController)
             }
         }
     }
@@ -127,17 +133,17 @@ fun BannerAdview() {
 }
 
 @Composable
-fun MacrosManagerRadioButton(modifier: Modifier, title: String) {
+fun MacrosManagerRadioButton(modifier: Modifier, title: String, isSelected: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         RadioButton(modifier = modifier.padding(start = dimensionResource(R.dimen.margin_standard),
-            top = dimensionResource(R.dimen.margin_smallest)), selected = false, onClick = null)
+            top = dimensionResource(R.dimen.margin_smallest)), selected = isSelected, onClick = null)
         Text(modifier = modifier.padding(start = dimensionResource(R.dimen.margin_small_minus)), text = title)
     }
 }
 
 sealed class Screens(val route: String) {
     data object Settings : Screens("settings")
-    data object Meal: Screens("meal")
+    data object Meal: Screens("meal?mealId={mealId}")
 }
 
 sealed class BottomNavigationItem(val route: String, val titleResourceId: Int, val icon: Int) {

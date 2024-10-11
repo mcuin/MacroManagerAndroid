@@ -1,35 +1,52 @@
 package com.cuinsolutions.macrosmanager.utils
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import java.time.LocalDate
 
-data class UserInfo(var email: String = "", var showAds: Boolean = true,
-                    var gender: Int = Gender.MALE.id, var birthYear: Int = -1, var birthMonth: Int = -1,
-                    var heightMeasurement: Int = HeightMeasurement.METRIC.id,
-                    var weightMeasurement: Int = WeightMeasurement.METRIC.id,
-                    var heightCm: Float = -1f, var weightKg: Float = -1f)
+data class MacrosManagerPreferences(val currentDate: LocalDate)
 
-data class Macros(val macros: List<Macro>)
+@Immutable
+@Entity(tableName = "user_info")
+data class UserInfo(@PrimaryKey(autoGenerate = true) var id: Int = -1,
+                    @ColumnInfo(name = "name") var name: String = "",
+                    @ColumnInfo(name = "email") var email: String = "",
+                    @ColumnInfo(name = "showAds") var showAds: Boolean = true,
+                    @ColumnInfo(name = "gender") var gender: Int = Gender.MALE.id,
+                    @ColumnInfo(name = "birthYear") var birthYear: Int = -1,
+                    @ColumnInfo(name = "birthMonth") var birthMonth: Int = -1,
+                    @ColumnInfo(name = "heightMeasurement") var heightMeasurement: Int = HeightMeasurement.METRIC.id,
+                    @ColumnInfo(name = "weightMeasurement") var weightMeasurement: Int = WeightMeasurement.METRIC.id,
+                    @ColumnInfo(name = "heightCm") var heightCm: Double = 0.0,
+                    @ColumnInfo(name = "weightKg") var weightKg: Double = 0.0)
+
+@Entity(tableName = "macros")
+data class Macros(@PrimaryKey(autoGenerate = true) var id: Int = -1,
+                  @ColumnInfo(name = "macros") var macros: List<Macro>)
 
 data class Macro(val name: String, val current: Double, val daily: Int)
 
-data class CalculatorOptions(var dailyActivity: Int = DailyActivityLevel.VERYLIGHT.id, var goal: Int = Goal.MAINTAIN.id,
-                             var physicalActivityLifestyle: Int = PhysicalActivityLifestyle.SEDENTARYADULT.id, var dietFatPercent: Double = 25.0)
-
 @Immutable
-data class CalculatorOptionsState(var dailyActivity: Int = DailyActivityLevel.VERYLIGHT.id,
-                                  var physicalActivityLifestyle: Int = PhysicalActivityLifestyle.SEDENTARYADULT.id,
-                                  var dietFatPercent: Double = 25.0,
-                                  var goal: Int = Goal.MAINTAIN.id)
+@Entity(tableName = "calculator_options")
+data class CalculatorOptions(@PrimaryKey(autoGenerate = true) var id: Int = -1,
+                             @ColumnInfo(name = "dailyActivity") var dailyActivity: Int = DailyActivityLevel.VERYLIGHT.id,
+                             @ColumnInfo(name = "goal") var goal: Int = Goal.MAINTAIN.id,
+                             @ColumnInfo(name = "physicalActivityLifestyle") var physicalActivityLifestyle: Int = PhysicalActivityLifestyle.SEDENTARYADULT.id,
+                             @ColumnInfo(name = "dietFatPercentId") var dietFatPercentId: Int =  0,
+                             @ColumnInfo(name = "dietFatPercent") var dietFatPercent: Double = 25.0)
 
 data class MacroCell(var macroName: String, var macrosDescription: String)
 
-data class Meal(var id: Int, var mealName: String, val servingSize: Double, var mealCalories: Double, var mealCarbs: Double,
-                var mealFats: Double, var mealProtein: Double)
+@Entity(tableName = "meals")
+data class Meal(@PrimaryKey(autoGenerate = true) var id: Int = 0,
+                @ColumnInfo(name = "mealName") var mealName: String,
+                @ColumnInfo(name = "servingSize") val servingSize: Double,
+                @ColumnInfo(name = "mealCalories") var mealCalories: Double,
+                @ColumnInfo(name = "mealCarbs") var mealCarbs: Double,
+                @ColumnInfo(name = "mealFats") var mealFats: Double,
+                @ColumnInfo(name = "mealProtein") var mealProtein: Double)
 
 enum class DailyActivityLevel(val title: String, val id: Int) {
     VERYLIGHT("Very Light", 0),
@@ -73,8 +90,8 @@ enum class WeightMeasurement(val title: String, val id: Int) {
     STONE("Stone", 2)
 }
 
-enum class DietFatPercent(val title: String, val id: Int) {
-    TwentyFivePercent("25%", 0),
-    ThirtyPercent("30%", 1),
-    ThirtyFivePercent("35%", 2),
+enum class DietFatPercent(val title: String, val id: Int, val percent: Double) {
+    TwentyFivePercent("25%", 0, 25.0),
+    ThirtyPercent("30%", 1, 30.0),
+    ThirtyFivePercent("35%", 2, 35.0)
 }

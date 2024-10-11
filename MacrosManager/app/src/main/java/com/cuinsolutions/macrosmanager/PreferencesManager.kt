@@ -19,7 +19,7 @@ class PreferencesManager(context: Context) {
         set(value) = preferences.edit{ putString("userInfo", Gson().toJson(value)) }
 
     var macros: Macros
-        get() = Gson().fromJson(preferences.getString("macros", Macros(listOf()).toString()), Macros::class.java)
+        get() = Gson().fromJson(preferences.getString("macros", Macros(1, emptyList()).toString()), Macros::class.java)
         set(value) = preferences.edit { putString("macros", Gson().toJson(value)) }
 
     var calculatorOptions: CalculatorOptions

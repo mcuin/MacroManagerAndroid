@@ -48,7 +48,7 @@
     <string name="imperial">Imperial</string>
     <string name="metric">Metric</string>
     <string name="stone">Stone</string>
-    <string name="birthday">Birthday</string>
+    <string name="birth_month_year">Birth Month and Year</string>
     <string name="servings_size">Serving Size</string>
     <string name="meal_name">Meal Name</string>
     <string name="height">Height</string>
@@ -73,14 +73,18 @@
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="height_error">Height Error</string>
+    <string name="height_entry_range_error">You have entered a height taller or shorter than the respective person that ever lived. Please go collect your award, or enter a valid height.</string>
     <string name="height_entry_errors">Please enter a valid number for both height entries.</string>
     <string name="height_entry_error">Please enter a valid number for your height.</string>
+    <string name="weight_entry_range_error">You have entered a weight heavier or lighter than the respective person that ever lived. Please go collect your award, or enter a valid weight.</string>
     <string name="weight_error">Weight Error</string>
     <string name="weight_entry_error">Please enter a valid number for your weight.</string>
     <string name="weight_entry_errors">Please enter a valid number for both weight entries.</string>
     <string name="custom_fat_error">Custom Fat Percent Error</string>
-    <string name="custom_fat_entry_error">Please enter a valid fat perfect for your diet, or select one of the other options.</string>
-    <string name="birth_month_year">%1$02d/%2$d</string>
+    <string name="custom_fat_entry_error">Please enter a valid fat percent for your diet, or select one of the other options.</string>
+    <string name="custom_fat_entry_range_error">Please enter a number within the correct range.</string>
+    <string name="goal_error">Goal Error</string>
+    <string name="birth_month_year_entry">%1$02d/%2$d</string>
     <string name="settings_error">Settings Error</string>
     <string name="settings_error_description">Please visit the settings page first to fill out some information about yourself for use in calculations.</string>
     <string name="go_to_settings">Go to Settings</string>
@@ -114,6 +118,11 @@
     <string name="login_failed_description">Your login failed. Please try again later.</string>
     <string name="add_meal">Add Meal</string>
     <string name="edit_meal">Edit Meal</string>
+    <string name="meal_card_calories">Calories: %1$f</string>
+    <string name="meal_card_carbs">Carbs: %1$f</string>
+    <string name="meal_card_fat">Fat: %1$f</string>
+    <string name="meal_card_protein">Protein: %1$f</string>
+    <string name="meal_card_servings">Servings: %1$f</string>
 
     <string name="admob_id">ca-app-pub-6601965971959563~1619744217</string>
 </resources>

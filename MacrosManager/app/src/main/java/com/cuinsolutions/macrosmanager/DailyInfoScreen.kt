@@ -1,31 +1,29 @@
 package com.cuinsolutions.macrosmanager
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.BlendMode.Companion.Screen
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.cuinsolutions.macrosmanager.utils.Macro
-import com.cuinsolutions.macrosmanager.utils.Macros
+import com.cuinsolutions.macrosmanager.utils.Meal
 
 @Composable
 fun DailyInfoScreen(modifier: Modifier, navController: NavHostController, viewModel: DailyInfoViewModel = hiltViewModel()) {
@@ -51,19 +49,25 @@ fun DailyInfoScreen(modifier: Modifier, navController: NavHostController, viewMo
             .fillMaxSize()
             .padding(it)) {
 
-            val macros by viewModel.macros.collectAsStateWithLifecycle()
+            val state by viewModel.states.collectAsStateWithLifecycle()
+            val meals by viewModel.mealsList.collectAsStateWithLifecycle()
 
-            DailyMacrosGrid(modifier = modifier, macros = macros)
-            DailyMealsList(modifier = modifier.weight(1f))
-            BannerAdview()
+            when (val macros = state) {
+                is DailyInfoUiState.Success -> {
+                    DailyMacrosGrid(modifier = modifier, macros = macros.macros)
+                    DailyMealsList(modifier = modifier.weight(1f), meals = meals, navController = navController)
+                    BannerAdview()
+                }
+                is DailyInfoUiState.Loading -> {}
+            }
         }
     }
 }
 
 @Composable
-fun DailyMacrosGrid(modifier: Modifier, macros: Macros) {
+fun DailyMacrosGrid(modifier: Modifier, macros: List<Macro>) {
     LazyVerticalGrid(columns = GridCells.Fixed(count = 4), modifier = modifier) {
-        items(macros.macros) { macro ->
+        items(macros) { macro ->
             DailyMacrosGridCell(modifier = modifier, macro = macro)
         }
     }
@@ -80,15 +84,38 @@ fun DailyMacrosGridCell(modifier: Modifier, macro: Macro) {
 }
 
 @Composable
-fun DailyMealsList(modifier: Modifier) {
+fun DailyMealsList(modifier: Modifier, meals: List<Meal>, navController: NavHostController) {
     LazyColumn(modifier = modifier.fillMaxWidth()) {
+        items(meals) { meal ->
+            DailyMealsListItem(modifier = modifier, meal = meal, navController = navController)
+        }
+    }
+}
 
+@Composable
+fun DailyMealsListItem(modifier: Modifier, meal: Meal, navController: NavHostController) {
+    Card (modifier = modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.margin_standard),
+        vertical = dimensionResource(R.dimen.margin_small)).background(color = MaterialTheme.colorScheme.primary), onClick = {
+            navController.navigate(route = Screens.Meal.route.replace("{mealId}", meal.id.toString()))
+    }) {
+        //Column {
+            Row(modifier = modifier.fillMaxWidth()) {
+                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_small)), text = meal.mealName)
+                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), end = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_calories, meal.mealCalories))
+            }
+            Row(modifier = modifier.fillMaxWidth()) {
+                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_servings, meal.servingSize))
+                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_carbs, meal.mealCarbs))
+                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_fat, meal.mealFats))
+                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), end = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_protein, meal.mealProtein))
+            }
+        //}
     }
 }
 
 @Composable
 fun AddMealFAB(modifier: Modifier, navController: NavHostController) {
-    FloatingActionButton(onClick = { navController.navigate(route = Screens.Meal.route) }) {
+    FloatingActionButton(modifier = modifier.padding(bottom = 50.dp), containerColor = MaterialTheme.colorScheme.primary, onClick = { navController.navigate(route = Screens.Meal.route) }) {
         Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.add_meal))
     }
 }
