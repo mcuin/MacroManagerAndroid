@@ -1,6 +1,5 @@
 package com.cuinsolutions.macrosmanager
 
-import android.icu.text.DecimalFormat
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,12 +20,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,18 +51,22 @@ import com.cuinsolutions.macrosmanager.utils.Goal
 import com.cuinsolutions.macrosmanager.utils.HeightMeasurement
 import com.cuinsolutions.macrosmanager.utils.PhysicalActivityLifestyle
 import com.cuinsolutions.macrosmanager.utils.WeightMeasurement
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun MacrosCalculatorScreen(modifier: Modifier, navController: NavHostController, calculatorViewModel: MacrosCalculatorViewModel = hiltViewModel()) {
 
-    var showCalculateFab by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(modifier = modifier
         .navigationBarsPadding()
         .imePadding(), topBar = {
         MacrosManagerOptionsMenuAppBar(modifier = modifier, navController = navController, titleResourceId = R.string.calculator) },
-        floatingActionButton = { if (showCalculateFab) CalculateFab(modifier = modifier, calculatorViewModel = calculatorViewModel, navController = navController) },
-        bottomBar = { BottomNavigationBar(modifier = modifier, navController = navController) }) {
+        floatingActionButton = { CalculateFab(modifier = modifier, calculatorViewModel = calculatorViewModel, navController = navController, snackbarHostState = snackbarHostState, scope = scope) },
+        bottomBar = { BottomNavigationBar(modifier = modifier, navController = navController) },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
 
         Column(modifier = modifier
             .fillMaxSize()
@@ -71,15 +78,13 @@ fun MacrosCalculatorScreen(modifier: Modifier, navController: NavHostController,
             when (states.value) {
                 is CalculatorState.Loading -> {}
                 is CalculatorState.Success -> {
-                    showCalculateFab = calculatorViewModel.currentUserInfo.weightKg > 0.0 && calculatorViewModel.currentUserInfo.heightCm > 0.0
-                    CalculatorHeight(modifier = modifier, heightMeasurement = calculatorViewModel.currentUserInfo.heightMeasurement, calculatorViewModel = calculatorViewModel, updateShowCalculateFab = { showCalculateFab = it })
-                    CalculatorWeight(modifier = modifier, weightMeasurement = calculatorViewModel.currentUserInfo.weightMeasurement, calculatorViewModel = calculatorViewModel, updateShowCalculateFab = { showCalculateFab = it })
+                    CalculatorHeight(modifier = modifier, heightMeasurement = calculatorViewModel.currentUserInfo.heightMeasurement, calculatorViewModel = calculatorViewModel)
+                    CalculatorWeight(modifier = modifier, weightMeasurement = calculatorViewModel.currentUserInfo.weightMeasurement, calculatorViewModel = calculatorViewModel)
                     CalculatorDailyActivityLevel(modifier = modifier, dailyActivityLevelId = calculatorViewModel.currentCalculatorOptions.dailyActivity, calculatorViewModel = calculatorViewModel)
                     CalculatorPhysicalActivityLifestyle(modifier = modifier, physicalActivityLifestyleId = calculatorViewModel.currentCalculatorOptions.physicalActivityLifestyle, calculatorViewModel = calculatorViewModel)
-                    CalculatorDietFatPercent(modifier = modifier, dietFatPercentId = calculatorViewModel.currentCalculatorOptions.dietFatPercentId, calculatorViewModel = calculatorViewModel,
-                        updateShowCalculateFab = { showCalculateFab = it })
+                    CalculatorDietFatPercent(modifier = modifier, dietFatPercentId = calculatorViewModel.currentCalculatorOptions.dietFatPercentId, calculatorViewModel = calculatorViewModel)
                     CalculatorGoal(modifier = modifier, goalId = calculatorViewModel.currentCalculatorOptions.goal, calculatorViewModel = calculatorViewModel)
-                    BannerAdview()
+                    BannerAdview(stringResource(id = R.string.calculator_ad_unit_id))
                 }
                 is CalculatorState.SettingsError -> {
                     SettingsErrorAlertDialog(modifier = modifier, navController = navController)
@@ -91,11 +96,9 @@ fun MacrosCalculatorScreen(modifier: Modifier, navController: NavHostController,
 
 @Composable
 fun CalculatorHeight(modifier: Modifier, heightMeasurement: Int,
-                     calculatorViewModel: MacrosCalculatorViewModel, updateShowCalculateFab: (Boolean) -> Unit) {
+                     calculatorViewModel: MacrosCalculatorViewModel) {
 
     val focusManager = LocalFocusManager.current
-    var showRangeError by rememberSaveable { mutableStateOf(false) }
-    var showEmptyError by rememberSaveable { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(modifier = modifier.padding(start = dimensionResource(R.dimen.margin_standard),
@@ -112,27 +115,15 @@ fun CalculatorHeight(modifier: Modifier, heightMeasurement: Int,
                 ),
                 value = calculatorViewModel.userCm,
                 onValueChange = { cmText ->
-                    val filteredCm = calculatorViewModel.validHeightCm(cmText)
-                    if (filteredCm.isNotEmpty()) {
-                        if (filteredCm.toDouble() !in 54.6..272.0) {
-                            showRangeError = true
-                        } else {
-                            showRangeError = false
-                        }
-                        showEmptyError = false
-                    } else {
-                        showEmptyError = true
-                    }
-                    updateShowCalculateFab(!showEmptyError && !showRangeError)
-                    calculatorViewModel.updateUserCm(filteredCm) },
+                    calculatorViewModel.updateUserCm(cmText) },
                 label = { Text(text = stringResource(id = R.string.centimeters)) },
-                isError = showRangeError || showEmptyError,
+                isError = calculatorViewModel.userCmRangeError || calculatorViewModel.userCmEmptyError,
                 supportingText = {
                     when {
-                        showEmptyError -> Text(text = stringResource(id = R.string.height_entry_error))
-                        showRangeError -> Text(text = stringResource(id = R.string.height_entry_range_error))
+                        calculatorViewModel.userCmEmptyError -> Text(text = stringResource(id = R.string.height_entry_error))
+                        calculatorViewModel.userCmRangeError -> Text(text = stringResource(id = R.string.height_entry_range_error))
                 }},
-                trailingIcon = { if (showRangeError || showEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
+                trailingIcon = { if (calculatorViewModel.userCmRangeError || calculatorViewModel.userCmEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }))
@@ -147,27 +138,15 @@ fun CalculatorHeight(modifier: Modifier, heightMeasurement: Int,
                     ),
                     value = calculatorViewModel.userFeet,
                     onValueChange = { feetText ->
-                        val filteredFeet = calculatorViewModel.validHeightFeet(feetText)
-                        if (filteredFeet.isNotEmpty()) {
-                            if (filteredFeet.toDouble() !in 1.0..8.0) {
-                                showRangeError = true
-                            } else {
-                                showRangeError = false
-                            }
-                            showEmptyError = false
-                        } else {
-                            showEmptyError = true
-                        }
-                        updateShowCalculateFab(!showEmptyError && !showRangeError)
-                        calculatorViewModel.updateUserFeet(filteredFeet) },
+                        calculatorViewModel.updateUserFeet(feetText) },
                     label = { Text(text = stringResource(id = R.string.feet)) },
-                    isError = showRangeError || showEmptyError,
+                    isError = calculatorViewModel.userFeetRangeError || calculatorViewModel.userFeetEmptyError,
                     supportingText = {
                         when {
-                            showEmptyError -> Text(text = stringResource(id = R.string.height_entry_error))
-                            showRangeError -> Text(text = stringResource(id = R.string.height_entry_range_error))
+                            calculatorViewModel.userFeetEmptyError -> Text(text = stringResource(id = R.string.height_entry_error))
+                            calculatorViewModel.userFeetRangeError -> Text(text = stringResource(id = R.string.height_entry_range_error))
                         }},
-                    trailingIcon = { if (showRangeError || showEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
+                    trailingIcon = { if (calculatorViewModel.userFeetRangeError || calculatorViewModel.userFeetEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }))
@@ -181,26 +160,14 @@ fun CalculatorHeight(modifier: Modifier, heightMeasurement: Int,
                     value = calculatorViewModel.userInches,
                     label = { Text(text = stringResource(id = R.string.inches)) },
                     onValueChange = { inchesText ->
-                        val filteredInches = calculatorViewModel.validHeightInches(inchesText)
-                        if (filteredInches.isNotEmpty()) {
-                            if (filteredInches.toDouble() !in 0.0..11.0) {
-                                showRangeError = true
-                            } else {
-                                showRangeError = false
-                            }
-                            showEmptyError = false
-                        } else {
-                            showEmptyError = true
-                        }
-                        updateShowCalculateFab(!showEmptyError && !showRangeError)
                         calculatorViewModel.updateUserInches(inchesText) },
-                    isError = showRangeError || showEmptyError,
+                    isError = calculatorViewModel.userInchesRangeError || calculatorViewModel.userInchesEmptyError,
                     supportingText = {
                         when {
-                            showEmptyError -> Text(text = stringResource(id = R.string.height_entry_error))
-                            showRangeError -> Text(text = stringResource(id = R.string.height_entry_range_error))
+                            calculatorViewModel.userInchesEmptyError -> Text(text = stringResource(id = R.string.height_entry_error))
+                            calculatorViewModel.userInchesRangeError -> Text(text = stringResource(id = R.string.height_entry_range_error))
                         }},
-                    trailingIcon = { if (showRangeError || showEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
+                    trailingIcon = { if (calculatorViewModel.userInchesRangeError || calculatorViewModel.userInchesEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }))
@@ -211,11 +178,9 @@ fun CalculatorHeight(modifier: Modifier, heightMeasurement: Int,
 
 @Composable
 fun CalculatorWeight(modifier: Modifier, weightMeasurement: Int,
-                     calculatorViewModel: MacrosCalculatorViewModel, updateShowCalculateFab: (Boolean) -> Unit) {
+                     calculatorViewModel: MacrosCalculatorViewModel) {
 
     val focusManager = LocalFocusManager.current
-    var showRangeError by rememberSaveable { mutableStateOf(false) }
-    var showEmptyError by rememberSaveable { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(modifier = modifier.padding(start = dimensionResource(R.dimen.margin_standard),
@@ -232,27 +197,15 @@ fun CalculatorWeight(modifier: Modifier, weightMeasurement: Int,
                 ),
                 value = calculatorViewModel.userKg,
                 onValueChange = { kgText ->
-                    val filteredKg = calculatorViewModel.validWeightKg(kgText)
-                    if (filteredKg.isNotEmpty()) {
-                        if (filteredKg.toDouble() !in 2.0..635.0) {
-                            showRangeError = true
-                        } else {
-                            showRangeError = false
-                        }
-                        showEmptyError = false
-                    } else {
-                        showEmptyError = true
-                    }
-                    updateShowCalculateFab(!showEmptyError && !showRangeError)
-                    calculatorViewModel.updateUserKg(filteredKg) },
+                    calculatorViewModel.updateUserKg(kgText) },
                 label = { Text(text = stringResource(id = R.string.kilograms)) },
-                isError = showRangeError || showEmptyError,
+                isError = calculatorViewModel.userKgRangeError || calculatorViewModel.userKgEmptyError,
                 supportingText = {
                     when {
-                        showEmptyError -> Text(text = stringResource(id = R.string.weight_entry_error))
-                        showRangeError -> Text(text = stringResource(id = R.string.weight_entry_range_error))
+                        calculatorViewModel.userKgEmptyError -> Text(text = stringResource(id = R.string.weight_entry_error))
+                        calculatorViewModel.userKgRangeError -> Text(text = stringResource(id = R.string.weight_entry_range_error))
                     }},
-                trailingIcon = { if (showRangeError || showEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
+                trailingIcon = { if (calculatorViewModel.userKgRangeError || calculatorViewModel.userKgEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }))
@@ -265,27 +218,15 @@ fun CalculatorWeight(modifier: Modifier, weightMeasurement: Int,
                 ),
                 value = calculatorViewModel.userPounds,
                 onValueChange = { poundsText ->
-                    val filteredPounds = calculatorViewModel.validWeightPounds(poundsText)
-                    if (filteredPounds.isNotEmpty()) {
-                        if (filteredPounds.toDouble() !in 4.7..1400.0) {
-                            showRangeError = true
-                        } else {
-                            showRangeError = false
-                        }
-                        showEmptyError = false
-                    } else {
-                        showEmptyError = true
-                    }
-                    updateShowCalculateFab(!showEmptyError && !showRangeError)
-                    calculatorViewModel.updateUserPounds(filteredPounds) },
+                    calculatorViewModel.updateUserPounds(poundsText) },
                 label = { Text(text = stringResource(id = R.string.pounds)) },
-                isError = showRangeError || showEmptyError,
+                isError = calculatorViewModel.userPoundsRangeError || calculatorViewModel.userPoundsEmptyError,
                 supportingText = {
                     when {
-                        showEmptyError -> Text(text = stringResource(id = R.string.weight_entry_error))
-                        showRangeError -> Text(text = stringResource(id = R.string.weight_entry_range_error))
+                        calculatorViewModel.userPoundsEmptyError -> Text(text = stringResource(id = R.string.weight_entry_error))
+                        calculatorViewModel.userPoundsRangeError -> Text(text = stringResource(id = R.string.weight_entry_range_error))
                     }},
-                trailingIcon = { if (showRangeError || showEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
+                trailingIcon = { if (calculatorViewModel.userPoundsRangeError || calculatorViewModel.userPoundsEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }))
@@ -300,27 +241,15 @@ fun CalculatorWeight(modifier: Modifier, weightMeasurement: Int,
                         ),
                         value = calculatorViewModel.userStone,
                         onValueChange = { stoneText ->
-                            val filteredStone = calculatorViewModel.validWeightStone(stoneText)
-                            if (filteredStone.isNotEmpty()) {
-                                if (filteredStone.toDouble() !in 0.0..100.0) {
-                                    showRangeError = true
-                                } else {
-                                    showRangeError = false
-                                }
-                                showEmptyError = false
-                            } else {
-                                showEmptyError = true
-                            }
-                            updateShowCalculateFab(!showEmptyError && !showRangeError)
-                            calculatorViewModel.updateUserStone(filteredStone) },
+                            calculatorViewModel.updateUserStone(stoneText) },
                         label = { Text(text = stringResource(id = R.string.stone)) },
-                        isError = showRangeError || showEmptyError,
+                        isError = calculatorViewModel.userStoneRangeError || calculatorViewModel.userStoneEmptyError,
                         supportingText = {
                             when {
-                                showEmptyError -> Text(text = stringResource(id = R.string.weight_entry_error))
-                                showRangeError -> Text(text = stringResource(id = R.string.weight_entry_range_error))
+                                calculatorViewModel.userStoneEmptyError -> Text(text = stringResource(id = R.string.weight_entry_error))
+                                calculatorViewModel.userStoneRangeError -> Text(text = stringResource(id = R.string.weight_entry_range_error))
                             }},
-                        trailingIcon = { if (showRangeError || showEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
+                        trailingIcon = { if (calculatorViewModel.userStoneRangeError || calculatorViewModel.userStoneEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }))
@@ -333,28 +262,16 @@ fun CalculatorWeight(modifier: Modifier, weightMeasurement: Int,
                         ),
                         value = calculatorViewModel.userPounds,
                         onValueChange = { poundsText ->
-                            val filteredPounds = calculatorViewModel.validWeightPounds(poundsText)
-                            if (filteredPounds.isNotEmpty()) {
-                                if (filteredPounds.toDouble() !in 4.7..1400.0) {
-                                    showRangeError = true
-                                } else {
-                                    showRangeError = false
-                                }
-                                showEmptyError = false
-                            } else {
-                                showEmptyError = true
-                            }
-                            updateShowCalculateFab(!showEmptyError && !showRangeError)
-                            calculatorViewModel.updateUserPounds(filteredPounds) },
+                            calculatorViewModel.updateUserPoundsStone(poundsText) },
                         label = { Text(text = stringResource(id = R.string.pounds)) },
-                        isError = showRangeError || showEmptyError,
+                        isError = calculatorViewModel.userPoundsRangeError || calculatorViewModel.userPoundsEmptyError,
                         supportingText = {
                             when {
-                                showEmptyError -> Text(text = stringResource(id = R.string.weight_entry_error))
-                                showRangeError -> Text(text = stringResource(id = R.string.weight_entry_range_error))
+                                calculatorViewModel.userPoundsEmptyError -> Text(text = stringResource(id = R.string.weight_entry_error))
+                                calculatorViewModel.userPoundsRangeError -> Text(text = stringResource(id = R.string.weight_entry_range_error))
                                 else -> Text(text = "")
                             }},
-                        trailingIcon = { if (showRangeError || showEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
+                        trailingIcon = { if (calculatorViewModel.userPoundsRangeError || calculatorViewModel.userPoundsEmptyError) Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }))
@@ -408,7 +325,7 @@ fun CalculatorPhysicalActivityLifestyle(modifier: Modifier, physicalActivityLife
 }
 
 @Composable
-fun CalculatorDietFatPercent(modifier: Modifier, dietFatPercentId: Int, calculatorViewModel: MacrosCalculatorViewModel, updateShowCalculateFab: (Boolean) -> Unit) {
+fun CalculatorDietFatPercent(modifier: Modifier, dietFatPercentId: Int, calculatorViewModel: MacrosCalculatorViewModel) {
 
     var showDietFatPercentDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -433,7 +350,7 @@ fun CalculatorDietFatPercent(modifier: Modifier, dietFatPercentId: Int, calculat
         onClick = { calculatorViewModel.updateCalculatorOptionDietFatId(3, 0.0) },
         role = Role.RadioButton),
         isSelected = dietFatPercentId == 3,
-        calculatorViewModel = calculatorViewModel, updateShowCalculateFab = { updateShowCalculateFab(it) })
+        calculatorViewModel = calculatorViewModel)
 
     if (showDietFatPercentDialog) {
         DietFatPercentDialog(modifier = modifier, onDismiss = { showDietFatPercentDialog = false })
@@ -456,11 +373,9 @@ fun CalculatorGoal(modifier: Modifier, goalId: Int, calculatorViewModel: MacrosC
 
 @Composable
 fun CalculatorCustomRadioButton(modifier: Modifier, isSelected: Boolean,
-                                calculatorViewModel: MacrosCalculatorViewModel, updateShowCalculateFab: (Boolean) -> Unit) {
+                                calculatorViewModel: MacrosCalculatorViewModel) {
 
     val focusManager = LocalFocusManager.current
-    var dietFatPercentEmptyError by rememberSaveable { mutableStateOf(false) }
-    var dietFatPercentRangeError by rememberSaveable { mutableStateOf(false) }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         RadioButton(modifier = modifier.padding(start = dimensionResource(R.dimen.margin_standard)),
@@ -468,22 +383,12 @@ fun CalculatorCustomRadioButton(modifier: Modifier, isSelected: Boolean,
         TextField(modifier = modifier.padding(start = dimensionResource(R.dimen.margin_small_minus)),
             value = calculatorViewModel.userDietFatPercent,
             onValueChange = { dietFatPercentText ->
-                val dietFatPercentFiltered = calculatorViewModel.validDietFatPercent(dietFatPercentText)
-                when {
-                    dietFatPercentFiltered !in ("25".."35") -> dietFatPercentRangeError = true
-                    dietFatPercentFiltered.isEmpty() -> dietFatPercentEmptyError = true
-                    else -> {
-                        dietFatPercentEmptyError = false
-                        dietFatPercentRangeError = false
-                    }
-                }
-                updateShowCalculateFab(!dietFatPercentEmptyError && !dietFatPercentRangeError)
-                calculatorViewModel.updateDietFatPercent(dietFatPercentFiltered) },
-            isError = dietFatPercentEmptyError || dietFatPercentRangeError,
+                calculatorViewModel.updateDietFatPercent(dietFatPercentText) },
+            isError = calculatorViewModel.userDietFatPercentEmptyError || calculatorViewModel.userDietFatPercentRangeError,
             supportingText = {
                 when {
-                    dietFatPercentEmptyError -> Text(text = stringResource(id = R.string.custom_fat_entry_error))
-                    dietFatPercentRangeError -> Text(text = stringResource(id = R.string.custom_fat_entry_range_error))
+                    calculatorViewModel.userDietFatPercentEmptyError -> Text(text = stringResource(id = R.string.custom_fat_entry_error))
+                    calculatorViewModel.userDietFatPercentRangeError -> Text(text = stringResource(id = R.string.custom_fat_entry_range_error))
                 }
             },
             label = { Text(text = stringResource(id = R.string.custom)) },
@@ -496,10 +401,34 @@ fun CalculatorCustomRadioButton(modifier: Modifier, isSelected: Boolean,
 }
 
 @Composable
-fun CalculateFab(modifier: Modifier, calculatorViewModel: MacrosCalculatorViewModel, navController: NavHostController) {
-    ExtendedFloatingActionButton(modifier = modifier, onClick = {
-        calculatorViewModel.calculate()
-        navController.popBackStack()
+fun CalculateFab(modifier: Modifier, calculatorViewModel: MacrosCalculatorViewModel, navController: NavHostController, snackbarHostState: SnackbarHostState, scope: CoroutineScope) {
+    ExtendedFloatingActionButton(modifier = modifier.padding(bottom = dimensionResource(R.dimen.banner_ad_padding)), onClick = {
+        val heightEntryError = when (calculatorViewModel.currentUserInfo.heightMeasurement) {
+            HeightMeasurement.METRIC.id -> calculatorViewModel.userCmEmptyError || calculatorViewModel.userCmRangeError || calculatorViewModel.userCm.isEmpty()
+            HeightMeasurement.IMPERIAL.id -> calculatorViewModel.userFeetEmptyError || calculatorViewModel.userFeetRangeError || calculatorViewModel.userInchesEmptyError || calculatorViewModel.userInchesRangeError ||
+                    calculatorViewModel.userFeet.isEmpty() || calculatorViewModel.userInches.isEmpty()
+            else -> false
+        }
+        val weightEntryError = when (calculatorViewModel.currentUserInfo.weightMeasurement) {
+            WeightMeasurement.METRIC.id -> calculatorViewModel.userKgEmptyError || calculatorViewModel.userKgRangeError || calculatorViewModel.userKg.isEmpty()
+            WeightMeasurement.IMPERIAL.id -> calculatorViewModel.userPoundsEmptyError || calculatorViewModel.userPoundsRangeError || calculatorViewModel.userPounds.isEmpty()
+            WeightMeasurement.STONE.id -> calculatorViewModel.userStoneEmptyError || calculatorViewModel.userStoneRangeError || calculatorViewModel.userPoundsEmptyError || calculatorViewModel.userPoundsRangeError ||
+                    calculatorViewModel.userStone.isEmpty() || calculatorViewModel.userPounds.isEmpty()
+            else -> false
+        }
+        val dietFatPercentError = if (calculatorViewModel.currentCalculatorOptions.dietFatPercentId == 3) {
+            calculatorViewModel.userDietFatPercentEmptyError || calculatorViewModel.userDietFatPercentRangeError || calculatorViewModel.userDietFatPercent.isEmpty()
+        } else {
+            false
+        }
+        if (heightEntryError || weightEntryError || dietFatPercentError) {
+            scope.launch {
+                snackbarHostState.showSnackbar(message = "Fill out or fix all errors before calculating")
+            }
+        } else {
+            calculatorViewModel.calculate()
+            navController.popBackStack()
+        }
     }) {
         Text(text = stringResource(id = R.string.calc))
     }

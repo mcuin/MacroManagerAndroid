@@ -1,31 +1,14 @@
 package com.cuinsolutions.macrosmanager
 
-import android.app.Application
-import android.content.Context
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.cuinsolutions.macrosmanager.utils.CalculatorOptions
-import com.cuinsolutions.macrosmanager.utils.Macros
 import com.cuinsolutions.macrosmanager.utils.MacrosManagerPreferences
 import com.cuinsolutions.macrosmanager.utils.MacrosManagerPreferencesRepository
-import com.cuinsolutions.macrosmanager.utils.Meal
 import com.cuinsolutions.macrosmanager.utils.MealsRepository
-import com.cuinsolutions.macrosmanager.utils.UserInfo
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.toObject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
 

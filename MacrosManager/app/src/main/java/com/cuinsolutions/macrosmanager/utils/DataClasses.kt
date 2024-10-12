@@ -43,10 +43,10 @@ data class MacroCell(var macroName: String, var macrosDescription: String)
 data class Meal(@PrimaryKey(autoGenerate = true) var id: Int = 0,
                 @ColumnInfo(name = "mealName") var mealName: String,
                 @ColumnInfo(name = "servingSize") val servingSize: Double,
-                @ColumnInfo(name = "mealCalories") var mealCalories: Double,
-                @ColumnInfo(name = "mealCarbs") var mealCarbs: Double,
-                @ColumnInfo(name = "mealFats") var mealFats: Double,
-                @ColumnInfo(name = "mealProtein") var mealProtein: Double)
+                @ColumnInfo(name = "mealCalories") var mealCalories: Int,
+                @ColumnInfo(name = "mealCarbs") var mealCarbs: Int,
+                @ColumnInfo(name = "mealFats") var mealFats: Int,
+                @ColumnInfo(name = "mealProtein") var mealProtein: Int)
 
 enum class DailyActivityLevel(val title: String, val id: Int) {
     VERYLIGHT("Very Light", 0),

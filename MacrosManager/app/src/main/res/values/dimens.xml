@@ -17,4 +17,5 @@
     <dimen name="body">16sp</dimen>
     <dimen name="header">24sp</dimen>
     <dimen name="zero">0dp</dimen>
+    <dimen name="banner_ad_padding">50dp</dimen>
 </resources>

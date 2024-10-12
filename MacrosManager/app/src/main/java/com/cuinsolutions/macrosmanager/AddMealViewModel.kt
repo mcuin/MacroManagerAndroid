@@ -7,11 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cuinsolutions.macrosmanager.utils.Meal
 import com.cuinsolutions.macrosmanager.utils.MealsRepository
-import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class AddMealViewModel @Inject constructor(val mealRepository: MealsRepository): ViewModel() {
@@ -106,9 +104,9 @@ class AddMealViewModel @Inject constructor(val mealRepository: MealsRepository):
     }
 
     fun saveMeal() {
-        val meal = Meal(mealName = mealName, mealCalories = mealCalories.toDouble(),
-            mealCarbs = mealCarbs.toDouble(), mealFats = mealFats.toDouble(),
-            mealProtein = mealProtein.toDouble(), servingSize = mealServings.toDouble())
+        val meal = Meal(mealName = mealName, mealCalories = mealCalories.toInt(),
+            mealCarbs = mealCarbs.toInt(), mealFats = mealFats.toInt(),
+            mealProtein = mealProtein.toInt(), servingSize = mealServings.toDouble())
 
         viewModelScope.launch {
             mealRepository.addMeal(meal)
@@ -119,16 +117,5 @@ class AddMealViewModel @Inject constructor(val mealRepository: MealsRepository):
         viewModelScope.launch {
             mealRepository.deleteMeal(mealId)
         }
-    }
-
-    fun editMeal(mealName: String, mealServingSize: Double, mealCalories: Double, mealCarbs: Double, mealFats: Double,
-                 mealProtein: Double, previousMeal: Meal
-    ): Meal {
-        val calories = mealCalories * mealServingSize
-        val carbs = mealCarbs * mealServingSize
-        val fats = mealFats * mealServingSize
-        val protein = mealProtein * mealServingSize
-        return previousMeal.copy(mealName =  mealName, servingSize = mealServingSize, mealCalories = calories, mealCarbs = carbs,
-            mealFats = fats, mealProtein = protein)
     }
 }

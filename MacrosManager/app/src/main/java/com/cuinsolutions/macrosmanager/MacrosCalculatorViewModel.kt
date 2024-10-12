@@ -1,8 +1,6 @@
 package com.cuinsolutions.macrosmanager
 
-import android.icu.text.DecimalFormat
 import android.icu.util.Calendar
-import android.util.Range
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -21,12 +19,8 @@ import com.cuinsolutions.macrosmanager.utils.PhysicalActivityLifestyle
 import com.cuinsolutions.macrosmanager.utils.UserInfo
 import com.cuinsolutions.macrosmanager.utils.UserInfoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -47,6 +41,20 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
     var userStone by mutableStateOf("")
     var userKg by mutableStateOf("")
     var userDietFatPercent by mutableStateOf("")
+    var userCmEmptyError by mutableStateOf(false)
+    var userCmRangeError by mutableStateOf(false)
+    var userPoundsEmptyError by mutableStateOf(false)
+    var userPoundsRangeError by mutableStateOf(false)
+    var userFeetEmptyError by mutableStateOf(false)
+    var userFeetRangeError by mutableStateOf(false)
+    var userInchesEmptyError by mutableStateOf(false)
+    var userInchesRangeError by mutableStateOf(false)
+    var userStoneEmptyError by mutableStateOf(false)
+    var userStoneRangeError by mutableStateOf(false)
+    var userKgEmptyError by mutableStateOf(false)
+    var userKgRangeError by mutableStateOf(false)
+    var userDietFatPercentEmptyError by mutableStateOf(false)
+    var userDietFatPercentRangeError by mutableStateOf(false)
     var currentUserInfo by mutableStateOf(UserInfo())
     var currentCalculatorOptions by mutableStateOf(CalculatorOptions())
     val states = combine(userInfoRepository.userInfo, calculatorOptionsRepository.calculatorOptions, macrosRepository.macros) { userInfo, calculatorOptions, macros ->
@@ -62,7 +70,7 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
                 if (calculatorOptions != null) {
                     currentCalculatorOptions = calculatorOptions
                     if (calculatorOptions.dietFatPercentId == 3) {
-                        userDietFatPercent = validDietFatPercent(calculatorOptions.dietFatPercent.toString())
+                        updateDietFatPercent(calculatorOptions.dietFatPercent.toString())
                     }
                 }
                 if (macros != null) {
@@ -70,25 +78,28 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
                 } else {
                     currentMacros = listOf(Macro("calories", 0.0, 0), Macro("protein", 0.0, 0), Macro("fat", 0.0, 0), Macro("carbs", 0.0, 0))
                 }
-                if (userInfo.heightMeasurement == HeightMeasurement.METRIC.id) {
-                    userCm = validHeightCm(userInfo.heightCm.toString())
-                } else {
-                    val imperialHeight = heightMetricToImperial(userInfo.heightCm)
-                    userFeet = validHeightFeet(imperialHeight.feet.toString())
-                    userInches = validHeightInches(imperialHeight.inches.toString())
+                if (userInfo.heightCm > 0.0) {
+                    if (userInfo.heightMeasurement == HeightMeasurement.METRIC.id) {
+                        updateUserCm(userInfo.heightCm.toString())
+                    } else {
+                        val imperialHeight = heightMetricToImperial(userInfo.heightCm)
+                        updateUserFeet((imperialHeight.feet.toString()))
+                        updateUserInches(imperialHeight.inches.toString())
+                    }
                 }
-                when (userInfo.weightMeasurement) {
+                if (userInfo.weightKg > 0.0) {when (userInfo.weightMeasurement) {
                     HeightMeasurement.METRIC.id -> {
-                        userKg = validWeightKg(userInfo.weightKg.toString())
+                        updateUserKg(userInfo.weightKg.toString())
                     }
                     HeightMeasurement.IMPERIAL.id -> {
-                        userPounds = validWeightPounds(weightMetricToImperial(userInfo.weightKg).toString())
+                        updateUserPounds(weightMetricToImperial(userInfo.weightKg).toString())
                     }
                     else -> {
                         val stoneWeight = weightMetricToStone(userInfo.weightKg)
-                        userStone = validWeightStone(stoneWeight.stone.toString())
-                        userPounds = validWeightPounds(stoneWeight.pounds.toString())
+                        updateUserStone(stoneWeight.stone.toString())
+                        updateUserPoundsStone(stoneWeight.pounds.toString())
                     }
+                }
                 }
                 CalculatorState.Success(userInfo)
             }
@@ -96,9 +107,6 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
             CalculatorState.SettingsError
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), CalculatorState.Loading)
-    val calcedMacros: MutableSharedFlow<Macros> = MutableSharedFlow()
-
-    var calculatorOptionsCustomDietFatPercent by mutableStateOf(currentCalculatorOptions.dietFatPercent.toString())
 
     fun updateCalculatorOptionDailyActivity(updatedDailyActivity: Int) {
         currentCalculatorOptions = currentCalculatorOptions.copy(dailyActivity = updatedDailyActivity)
@@ -112,87 +120,11 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
     fun updateCalculatorOptionPhysicalActivityLifestyle(updatedPhysicalActivityLifestyle: Int) {
         currentCalculatorOptions = currentCalculatorOptions.copy(physicalActivityLifestyle = updatedPhysicalActivityLifestyle)
     }
-    fun updateCustomDietFatPercent(updatedCustomDietFatPercent: String) {
-        calculatorOptionsCustomDietFatPercent = updatedCustomDietFatPercent
-        if (updatedCustomDietFatPercent.isNotEmpty() && updatedCustomDietFatPercent.toDouble() in 20.0..35.0) {
-            currentCalculatorOptions = currentCalculatorOptions.copy(dietFatPercent = updatedCustomDietFatPercent.toDouble())
-        }
-    }
 
     fun updateUserKg(updatedKg: String) {
-        userKg = updatedKg
-    }
-
-    fun updateUserCm(updatedCm: String) {
-        userCm = updatedCm
-    }
-
-    fun updateUserPounds(updatedPounds: String) {
-        userPounds = updatedPounds
-    }
-
-    fun updateUserFeet(updatedFeet: String) {
-        userFeet = updatedFeet
-    }
-
-    fun updateUserInches(updatedInches: String) {
-        userInches = updatedInches
-    }
-
-    fun updateUserStone(updatedStone: String) {
-        userStone = updatedStone
-    }
-
-    fun updateDietFatPercent(updatedDietFatPercent: String) {
-        userDietFatPercent = updatedDietFatPercent
-    }
-
-    fun validHeightCm(updatedCm: String): String {
-        if (updatedCm.isEmpty()) {
-            return ""
-        } else {
-            val filteredCm = updatedCm.filterIndexed { index, c ->
-                c.isDigit() || (c == '.' && index != 0 && updatedCm.indexOf('.') == index) }
-
-            return if (filteredCm.count { it == '.' } == 1) {
-                val wholeNumber = filteredCm.substringBefore('.')
-                val decimal = filteredCm.substringAfter('.')
-                wholeNumber.take(3) + "." + decimal.take(2)
-            } else {
-                filteredCm.take(3)
-            }
-        }
-    }
-
-    fun validHeightFeet(updatedFeet: String): String {
-        return if (updatedFeet.isEmpty()) {
+        userKgEmptyError = updatedKg.isEmpty()
+        val formattedKg = if (updatedKg.isEmpty()) {
             ""
-        } else {
-            updatedFeet.take(1)
-        }
-    }
-
-    fun validHeightInches(updatedInches: String): String {
-        if (updatedInches.isEmpty()) {
-            return ""
-        } else {
-            val filteredInches = updatedInches.filterIndexed { index, c ->
-                c.isDigit() || (c == '.' && index != 0 && updatedInches.indexOf('.') == index)
-                        || (c == '-' && index != 0 && updatedInches.count { it == '.' } <= 1)}
-
-            return if (filteredInches.count { it == '.' } == 1) {
-                val wholeNumber = filteredInches.substringBefore('.')
-                val decimal = filteredInches.substringAfter('.')
-                wholeNumber.take(2) + "." + decimal.take(2)
-            } else {
-                filteredInches.take(2)
-            }
-        }
-    }
-
-    fun validWeightKg(updatedKg: String): String {
-        if (updatedKg.isEmpty()) {
-            return ""
         } else {
             val filteredKg = updatedKg.filterIndexed { index, c ->
                 c.isDigit() || (c == '.' && index != 0 && updatedKg.indexOf('.') == index)
@@ -200,7 +132,7 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
 
             }
 
-            return if (filteredKg.count { it == '.' } == 1) {
+            if (filteredKg.count { it == '.' } == 1) {
                 val wholeNumber = filteredKg.substringBefore('.')
                 val decimal = filteredKg.substringAfter('.')
                 wholeNumber.take(3) + "." + decimal.take(2)
@@ -208,17 +140,40 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
                 filteredKg.take(3)
             }
         }
+        userKgRangeError = if (formattedKg.isNotEmpty()) formattedKg.toDouble() !in 2.0..635.0 else false
+        userKg = formattedKg
     }
 
-    fun validWeightPounds(updatedPounds: String): String {
-        if (updatedPounds.isEmpty()) {
-            return ""
+    fun updateUserCm(updatedCm: String) {
+        userCmEmptyError = updatedCm.isEmpty()
+        val formattedCm = if (updatedCm.isEmpty()) {
+            ""
+        } else {
+            val filteredCm = updatedCm.filterIndexed { index, c ->
+                c.isDigit() || (c == '.' && index != 0 && updatedCm.indexOf('.') == index) }
+
+            if (filteredCm.count { it == '.' } == 1) {
+                val wholeNumber = filteredCm.substringBefore('.')
+                val decimal = filteredCm.substringAfter('.')
+                wholeNumber.take(3) + "." + decimal.take(2)
+            } else {
+                filteredCm.take(3)
+            }
+        }
+        userCmRangeError = if (formattedCm.isNotEmpty()) formattedCm.toDouble() !in 54.6..272.0 else false
+        userCm = formattedCm
+    }
+
+    fun updateUserPounds(updatedPounds: String) {
+        userPoundsEmptyError = updatedPounds.isEmpty()
+        val formattedPounds = if (updatedPounds.isEmpty()) {
+            ""
         } else {
             val filteredPounds = updatedPounds.filterIndexed { index, c ->
                 c.isDigit() || (c == '.' && index != 0 && updatedPounds.indexOf('.') == index)
                         || (c == '-' && index != 0 && updatedPounds.count { it == '.' } <= 1) }
 
-            return if (filteredPounds.count { it == '.' } == 1) {
+            if (filteredPounds.count { it == '.' } == 1) {
                 val wholeNumber = filteredPounds.substringBefore('.')
                 val decimal = filteredPounds.substringAfter('.')
                 wholeNumber.take(4) + "." + decimal.take(2)
@@ -226,25 +181,63 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
                 filteredPounds.take(4)
             }
         }
+        userPoundsRangeError = if (formattedPounds.isNotEmpty()) formattedPounds.toDouble() !in 4.7..1400.0 else false
+        userPounds = formattedPounds
     }
 
-    fun validWeightStone(updatedStone: String): String {
-        return if (updatedStone.isEmpty()) {
+    fun updateUserFeet(updatedFeet: String) {
+        userFeetEmptyError = updatedFeet.isEmpty()
+        val formattedFeet = if (updatedFeet.isEmpty()) {
+            ""
+        } else {
+            updatedFeet.take(1)
+        }
+        userFeetRangeError = if (formattedFeet.isNotEmpty()) formattedFeet.toInt() !in 1..8 else false
+        userFeet = formattedFeet
+    }
+
+    fun updateUserInches(updatedInches: String) {
+        userInchesEmptyError = updatedInches.isEmpty()
+        val formattedInches = if (updatedInches.isEmpty()) {
+            ""
+        } else {
+            val filteredInches = updatedInches.filterIndexed { index, c ->
+                c.isDigit() || (c == '.' && index != 0 && updatedInches.indexOf('.') == index)
+                        || (c == '-' && index != 0 && updatedInches.count { it == '.' } <= 1)}
+
+            if (filteredInches.count { it == '.' } == 1) {
+                val wholeNumber = filteredInches.substringBefore('.')
+                val decimal = filteredInches.substringAfter('.')
+                wholeNumber.take(2) + "." + decimal.take(2)
+            } else {
+                filteredInches.take(2)
+            }
+        }
+        userInchesRangeError = if (formattedInches.isNotEmpty()) formattedInches.toDouble() !in 0.0..11.9 else false
+        userInches = formattedInches
+    }
+
+    fun updateUserStone(updatedStone: String) {
+        userStoneEmptyError = updatedStone.isEmpty()
+        val formattedStone = if (updatedStone.isEmpty()) {
             ""
         } else {
             updatedStone.take(3)
         }
+        userStoneRangeError = if (formattedStone.isNotEmpty()) formattedStone.toInt() !in 0..100 else false
+        userStone = formattedStone
     }
 
-    fun validDietFatPercent(updatedDietFatPercent: String): String {
-        return if (updatedDietFatPercent.isEmpty()) {
+    fun updateUserPoundsStone(updatedPounds: String) {
+        userPoundsEmptyError = updatedPounds.isEmpty()
+        val formattedPounds = if (updatedPounds.isEmpty()) {
             ""
         } else {
-            val filteredPounds = updatedDietFatPercent.filterIndexed { index, c ->
-                c.isDigit() || (c == '.' && index != 0 && updatedDietFatPercent.indexOf('.') == index)
-                        || (c == '-' && index != 0 && updatedDietFatPercent.count { it == '.' } <= 1) }
+            val filteredPounds = updatedPounds.filterIndexed { index, c ->
+                c.isDigit() || (c == '.' && index != 0 && updatedPounds.indexOf('.') == index)
+                        || (c == '-' && index != 0 && updatedPounds.count { it == '.' } <= 1) }
 
-            return if (filteredPounds.count { it == '.' } == 1) {
+            if (filteredPounds.count { it == '.' } == 1) {
                 val wholeNumber = filteredPounds.substringBefore('.')
                 val decimal = filteredPounds.substringAfter('.')
                 wholeNumber.take(2) + "." + decimal.take(2)
@@ -252,6 +245,29 @@ class MacrosCalculatorViewModel @Inject constructor(private val userInfoReposito
                 filteredPounds.take(2)
             }
         }
+        userPoundsRangeError = if (formattedPounds.isNotEmpty()) formattedPounds.toDouble() !in 0.0..14.0 else false
+        userPounds = formattedPounds
+    }
+
+    fun updateDietFatPercent(updatedDietFatPercent: String) {
+        userDietFatPercentEmptyError = updatedDietFatPercent.isEmpty()
+        val formattedDietFatPercent = if (updatedDietFatPercent.isEmpty()) {
+            ""
+        } else {
+            val filteredPounds = updatedDietFatPercent.filterIndexed { index, c ->
+                c.isDigit() || (c == '.' && index != 0 && updatedDietFatPercent.indexOf('.') == index)
+                        || (c == '-' && index != 0 && updatedDietFatPercent.count { it == '.' } <= 1) }
+
+            if (filteredPounds.count { it == '.' } == 1) {
+                val wholeNumber = filteredPounds.substringBefore('.')
+                val decimal = filteredPounds.substringAfter('.')
+                wholeNumber.take(2) + "." + decimal.take(2)
+            } else {
+                filteredPounds.take(2)
+            }
+        }
+        userDietFatPercentRangeError = if (formattedDietFatPercent.isNotEmpty()) formattedDietFatPercent.toDouble() !in 20.0..35.0 else false
+        userDietFatPercent = updatedDietFatPercent
     }
 
     fun heightImperialToMetric(foot: Int, inches: Double) : Double {

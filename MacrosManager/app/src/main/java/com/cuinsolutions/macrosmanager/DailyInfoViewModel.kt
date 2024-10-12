@@ -10,7 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -40,7 +39,7 @@ class DailyInfoViewModel @Inject constructor(macrosRepository: MacrosRepository,
             mealsList.emit(emptyList())
         }
         if (macros != null) {
-            val mutableMacros = macros.macros.toMutableList()
+            val mutableMacros = mutableListOf<Macro>()
             mutableMacros.add(Macro("calories", currentCalories, macros.macros.find { it.name == "calories" }?.daily ?: 0))
             mutableMacros.add(Macro("protein", currentProtein, macros.macros.find { it.name == "protein" }?.daily ?: 0))
             mutableMacros.add(Macro("fat", currentFat, macros.macros.find { it.name == "fat" }?.daily ?: 0))

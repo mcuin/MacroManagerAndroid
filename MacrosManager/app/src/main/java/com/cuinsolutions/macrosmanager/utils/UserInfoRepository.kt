@@ -1,6 +1,5 @@
 package com.cuinsolutions.macrosmanager.utils
 
-import androidx.room.Insert
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

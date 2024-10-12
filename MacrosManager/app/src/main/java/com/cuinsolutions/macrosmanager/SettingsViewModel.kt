@@ -17,10 +17,12 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(val userInfoRepository: UserInfoRepository) : ViewModel() {
 
+    var saveFabError by mutableStateOf(false)
     var userInfo by mutableStateOf(UserInfo())
     val states = userInfoRepository.userInfo.map { repoUserInfo ->
         if (repoUserInfo != null) {
             userInfo = repoUserInfo
+            saveFabError = userInfo.birthMonth > -1 && userInfo.birthYear > -1
             SettingsScreenUIState.Success
         } else {
             userInfo = UserInfo()
@@ -48,6 +50,10 @@ class SettingsViewModel @Inject constructor(val userInfoRepository: UserInfoRepo
         viewModelScope.launch {
             userInfoRepository.insertUserInfo(userInfo)
         }
+    }
+
+    fun validateSettings(): Boolean {
+        return userInfo.birthMonth > -1 && userInfo.birthYear > -1
     }
 }
 

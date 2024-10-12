@@ -5,14 +5,13 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kapt)
     alias(libs.plugins.ksp)
-    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
     compileSdk = 35
 
     signingConfigs {
-        create("release") {keyAlias = "key0"
+        create("release") { keyAlias = "key0"
             keyPassword = "MacrosManagerKey"
             storeFile = file("/Users/mykalcuin/Documents/MacrosManagerAndroid/MacrosManager/macrosManagerKeyStore")
             storePassword = "MacrosManagerKey"
@@ -25,7 +24,7 @@ android {
         applicationId = "com.cuinsolutions.macrosmanager"
         minSdk = 28
         targetSdk = 35
-        versionCode = 11
+        versionCode = 12
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -36,6 +35,29 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles (getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            resValue("string", "daily_info_ad_unit_id", "ca-app-pub-6601965971959563/5273159001")
+            resValue("string", "add_meal_ad_unit_id", "ca-app-pub-6601965971959563/8885100953")
+            resValue("string", "calculator_ad_unit_id", "ca-app-pub-6601965971959563/1916266296")
+            resValue("string", "settings_ad_unit_id", "ca-app-pub-6601965971959563/5628382226")
+            signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
+            isMinifyEnabled = false
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            resValue("string", "daily_info_ad_unit_id", "ca-app-pub-3940256099942544/9214589741")
+            resValue("string", "add_meal_ad_unit_id", "ca-app-pub-3940256099942544/9214589741")
+            resValue("string", "calculator_ad_unit_id", "ca-app-pub-3940256099942544/9214589741")
+            resValue("string", "settings_ad_unit_id", "ca-app-pub-3940256099942544/9214589741")
+        }
+    }
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+        }
+        create("prod") {
+            dimension = "environment"
         }
     }
     compileOptions {
@@ -51,6 +73,7 @@ android {
     buildFeatures {
         dataBinding = true
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
@@ -95,13 +118,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(platform(libs.firebase.bom))
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation(libs.firebase.auth)
     implementation(libs.firestore)
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation ("joda-time:joda-time:2.9.9")
 }

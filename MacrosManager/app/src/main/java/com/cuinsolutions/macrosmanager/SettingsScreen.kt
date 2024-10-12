@@ -4,7 +4,6 @@ import android.icu.util.Calendar
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,14 +15,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -39,16 +40,20 @@ import com.cuinsolutions.macrosmanager.utils.WeightMeasurement
 import com.dt.composedatepicker.CalendarType
 import com.dt.composedatepicker.ComposeCalendar
 import com.dt.composedatepicker.SelectDateListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.Date
 
 @Composable
 fun SettingsScreen(modifier: Modifier, navController: NavHostController, settingsViewModel: SettingsViewModel = hiltViewModel()) {
 
-    var showSaveFab by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(modifier = modifier.navigationBarsPadding(), topBar = { MacrosManagerOptionsMenuAppBar(modifier = modifier, navController = navController, titleResourceId = R.string.settings) },
-        floatingActionButton = { if (showSaveFab) SettingsSaveFAB(modifier = modifier, settingsViewModel = settingsViewModel, navController = navController) },
-        bottomBar = { BannerAdview() }) {
+        floatingActionButton = { SettingsSaveFAB(modifier = modifier, settingsViewModel = settingsViewModel, navController = navController, snackbarHostState = snackbarHostState, scope = scope) },
+        bottomBar = { BannerAdview(stringResource(id = R.string.settings_ad_unit_id)) },
+        snackbarHost = { SnackbarHost(snackbarHostState) }) {
 
         val states = settingsViewModel.states.collectAsStateWithLifecycle()
 
@@ -59,7 +64,6 @@ fun SettingsScreen(modifier: Modifier, navController: NavHostController, setting
             when (states.value) {
                 is SettingsScreenUIState.Loading -> {}
                 is SettingsScreenUIState.Success -> {
-                    showSaveFab = settingsViewModel.userInfo.birthMonth > -1 && settingsViewModel.userInfo.birthYear > -1
                     SettingsBirthday(modifier = modifier, birthMonth = settingsViewModel.userInfo.birthMonth, birthYear = settingsViewModel.userInfo.birthYear, settingsViewModel = settingsViewModel)
                     SettingsGender(modifier = modifier, selectedGenderId = settingsViewModel.userInfo.gender, settingsViewModel = settingsViewModel)
                     SettingsHeightMeasurement(modifier = modifier, heightMeasurementId = settingsViewModel.userInfo.heightMeasurement, settingsViewModel = settingsViewModel)
@@ -161,10 +165,16 @@ fun SettingsWeightMeasurement(modifier: Modifier, weightMeasurementId: Int, sett
 }
 
 @Composable
-fun SettingsSaveFAB(modifier: Modifier, settingsViewModel: SettingsViewModel, navController: NavHostController) {
+fun SettingsSaveFAB(modifier: Modifier, settingsViewModel: SettingsViewModel, navController: NavHostController, snackbarHostState: SnackbarHostState, scope: CoroutineScope) {
     FloatingActionButton(onClick = {
-        settingsViewModel.saveSettings()
-        navController.popBackStack()
+        if (settingsViewModel.validateSettings()) {
+            settingsViewModel.saveSettings()
+            navController.popBackStack()
+        } else {
+            scope.launch {
+                snackbarHostState.showSnackbar(message = "Fill out all fields before saving settings")
+            }
+        }
     }) {
         Icon(painterResource(id = R.drawable.ic_save), contentDescription = null)
     }

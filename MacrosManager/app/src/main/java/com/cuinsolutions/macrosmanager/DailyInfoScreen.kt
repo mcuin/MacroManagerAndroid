@@ -1,6 +1,5 @@
 package com.cuinsolutions.macrosmanager
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,14 +11,15 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -56,7 +56,7 @@ fun DailyInfoScreen(modifier: Modifier, navController: NavHostController, viewMo
                 is DailyInfoUiState.Success -> {
                     DailyMacrosGrid(modifier = modifier, macros = macros.macros)
                     DailyMealsList(modifier = modifier.weight(1f), meals = meals, navController = navController)
-                    BannerAdview()
+                    BannerAdview(stringResource(id = R.string.daily_info_ad_unit_id))
                 }
                 is DailyInfoUiState.Loading -> {}
             }
@@ -85,7 +85,7 @@ fun DailyMacrosGridCell(modifier: Modifier, macro: Macro) {
 
 @Composable
 fun DailyMealsList(modifier: Modifier, meals: List<Meal>, navController: NavHostController) {
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
+    LazyColumn(modifier = modifier.fillMaxWidth().padding(top = dimensionResource(R.dimen.margin_standard))) {
         items(meals) { meal ->
             DailyMealsListItem(modifier = modifier, meal = meal, navController = navController)
         }
@@ -94,28 +94,47 @@ fun DailyMealsList(modifier: Modifier, meals: List<Meal>, navController: NavHost
 
 @Composable
 fun DailyMealsListItem(modifier: Modifier, meal: Meal, navController: NavHostController) {
-    Card (modifier = modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.margin_standard),
-        vertical = dimensionResource(R.dimen.margin_small)).background(color = MaterialTheme.colorScheme.primary), onClick = {
-            navController.navigate(route = Screens.Meal.route.replace("{mealId}", meal.id.toString()))
-    }) {
-        //Column {
-            Row(modifier = modifier.fillMaxWidth()) {
-                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_small)), text = meal.mealName)
-                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), end = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_calories, meal.mealCalories))
-            }
-            Row(modifier = modifier.fillMaxWidth()) {
-                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_servings, meal.servingSize))
-                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_carbs, meal.mealCarbs))
-                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_fat, meal.mealFats))
-                Text(modifier = modifier.weight(1f).padding(top = dimensionResource(R.dimen.margin_small), end = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_protein, meal.mealProtein))
-            }
-        //}
+
+    Card (modifier = modifier.padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_standard), end = dimensionResource(R.dimen.margin_standard)), shape = RoundedCornerShape(10.dp),
+        onClick = {
+            navController.navigate(
+                route = Screens.Meal.route.replace(
+                    "{mealId}",
+                    meal.id.toString()
+                )
+            )
+        }) {
+        Row {
+            Text(
+                modifier = modifier
+                .padding(
+                    top = dimensionResource(R.dimen.margin_small),
+                    start = dimensionResource(R.dimen.margin_small)
+                ),
+                text = meal.mealName
+            )
+            Text(
+                modifier = modifier
+                .padding(top = dimensionResource(R.dimen.margin_small),
+                end = dimensionResource(R.dimen.margin_small)),
+                text = stringResource(R.string.meal_card_calories, meal.mealCalories * meal.servingSize)
+            )
+        }
+        Row {
+            Text(modifier = modifier.padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_servings, meal.servingSize))
+            Text(modifier = modifier.padding(top = dimensionResource(R.dimen.margin_small), end = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_carbs, meal.mealCarbs * meal.servingSize))
+        }
+
+        Row {
+            Text(modifier = modifier.padding(top = dimensionResource(R.dimen.margin_small), start = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_fat, meal.mealFats * meal.servingSize))
+            Text(modifier = modifier.padding(top = dimensionResource(R.dimen.margin_small), end = dimensionResource(R.dimen.margin_small), bottom = dimensionResource(R.dimen.margin_small)), text = stringResource(R.string.meal_card_protein, meal.mealProtein * meal.servingSize))
+        }
     }
 }
 
 @Composable
 fun AddMealFAB(modifier: Modifier, navController: NavHostController) {
-    FloatingActionButton(modifier = modifier.padding(bottom = 50.dp), containerColor = MaterialTheme.colorScheme.primary, onClick = { navController.navigate(route = Screens.Meal.route) }) {
+    FloatingActionButton(modifier = modifier.padding(bottom = dimensionResource(R.dimen.banner_ad_padding)), containerColor = MaterialTheme.colorScheme.primary, onClick = { navController.navigate(route = Screens.Meal.route) }) {
         Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.add_meal))
     }
 }

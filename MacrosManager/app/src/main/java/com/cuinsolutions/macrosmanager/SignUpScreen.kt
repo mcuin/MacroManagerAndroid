@@ -6,28 +6,23 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun SignUpScreen(modifier: Modifier, navController: NavHostController, signUpViewModel: SignUpViewModel = hiltViewModel()) {
 
     Scaffold(modifier = modifier.navigationBarsPadding(), topBar = { MacrosManagerOptionsMenuAppBar(modifier, R.string.sign_up, navController) },
-        bottomBar = { BannerAdview() }) {
+        bottomBar = { /*BannerAdview()*/ }) {
 
         Column(modifier = Modifier.fillMaxSize().padding(it)) {
             Text(text = stringResource(id = R.string.sign_up_description))

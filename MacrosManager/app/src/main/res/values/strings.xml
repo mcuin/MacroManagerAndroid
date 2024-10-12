@@ -118,11 +118,11 @@
     <string name="login_failed_description">Your login failed. Please try again later.</string>
     <string name="add_meal">Add Meal</string>
     <string name="edit_meal">Edit Meal</string>
-    <string name="meal_card_calories">Calories: %1$f</string>
-    <string name="meal_card_carbs">Carbs: %1$f</string>
-    <string name="meal_card_fat">Fat: %1$f</string>
-    <string name="meal_card_protein">Protein: %1$f</string>
-    <string name="meal_card_servings">Servings: %1$f</string>
+    <string name="meal_card_calories">Calories: %1$.2f</string>
+    <string name="meal_card_carbs">Carbs: %1$.2f</string>
+    <string name="meal_card_fat">Fat: %1$.2f</string>
+    <string name="meal_card_protein">Protein: %1$.2f</string>
+    <string name="meal_card_servings">Servings: %1$.2f</string>
 
     <string name="admob_id">ca-app-pub-6601965971959563~1619744217</string>
 </resources>

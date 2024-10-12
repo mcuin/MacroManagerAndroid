@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#a11f00</color>
-    <color name="colorPrimaryDark">#92b539</color>
-    <color name="colorAccent">#654321</color>
+    <color name="primaryP80">#ffb4a3</color>
+    <color name="secondaryS80">#e7bdb4</color>
+    <color name="tertiaryT80">#dbc58c</color>
+
+    <color name="primaryP40">#7b1500</color>
+    <color name="secondaryS40">#974734</color>
+    <color name="tertiaryT40">#4f3b00</color>
 </resources>

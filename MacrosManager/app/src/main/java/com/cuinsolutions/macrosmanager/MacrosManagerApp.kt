@@ -5,27 +5,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
@@ -68,7 +64,7 @@ fun MacrosManagerApp(navController: NavHostController = rememberNavController())
 @Composable
 fun MacrosManagerOptionsMenuAppBar(modifier: Modifier, titleResourceId: Int, navController: NavHostController) {
 
-    var optionsExpanded by remember { mutableStateOf(false) }
+    //var optionsExpanded by remember { mutableStateOf(false) }
 
     TopAppBar(modifier = modifier, title = { Text(text = stringResource(id = titleResourceId)) },
         navigationIcon = {
@@ -79,19 +75,20 @@ fun MacrosManagerOptionsMenuAppBar(modifier: Modifier, titleResourceId: Int, nav
             }
         },
         actions = {
-
-        IconButton(onClick = { optionsExpanded = !optionsExpanded }) {
-            Icon(Icons.Default.MoreVert, contentDescription = "")
+            if (navController.currentBackStackEntry?.destination?.route != Screens.Settings.route) {
+                IconButton(onClick = { navController.navigate(Screens.Settings.route) }) {
+                    Icon(Icons.Default.Settings, contentDescription = "")
+            }
         }
 
-        DropdownMenu(expanded = optionsExpanded, onDismissRequest = { optionsExpanded = false }) {
+        /*DropdownMenu(expanded = optionsExpanded, onDismissRequest = { optionsExpanded = false }) {
 
             DropdownMenuItem(text = { Text(text = stringResource(id = R.string.settings)) },
                 onClick = {
                     optionsExpanded = false
                     navController.navigate(Screens.Settings.route)
                 })
-        }
+        }*/
     })
 }
 
@@ -106,10 +103,10 @@ fun BottomNavigationBar(modifier: Modifier, navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    BottomNavigation(modifier = modifier.fillMaxWidth()) {
+    NavigationBar(modifier = modifier.fillMaxWidth()) {
 
         items.forEach { item ->
-            BottomNavigationItem(icon = { item.icon },
+            NavigationBarItem(icon = { Icon(painter = painterResource(id = item.icon), contentDescription = "") },
                 label = { Text(text = stringResource(id = item.titleResourceId)) },
                 selected = currentRoute == item.route, onClick = {
                     if (currentRoute != item.route) {
@@ -121,11 +118,11 @@ fun BottomNavigationBar(modifier: Modifier, navController: NavHostController) {
 }
 
 @Composable
-fun BannerAdview() {
+fun BannerAdview(addUnitId: String) {
     AndroidView(factory = { context ->
         AdView(context).apply {
             setAdSize(AdSize.BANNER)
-            adUnitId = "ca-app-pub-3940256099942544/6300978111"
+            adUnitId = addUnitId
             loadAd(AdRequest.Builder().build())
         }
     }, modifier = Modifier
