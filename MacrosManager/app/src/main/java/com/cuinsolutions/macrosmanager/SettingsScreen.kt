@@ -14,6 +14,7 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -118,6 +119,7 @@ fun BirthPickerDialog(modifier: Modifier, hideDatePicker: () -> Unit, monthYearS
             maxDate = maxCalendar.time,
             calendarType = CalendarType.MONTH_AND_YEAR,
             title = "Select Birth Month and Year",
+            themeColor = MaterialTheme.colorScheme.primary,
             listener = object : SelectDateListener {
                 override fun onCanceled() {
                     hideDatePicker()
