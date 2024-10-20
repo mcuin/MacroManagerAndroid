@@ -102,7 +102,7 @@
     <string name="firestore_save_data_error">Save Data Issue</string>
     <string name="firestore_save_data_error_description">Some data was saved to your device, but not to your account. Please try to save again or try again later.</string>
     <string name="retry">Retry</string>
-    <string name="macros_daily">%1$s/%2$d</string>
+    <string name="macros_daily">%1$.1f/%2$d</string>
     <string name="macros_daily_empty">-/-</string>
     <string name="servings">Servings</string>
     <string name="delete_meal">Remove Meal</string>

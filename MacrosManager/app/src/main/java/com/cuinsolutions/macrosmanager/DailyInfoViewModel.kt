@@ -24,6 +24,10 @@ class DailyInfoViewModel @Inject constructor(macrosRepository: MacrosRepository,
 
     val states = macrosRepository.macros.combine(mealsRepository.meals) { macros, meals ->
         if (!meals.isNullOrEmpty()) {
+            currentCalories = 0.0
+            currentProtein = 0.0
+            currentFat = 0.0
+            currentCarbs = 0.0
             for (meal in meals) {
                 currentCalories += meal.mealCalories * meal.servingSize
                 currentProtein += meal.mealProtein * meal.servingSize

@@ -13,7 +13,7 @@ android {
     signingConfigs {
         create("release") { keyAlias = "key0"
             keyPassword = "MacrosManagerKey"
-            storeFile = file("/Users/mykalcuin/Documents/MacrosManagerAndroid/MacrosManager/macrosManagerKeyStore")
+            storeFile = file("/Users/mykalcuin/Documents/MacroManagerAndroid/MacrosManager/macrosManagerKeyStore")
             storePassword = "MacrosManagerKey"
         }
     }
@@ -24,8 +24,8 @@ android {
         applicationId = "com.cuinsolutions.macrosmanager"
         minSdk = 28
         targetSdk = 35
-        versionCode = 12
-        versionName = "1.0"
+        versionCode = 26
+        versionName = "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
